@@ -61,6 +61,12 @@ The demo must work without real AI API keys, live job boards, clinic systems, PO
 
 ## Collaboration
 
+Before starting work, read:
+
+- `AGENTS.md` for agent-specific repository instructions
+- `docs/project_memory.md` for current project memory, completed tasks, and follow-ups
+- `docs/team_roles.md` for ownership areas
+
 Use feature branches:
 
 - `frontend/<name>`
@@ -77,6 +83,8 @@ data: add sample scenario files
 docs: update demo script
 fix: align API response shape
 ```
+
+Every completed partial task should update `docs/project_memory.md` in the same change set. If remote teammates or agents change the repository, the next person or agent who pulls those changes should update the memory file so it reflects the latest completed work.
 
 ## GitHub Remote
 
