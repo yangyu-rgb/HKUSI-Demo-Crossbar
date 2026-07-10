@@ -47,3 +47,20 @@ CREATE TABLE IF NOT EXISTS batch_plans (
 
 CREATE INDEX IF NOT EXISTS idx_batch_plans_company
 ON batch_plans(company, created_at);
+
+CREATE TABLE IF NOT EXISTS shadow_model_observations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    generated_at TEXT NOT NULL,
+    target_time TEXT NOT NULL,
+    port_id TEXT NOT NULL,
+    port_name TEXT NOT NULL,
+    statistical_wait_minutes REAL NOT NULL,
+    shadow_wait_minutes REAL,
+    difference_minutes REAL,
+    status TEXT NOT NULL,
+    model_version TEXT,
+    reason TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_shadow_model_observations_generated
+ON shadow_model_observations(generated_at, id);

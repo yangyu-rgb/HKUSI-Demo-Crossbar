@@ -10,7 +10,7 @@ from ..exceptions import PersistenceError
 from ..clock import Clock, HongKongClock
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def load_json(path: Path) -> dict | list:
@@ -67,11 +67,14 @@ class DemoRepository:
             schema = (Path(__file__).with_name("schema.sql")).read_text(encoding="utf-8")
             with self._connect() as connection:
                 connection.executescript(schema)
-                migration = connection.execute(
+                is_new_database = connection.execute(
+                    "SELECT COUNT(*) FROM schema_version"
+                ).fetchone()[0] == 0
+                connection.execute(
                     "INSERT OR IGNORE INTO schema_version(version, applied_at) VALUES (?, ?)",
                     (SCHEMA_VERSION, self._utc_now()),
                 )
-                if migration.rowcount > 0:
+                if is_new_database:
                     report_ids = [
                         item["id"]
                         for item in load_json(
@@ -431,12 +434,59 @@ class DemoRepository:
         except sqlite3.Error as error:
             raise PersistenceError() from error
 
+    def save_shadow_observations(self, observations: list[dict]) -> None:
+        if not observations:
+            return
+        try:
+            with self._connect() as connection:
+                connection.executemany(
+                    """
+                    INSERT INTO shadow_model_observations(
+                        generated_at, target_time, port_id, port_name,
+                        statistical_wait_minutes, shadow_wait_minutes,
+                        difference_minutes, status, model_version, reason
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    [
+                        (
+                            observation["generated_at"],
+                            observation["target_time"],
+                            observation["port_id"],
+                            observation["port_name"],
+                            observation["statistical_wait_minutes"],
+                            observation["shadow_wait_minutes"],
+                            observation["difference_minutes"],
+                            observation["status"],
+                            observation["model_version"],
+                            observation["reason"],
+                        )
+                        for observation in observations
+                    ],
+                )
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+    def list_shadow_observations(self, limit: int = 100) -> list[dict]:
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT * FROM shadow_model_observations
+                    ORDER BY id DESC LIMIT ?
+                    """,
+                    (limit,),
+                ).fetchall()
+            return [dict(row) for row in rows]
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
     def reset_dynamic_data(self) -> dict:
         try:
             with self._connect() as connection:
                 connection.execute("DELETE FROM crowdsource_reports")
                 connection.execute("DELETE FROM subscriptions")
                 connection.execute("DELETE FROM batch_plans")
+                connection.execute("DELETE FROM shadow_model_observations")
                 self._seed_reports(connection)
                 self._seed_subscriptions(connection)
             return {

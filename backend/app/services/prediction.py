@@ -1,4 +1,5 @@
 from datetime import timedelta
+import logging
 from statistics import NormalDist
 
 from ..clock import Clock, as_hong_kong, ceil_minutes
@@ -15,9 +16,13 @@ from ..config import (
 )
 from ..exceptions import DomainValidationError, ErrorCode
 from ..repositories import DemoRepository
+from ..ml.shadow import ShadowWaitModel
 from ..schemas.common import Priority
 from ..schemas.prediction import PredictionPreferences, PredictionRequest
 from .wait_forecast import WaitForecastService
+
+
+logger = logging.getLogger(__name__)
 
 
 class PredictionService:
@@ -28,11 +33,13 @@ class PredictionService:
         repository: DemoRepository,
         clock: Clock,
         safety_buffer_minutes: int = DEFAULT_SAFETY_BUFFER_MINUTES,
+        shadow_model: ShadowWaitModel | None = None,
     ):
         self._repository = repository
         self._clock = clock
         self._forecast = WaitForecastService(repository, clock)
         self._safety_buffer_minutes = safety_buffer_minutes
+        self._shadow_model = shadow_model
 
     def get_locations(self) -> dict:
         return self._repository.get_locations()
@@ -61,6 +68,7 @@ class PredictionService:
         current_time,
         max_budget: int | None,
         reports: list[dict],
+        shadow_observations: list[dict],
     ) -> dict:
         access = self._repository.get_access_leg(origin_id, port["id"])
         onward = self._repository.get_onward_leg(port["id"], destination_id)
@@ -71,6 +79,13 @@ class PredictionService:
             reports,
         )
         predicted_value = estimate["value"]
+        self._append_shadow_observation(
+            shadow_observations=shadow_observations,
+            port=port,
+            target_time=target_time,
+            current_time=current_time,
+            statistical_wait=predicted_value,
+        )
         sigma = estimate["standard_deviation"]
         z_score = NormalDist().inv_cdf(0.5 + CONFIDENCE_LEVEL / 2)
         lower = max(1, round(predicted_value - z_score * sigma))
@@ -127,6 +142,62 @@ class PredictionService:
             "historical_sample_count": estimate["sample_count"],
             "uncertainty_minutes": round(sigma, 2),
         }
+
+    def _append_shadow_observation(
+        self,
+        *,
+        shadow_observations: list[dict],
+        port: dict,
+        target_time,
+        current_time,
+        statistical_wait: float,
+    ) -> None:
+        if self._shadow_model is None:
+            return
+        weather_condition = self._repository.get_weather()["condition"]
+        weather = (
+            "rain"
+            if "rain" in weather_condition or "thunder" in weather_condition
+            else "clear"
+        )
+        is_holiday = target_time.date().isoformat() in set(
+            self._repository.get_holidays()["dates"]
+        )
+        shadow_wait = self._shadow_model.predict(
+            port=port["name"],
+            timestamp=target_time,
+            weather=weather,
+            is_holiday=is_holiday,
+        )
+        status = self._shadow_model.status
+        shadow_observations.append(
+            {
+                "generated_at": current_time.isoformat(),
+                "target_time": target_time.isoformat(),
+                "port_id": port["id"],
+                "port_name": port["name"],
+                "statistical_wait_minutes": round(statistical_wait, 4),
+                "shadow_wait_minutes": (
+                    round(shadow_wait, 4) if shadow_wait is not None else None
+                ),
+                "difference_minutes": (
+                    round(shadow_wait - statistical_wait, 4)
+                    if shadow_wait is not None
+                    else None
+                ),
+                "status": "available" if shadow_wait is not None else "unavailable",
+                "model_version": status.model_version,
+                "reason": status.reason,
+            }
+        )
+
+    def _save_shadow_observations(self, observations: list[dict]) -> None:
+        if not observations:
+            return
+        try:
+            self._repository.save_shadow_observations(observations)
+        except Exception:
+            logger.warning("AI v1 影子模型观测记录失败", exc_info=True)
 
     @staticmethod
     def _preference_key(item: dict, preferences: PredictionPreferences) -> tuple:
@@ -211,6 +282,7 @@ class PredictionService:
             )
 
         snapshot, reports = self._forecast.build_snapshot(current_time)
+        shadow_observations: list[dict] = []
         predictions = [
             self._prediction_for_port(
                 port,
@@ -220,9 +292,11 @@ class PredictionService:
                 current_time,
                 request.preferences.max_budget,
                 reports,
+                shadow_observations,
             )
             for port in snapshot["ports"]
         ]
+        self._save_shadow_observations(shadow_observations)
         recommended, warnings = self._choose_recommended(
             predictions,
             request.preferences,

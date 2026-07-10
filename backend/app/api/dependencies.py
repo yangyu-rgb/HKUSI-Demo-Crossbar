@@ -1,6 +1,7 @@
 from fastapi import Depends, Request
 
 from ..clock import Clock
+from ..ml.shadow import ShadowWaitModel
 from ..repositories import DemoRepository
 from ..services import (
     BatchService,
@@ -20,11 +21,16 @@ def get_clock(request: Request) -> Clock:
     return request.app.state.clock
 
 
+def get_shadow_model(request: Request) -> ShadowWaitModel:
+    return request.app.state.shadow_model
+
+
 def get_prediction_service(
     repository: DemoRepository = Depends(get_repository),
     clock: Clock = Depends(get_clock),
+    shadow_model: ShadowWaitModel = Depends(get_shadow_model),
 ) -> PredictionService:
-    return PredictionService(repository, clock)
+    return PredictionService(repository, clock, shadow_model=shadow_model)
 
 
 def get_realtime_service(
@@ -57,5 +63,6 @@ def get_subscription_service(
 def get_batch_service(
     repository: DemoRepository = Depends(get_repository),
     clock: Clock = Depends(get_clock),
+    shadow_model: ShadowWaitModel = Depends(get_shadow_model),
 ) -> BatchService:
-    return BatchService(repository, clock)
+    return BatchService(repository, clock, shadow_model=shadow_model)

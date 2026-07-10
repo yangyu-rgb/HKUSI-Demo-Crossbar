@@ -17,6 +17,7 @@ from .api import (
     subscription_router,
 )
 from .clock import Clock, HongKongClock
+from .ml.shadow import ShadowWaitModel
 from .config import DATABASE_PATH, DATA_DIR
 from .exceptions import AppError, ErrorCode
 from .repositories import DemoRepository
@@ -40,6 +41,11 @@ def create_app(
     )
     app.state.clock = clock or HongKongClock()
     app.state.repository = DemoRepository(data_dir, database_path, app.state.clock)
+    app.state.shadow_model = ShadowWaitModel.load_optional(
+        artifact_path=data_dir / "runtime" / "models" / "wait_model_v1.joblib",
+        metadata_path=data_dir / "models" / "wait_model_v1.metadata.json",
+        dataset_path=data_dir / "history" / "port_wait_history.csv",
+    )
 
     app.add_middleware(
         CORSMiddleware,

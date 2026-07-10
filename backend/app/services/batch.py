@@ -2,15 +2,25 @@ from datetime import datetime, timedelta
 
 from ..clock import Clock
 from ..repositories import DemoRepository
+from ..ml.shadow import ShadowWaitModel
 from ..schemas.batch import BatchRequest
 from ..schemas.prediction import PredictionPreferences, PredictionRequest
 from .prediction import PredictionService
 
 
 class BatchService:
-    def __init__(self, repository: DemoRepository, clock: Clock):
+    def __init__(
+        self,
+        repository: DemoRepository,
+        clock: Clock,
+        shadow_model: ShadowWaitModel | None = None,
+    ):
         self._repository = repository
-        self._prediction_service = PredictionService(repository, clock)
+        self._prediction_service = PredictionService(
+            repository,
+            clock,
+            shadow_model=shadow_model,
+        )
 
     def create_plan(self, request: BatchRequest) -> dict:
         plan = []

@@ -12,3 +12,6 @@ __all__ = [
     "run_experiment",
     "split_chronologically",
 ]
+from .shadow import ShadowWaitModel
+
+__all__ = ["ShadowWaitModel"]
