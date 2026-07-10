@@ -1,5 +1,5 @@
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 import json
@@ -7,9 +7,10 @@ import sqlite3
 import csv
 
 from ..exceptions import PersistenceError
+from ..clock import Clock, HongKongClock
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def load_json(path: Path) -> dict | list:
@@ -17,16 +18,18 @@ def load_json(path: Path) -> dict | list:
         return json.load(file)
 
 
-def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
 class DemoRepository:
     """Combines cached deterministic JSON inputs with transactional SQLite state."""
 
-    def __init__(self, data_dir: Path, database_path: Path):
+    def __init__(
+        self,
+        data_dir: Path,
+        database_path: Path,
+        clock: Clock | None = None,
+    ):
         self._data_dir = data_dir
         self._database_path = database_path
+        self._clock = clock or HongKongClock()
         self._port_state = load_json(data_dir / "realtime" / "ports_status.json")
         self._locations = load_json(data_dir / "routes" / "locations.json")
         self._transit_matrix = load_json(data_dir / "routes" / "transit_matrix.json")
@@ -35,6 +38,9 @@ class DemoRepository:
         self._weather = load_json(data_dir / "factors" / "weather.json")
         self._holidays = load_json(data_dir / "factors" / "holidays.json")
         self._initialize_database()
+
+    def _utc_now(self) -> str:
+        return self._clock.now().astimezone(timezone.utc).isoformat()
 
     def _load_history(self) -> list[dict]:
         with self._history_path.open("r", encoding="utf-8") as file:
@@ -63,9 +69,29 @@ class DemoRepository:
                 connection.executescript(schema)
                 migration = connection.execute(
                     "INSERT OR IGNORE INTO schema_version(version, applied_at) VALUES (?, ?)",
-                    (SCHEMA_VERSION, utc_now()),
+                    (SCHEMA_VERSION, self._utc_now()),
                 )
                 if migration.rowcount > 0:
+                    report_ids = [
+                        item["id"]
+                        for item in load_json(
+                            self._data_dir / "crowdsource" / "user_reports.json"
+                        )
+                    ]
+                    subscription_ids = [
+                        item["subscription_id"]
+                        for item in load_json(
+                            self._data_dir / "subscriptions" / "demo_subscriptions.json"
+                        )
+                    ]
+                    connection.executemany(
+                        "DELETE FROM crowdsource_reports WHERE id = ?",
+                        [(item_id,) for item_id in report_ids],
+                    )
+                    connection.executemany(
+                        "DELETE FROM subscriptions WHERE id = ?",
+                        [(item_id,) for item_id in subscription_ids],
+                    )
                     self._seed_reports(connection)
                     self._seed_subscriptions(connection)
         except (OSError, sqlite3.Error) as error:
@@ -73,7 +99,9 @@ class DemoRepository:
 
     def _seed_reports(self, connection: sqlite3.Connection) -> None:
         reports = load_json(self._data_dir / "crowdsource" / "user_reports.json")
+        now = self._clock.now().replace(microsecond=0)
         for report in reports:
+            effective_at = now - timedelta(minutes=report["age_minutes"])
             connection.execute(
                 """
                 INSERT INTO crowdsource_reports(
@@ -87,10 +115,10 @@ class DemoRepository:
                     report["port"],
                     report["actual_wait_time"],
                     report["crowd_level"],
-                    report["timestamp"],
-                    report["time_label"],
+                    effective_at.isoformat(),
+                    "",
                     report["comment"],
-                    report["timestamp"],
+                    effective_at.astimezone(timezone.utc).isoformat(),
                 ),
             )
 
@@ -101,7 +129,7 @@ class DemoRepository:
         for subscription in subscriptions:
             routine = subscription["routine"]
             alerts = subscription["alerts"]
-            created_at = self._port_state["timestamp"]
+            created_at = self._utc_now()
             connection.execute(
                 """
                 INSERT INTO subscriptions(
@@ -217,7 +245,7 @@ class DemoRepository:
         record = {
             **report,
             "id": report.get("id", f"report-{uuid4().hex[:12]}"),
-            "_created_at": utc_now(),
+            "_created_at": self._utc_now(),
         }
         try:
             with self._connect() as connection:
@@ -276,8 +304,8 @@ class DemoRepository:
                 "subscription_id",
                 f"sub-{uuid4().hex[:12]}",
             ),
-            "created_at": utc_now(),
-            "updated_at": utc_now(),
+            "created_at": self._utc_now(),
+            "updated_at": self._utc_now(),
         }
         routine = record["routine"]
         alerts = record["alerts"]
@@ -313,7 +341,7 @@ class DemoRepository:
     def update_subscription(self, subscription_id: str, subscription: dict) -> dict | None:
         routine = subscription["routine"]
         alerts = subscription["alerts"]
-        updated_at = utc_now()
+        updated_at = self._utc_now()
         try:
             with self._connect() as connection:
                 cursor = connection.execute(
@@ -371,7 +399,7 @@ class DemoRepository:
                         service_date,
                         json.dumps(request, ensure_ascii=False),
                         json.dumps(result, ensure_ascii=False),
-                        utc_now(),
+                        self._utc_now(),
                     ),
                 )
             return plan_id

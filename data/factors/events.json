@@ -2,10 +2,12 @@
   "events": [
     {
       "name": "Morning cross-border commuter peak",
-      "start": "2026-07-09T08:30:00",
-      "end": "2026-07-09T10:00:00",
+      "weekdays": [0, 1, 2, 3, 4],
+      "start_time": "08:30",
+      "end_time": "10:00",
       "affected_ports": ["罗湖", "皇岗"],
       "impact": "medium"
     }
-  ]
+  ],
+  "demo_note": "Recurring simulated event profile; this is not a live event feed."
 }

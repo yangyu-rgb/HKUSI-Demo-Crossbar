@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.repositories import DemoRepository
 from app.schemas.prediction import PredictionRequest
+from app.clock import HONG_KONG_TZ
 from app.services import CrowdsourceService, PredictionService, RealtimeService
 from app.services.report_quality import evaluate_report, quality_weighted_wait
 
@@ -12,12 +13,17 @@ FUTIAN = {
     "name": "福田",
     "current_wait": 14,
 }
-SCENARIO_TIME = datetime.fromisoformat("2026-07-09T07:45:00")
+SCENARIO_TIME = datetime(2026, 7, 10, 7, 45, tzinfo=HONG_KONG_TZ)
+
+
+class FrozenClock:
+    def now(self) -> datetime:
+        return SCENARIO_TIME
 
 
 def report(
     *,
-    timestamp: str = "2026-07-09T07:45:00",
+    timestamp: str = "2026-07-10T07:45:00+08:00",
     wait: int = 14,
     crowd_level: str = "low",
 ) -> dict:
@@ -36,7 +42,7 @@ def report(
 def test_quality_score_and_expiry() -> None:
     high_quality = evaluate_report(report(), FUTIAN, SCENARIO_TIME)
     expired = evaluate_report(
-        report(timestamp="2026-07-09T06:15:00"),
+        report(timestamp="2026-07-10T06:15:00+08:00"),
         FUTIAN,
         SCENARIO_TIME,
     )
@@ -44,7 +50,7 @@ def test_quality_score_and_expiry() -> None:
     assert high_quality["quality_score"] == 100
     assert high_quality["quality_level"] == "high"
     assert high_quality["used_for_prediction"] is True
-    assert high_quality["expires_at"].isoformat() == "2026-07-09T09:15:00"
+    assert high_quality["expires_at"].isoformat() == "2026-07-10T09:15:00+08:00"
     assert expired["_active"] is False
     assert expired["used_for_prediction"] is False
 
@@ -95,9 +101,14 @@ def test_duplicate_report_returns_conflict(client: TestClient) -> None:
 
 
 def test_points_follow_report_quality(client: TestClient) -> None:
+    futian = next(
+        port for port in client.get("/api/realtime").json()["ports"]
+        if port["id"] == "futian"
+    )
+    current_wait = futian["current_wait"]
     cases = [
-        ("points-high", 14, "low", "high", 10),
-        ("points-medium", 30, "medium", "medium", 6),
+        ("points-high", current_wait, futian["crowd_level"], "high", 10),
+        ("points-medium", current_wait + 20, "high", "medium", 6),
         ("points-low", 90, "low", "low", 2),
     ]
     for user_id, wait, crowd_level, quality_level, points in cases:
@@ -119,26 +130,27 @@ def test_points_follow_report_quality(client: TestClient) -> None:
 def test_expired_report_is_hidden_and_does_not_affect_prediction(
     repository: DemoRepository,
 ) -> None:
-    prediction_service = PredictionService(repository)
+    clock = FrozenClock()
+    prediction_service = PredictionService(repository, clock)
     request = PredictionRequest.model_validate(
         {
             "origin_id": "hku",
             "destination_id": "nanshan-tech",
-            "target_time": "2026-07-09T09:30:00",
+            "target_time": "2026-07-10T09:30:00",
             "preferences": {"priority": "balanced", "max_budget": 100},
         }
     )
     before = prediction_service.predict(request)
     repository.add_report(
         report(
-            timestamp="2026-07-09T06:00:00",
+            timestamp="2026-07-10T06:00:00+08:00",
             wait=180,
             crowd_level="high",
         )
     )
     after = prediction_service.predict(request)
-    feed = CrowdsourceService(repository).get_feed(30)
-    realtime = RealtimeService(repository).get_status()
+    feed = CrowdsourceService(repository, clock).get_feed(30)
+    realtime = RealtimeService(repository, clock).get_status()
 
     before_futian = next(item for item in before["ports"] if item["port_id"] == "futian")
     after_futian = next(item for item in after["ports"] if item["port_id"] == "futian")

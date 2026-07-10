@@ -20,7 +20,7 @@ def test_prediction_contract(client: TestClient) -> None:
         json={
             "origin_id": "hku",
             "destination_id": "nanshan-tech",
-            "target_time": "2026-07-09T09:30:00",
+            "target_time": "2026-07-10T09:30:00",
             "preferences": {"priority": "balanced", "max_budget": 100},
         },
     )
@@ -46,7 +46,7 @@ def test_invalid_location_returns_422(client: TestClient) -> None:
         json={
             "origin_id": "invalid",
             "destination_id": "nanshan-tech",
-            "target_time": "2026-07-09T09:30:00",
+            "target_time": "2026-07-10T09:30:00",
             "preferences": {"priority": "balanced"},
         },
     )
@@ -87,7 +87,7 @@ def test_crowdsource_subscription_and_batch(client: TestClient) -> None:
         "/api/batch",
         json={
             "company": "测试企业",
-            "date": "2026-07-09",
+            "date": "2026-07-10",
             "employees": [
                 {
                     "id": "E-1",
@@ -114,7 +114,10 @@ def test_demo_context_and_reset(client: TestClient) -> None:
     reset = client.post("/api/demo/reset")
 
     assert context.status_code == 200
-    assert context.json()["poll_interval_seconds"] == 60
+    payload = context.json()
+    assert payload["poll_interval_seconds"] == 60
+    assert payload["timezone"] == "Asia/Hong_Kong"
+    assert payload["current_time"].endswith("+08:00")
     assert reset.status_code == 200
     assert reset.json()["seeded"]["reports"] == 4
 
@@ -173,7 +176,7 @@ def test_batch_plan_history(client: TestClient) -> None:
         "/api/batch",
         json={
             "company": "历史测试企业",
-            "date": "2026-07-09",
+            "date": "2026-07-10",
             "employees": [
                 {
                     "id": "E-1",

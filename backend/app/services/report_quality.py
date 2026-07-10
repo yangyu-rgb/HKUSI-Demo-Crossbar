@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from math import floor
 
+from ..clock import as_hong_kong
 from ..config import (
     REPORT_EXPIRY_MINUTES,
     REPORT_MIN_PREDICTION_SCORE,
@@ -41,12 +42,13 @@ def _crowd_consistency(actual_wait: int, reported_level: str) -> float:
     return 0.0
 
 
-def evaluate_report(report: dict, port: dict, scenario_time: datetime) -> dict:
-    """根据固定场景时间计算反馈的新鲜度、质量分和预测可用性。"""
-    effective_at = datetime.fromisoformat(report["timestamp"])
+def evaluate_report(report: dict, port: dict, current_time: datetime) -> dict:
+    """根据香港当前时间计算反馈的新鲜度、质量分和预测可用性。"""
+    effective_at = as_hong_kong(datetime.fromisoformat(report["timestamp"]))
+    now = as_hong_kong(current_time)
     age_minutes = max(
         0.0,
-        (scenario_time - effective_at).total_seconds() / 60,
+        (now - effective_at).total_seconds() / 60,
     )
     expires_at = effective_at + timedelta(minutes=REPORT_EXPIRY_MINUTES)
     freshness = max(0.0, 1 - age_minutes / REPORT_EXPIRY_MINUTES)
@@ -73,7 +75,7 @@ def evaluate_report(report: dict, port: dict, scenario_time: datetime) -> dict:
         quality_level = "medium"
     else:
         quality_level = "low"
-    active = scenario_time < expires_at
+    active = now < expires_at
     if age_minutes < 1:
         time_label = "刚刚"
     else:
@@ -90,12 +92,15 @@ def evaluate_report(report: dict, port: dict, scenario_time: datetime) -> dict:
     }
 
 
-def evaluate_reports(reports: list[dict], port_state: dict) -> list[dict]:
+def evaluate_reports(
+    reports: list[dict],
+    ports: list[dict],
+    current_time: datetime,
+) -> list[dict]:
     """批量计算反馈质量；无法匹配当前口岸的数据不进入结果。"""
-    scenario_time = datetime.fromisoformat(port_state["timestamp"])
-    ports_by_name = {port["name"]: port for port in port_state["ports"]}
+    ports_by_name = {port["name"]: port for port in ports}
     return [
-        evaluate_report(report, ports_by_name[report["port"]], scenario_time)
+        evaluate_report(report, ports_by_name[report["port"]], current_time)
         for report in reports
         if report["port"] in ports_by_name
     ]

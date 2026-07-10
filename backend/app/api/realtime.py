@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api", tags=["实时状态"])
     "/realtime",
     response_model=RealtimeResponse,
     summary="获取四口岸 Demo 状态",
-    description="返回缓存的确定性口岸等待数据和持久化众包数量。",
+    description="返回按香港当前时间计算的模拟口岸等待数据和众包数量。",
     response_description="请求成功",
 )
 def realtime(

@@ -25,6 +25,13 @@ git fetch
 
 如果 `git fetch` 因网络或权限问题失败，仅在能根据本地上下文安全完成任务时继续，并在根目录的 `project_memory.md` 中记录该限制。
 
+## Git 操作边界
+
+- Agent 可以执行 `git status`、`git diff`、`git log` 等只读检查，并按上述流程执行 `git fetch` 和比较上游状态。
+- Agent 不执行 `git add`、`git commit` 或 `git push`；这些操作由用户负责。
+- 每次完成任务后，Agent 必须向用户提供一条建议的 commit 文案。
+- 除非用户在当前任务中明确改变上述约定，否则不得代替用户提交或推送改动。
+
 ## 项目记忆要求
 
 每个已完成的阶段性任务都必须在同一变更集中更新根目录的 `project_memory.md`。

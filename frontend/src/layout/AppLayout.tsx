@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useDemoReset } from "../features/demo/useDemo";
+import { useDemoContext, useDemoReset } from "../features/demo/useDemo";
+import { useHongKongClock } from "../features/demo/useHongKongClock";
 import { userFacingError } from "../shared/api/client";
+import { formatHongKongDateTime } from "../shared/formatters";
 import styles from "./AppLayout.module.css";
 
 
@@ -14,7 +16,9 @@ const navigation = [
 
 
 export function AppLayout() {
+  const context = useDemoContext();
   const reset = useDemoReset();
+  const hongKongTime = useHongKongClock(context.data?.current_time);
 
   function handleReset() {
     if (window.confirm("确定恢复Demo初始数据？所有新增反馈、订阅和企业方案都会删除。")) {
@@ -44,8 +48,12 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <time className={styles.platformClock} dateTime={hongKongTime?.toISOString()}>
+          <span>香港时间</span>
+          <strong>{hongKongTime ? formatHongKongDateTime(hongKongTime, true) : "同步中"}</strong>
+        </time>
         <div className={styles.demoControls}>
-          <span className={styles.demoChip}>Deterministic Demo</span>
+          <span className={styles.demoChip}>Simulated Data</span>
           <button onClick={handleReset} disabled={reset.isPending}>重置</button>
         </div>
       </header>
@@ -55,7 +63,7 @@ export function AppLayout() {
       <Outlet />
       <footer className={styles.footer}>
         <strong>CrossBorder AI</strong>
-        <span>SIUS2612 Topic 2 · Local deterministic prototype · No live border data</span>
+        <span>SIUS2612 Topic 2 · Hong Kong live clock · Simulated border data</span>
       </footer>
     </>
   );

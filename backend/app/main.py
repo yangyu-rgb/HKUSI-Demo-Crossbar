@@ -16,6 +16,7 @@ from .api import (
     realtime_router,
     subscription_router,
 )
+from .clock import Clock, HongKongClock
 from .config import DATABASE_PATH, DATA_DIR
 from .exceptions import AppError, ErrorCode
 from .repositories import DemoRepository
@@ -25,6 +26,7 @@ from .schemas.common import ErrorResponse
 def create_app(
     data_dir: Path = DATA_DIR,
     database_path: Path = DATABASE_PATH,
+    clock: Clock | None = None,
 ) -> FastAPI:
     app = FastAPI(
         title="CrossBorder AI Demo API",
@@ -36,7 +38,8 @@ def create_app(
             500: {"model": ErrorResponse, "description": "内部服务或持久化错误"},
         },
     )
-    app.state.repository = DemoRepository(data_dir, database_path)
+    app.state.clock = clock or HongKongClock()
+    app.state.repository = DemoRepository(data_dir, database_path, app.state.clock)
 
     app.add_middleware(
         CORSMiddleware,

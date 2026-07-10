@@ -15,7 +15,7 @@ class CrowdsourceReport(BaseModel):
 
 class CrowdsourceRecord(CrowdsourceReport):
     id: str
-    timestamp: str
+    timestamp: datetime
     time_label: str
     quality_score: int = Field(ge=0, le=100)
     quality_level: ReportQualityLevel

@@ -1,80 +1,39 @@
 {
-  "timestamp": "2026-07-09T07:45:00",
-  "source": "CrossBorder AI deterministic demo dataset",
+  "source": "CrossBorder AI local simulated historical model",
   "ports": [
     {
       "id": "luohu",
       "name": "罗湖",
       "name_en": "Lo Wu",
-      "current_wait": 22,
       "status": "open",
-      "crowd_level": "medium",
-      "special_channels": ["团队通道开放"],
-      "passenger_flow": "较繁忙",
-      "forecast": [
-        {"offset_minutes": 0, "wait": 22},
-        {"offset_minutes": 60, "wait": 31},
-        {"offset_minutes": 120, "wait": 38},
-        {"offset_minutes": 180, "wait": 34}
-      ],
-      "anomalies": ["09:30后客流预计上升"]
+      "special_channels": ["团队通道开放"]
     },
     {
       "id": "futian",
       "name": "福田",
       "name_en": "Futian",
-      "current_wait": 14,
       "status": "open",
-      "crowd_level": "low",
-      "special_channels": ["学生及团队通道开放"],
-      "passenger_flow": "畅通",
-      "forecast": [
-        {"offset_minutes": 0, "wait": 14},
-        {"offset_minutes": 60, "wait": 17},
-        {"offset_minutes": 120, "wait": 21},
-        {"offset_minutes": 180, "wait": 19}
-      ],
-      "anomalies": []
+      "special_channels": ["学生及团队通道开放"]
     },
     {
       "id": "huanggang",
       "name": "皇岗",
       "name_en": "Huanggang",
-      "current_wait": 41,
       "status": "open",
-      "crowd_level": "high",
-      "special_channels": ["24小时开放"],
-      "passenger_flow": "拥挤",
-      "forecast": [
-        {"offset_minutes": 0, "wait": 41},
-        {"offset_minutes": 60, "wait": 48},
-        {"offset_minutes": 120, "wait": 44},
-        {"offset_minutes": 180, "wait": 39}
-      ],
-      "anomalies": ["跨境巴士到站集中，短时拥堵"]
+      "special_channels": ["24小时开放"]
     },
     {
       "id": "shenzhen-bay",
       "name": "深圳湾",
       "name_en": "Shenzhen Bay",
-      "current_wait": 18,
       "status": "open",
-      "crowd_level": "medium",
-      "special_channels": ["跨境巴士通道开放"],
-      "passenger_flow": "正常",
-      "forecast": [
-        {"offset_minutes": 0, "wait": 18},
-        {"offset_minutes": 60, "wait": 20},
-        {"offset_minutes": 120, "wait": 24},
-        {"offset_minutes": 180, "wait": 22}
-      ],
-      "anomalies": []
+      "special_channels": ["跨境巴士通道开放"]
     }
   ],
   "alerts": [
     {
       "type": "weather",
-      "message": "深圳上午有雷雨可能，地面交通预留10分钟缓冲。",
+      "message": "模拟天气条件为雷雨，地面交通建议预留10分钟缓冲。",
       "severity": "medium"
     }
   ]

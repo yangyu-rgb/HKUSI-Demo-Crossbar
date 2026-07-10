@@ -38,7 +38,7 @@ export function ForecastChart({ data }: { data: RealtimeResponse }) {
           <span className="sectionKicker">Forecast comparison</span>
           <h2>未来三小时等待趋势</h2>
         </div>
-        <p>纵轴：预计等待分钟 · 横轴：相对场景时间</p>
+        <p>纵轴：预计等待分钟 · 横轴：相对香港当前时间</p>
       </div>
       <div className={styles.chart}>
         <ResponsiveContainer width="100%" height="100%">

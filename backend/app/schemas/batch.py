@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, Field
 
 
@@ -12,7 +14,7 @@ class BatchEmployee(BaseModel):
 class BatchRequest(BaseModel):
     company: str = Field(min_length=1)
     employees: list[BatchEmployee] = Field(min_length=1, max_length=100)
-    date: str
+    date: date
 
 
 class BatchPlanItem(BaseModel):
@@ -33,7 +35,7 @@ class BatchSummary(BaseModel):
 class BatchResponse(BaseModel):
     plan_id: str
     company: str
-    date: str
+    date: date
     plan: list[BatchPlanItem]
     summary: BatchSummary
 

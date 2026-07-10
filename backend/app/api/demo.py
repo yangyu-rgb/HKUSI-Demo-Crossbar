@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/demo", tags=["Demo 控制"])
 @router.get(
     "/context",
     response_model=DemoContextResponse,
-    summary="获取确定性 Demo 时间信息",
-    description="返回场景时间、有效预测范围和轮询间隔。",
+    summary="获取香港当前时间信息",
+    description="返回香港当前时间、有效预测范围和轮询间隔。",
     response_description="请求成功",
 )
 def get_demo_context(

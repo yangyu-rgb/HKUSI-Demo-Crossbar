@@ -71,8 +71,8 @@
         "tags": [
           "Demo 控制"
         ],
-        "summary": "获取确定性 Demo 时间信息",
-        "description": "返回场景时间、有效预测范围和轮询间隔。",
+        "summary": "获取香港当前时间信息",
+        "description": "返回香港当前时间、有效预测范围和轮询间隔。",
         "operationId": "get_demo_context_api_demo_context_get",
         "responses": {
           "200": {
@@ -196,7 +196,7 @@
           "实时状态"
         ],
         "summary": "获取四口岸 Demo 状态",
-        "description": "返回缓存的确定性口岸等待数据和持久化众包数量。",
+        "description": "返回按香港当前时间计算的模拟口岸等待数据和众包数量。",
         "operationId": "realtime_api_realtime_get",
         "responses": {
           "200": {
@@ -319,7 +319,7 @@
           "路线预测"
         ],
         "summary": "比较四个口岸的路线方案",
-        "description": "使用可解释统计 Demo 模型和确定性交通矩阵。",
+        "description": "使用时间加权统计 Demo 模型和确定性交通矩阵。",
         "operationId": "predict_api_predict_post",
         "requestBody": {
           "content": {
@@ -1233,6 +1233,7 @@
           },
           "date": {
             "type": "string",
+            "format": "date",
             "title": "Date"
           }
         },
@@ -1256,6 +1257,7 @@
           },
           "date": {
             "type": "string",
+            "format": "date",
             "title": "Date"
           },
           "plan": {
@@ -1371,6 +1373,7 @@
           },
           "timestamp": {
             "type": "string",
+            "format": "date-time",
             "title": "Timestamp"
           },
           "time_label": {
@@ -1482,15 +1485,24 @@
       },
       "DemoContextResponse": {
         "properties": {
-          "scenario_time": {
+          "current_time": {
             "type": "string",
             "format": "date-time",
-            "title": "Scenario Time"
+            "title": "Current Time"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
           },
           "min_target_time": {
             "type": "string",
             "format": "date-time",
             "title": "Min Target Time"
+          },
+          "suggested_target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Suggested Target Time"
           },
           "max_target_time": {
             "type": "string",
@@ -1504,8 +1516,10 @@
         },
         "type": "object",
         "required": [
-          "scenario_time",
+          "current_time",
+          "timezone",
           "min_target_time",
+          "suggested_target_time",
           "max_target_time",
           "poll_interval_seconds"
         ],

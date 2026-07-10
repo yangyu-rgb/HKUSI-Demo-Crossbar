@@ -7,7 +7,9 @@ export function useDemoContext() {
   return useQuery({
     queryKey: queryKeys.demoContext,
     queryFn: fetchDemoContext,
-    staleTime: Infinity,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
   });
 }
 

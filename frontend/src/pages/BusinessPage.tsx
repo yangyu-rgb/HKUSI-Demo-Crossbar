@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useBatchPlans } from "../features/business/useBatchPlans";
 import type { BatchEmployee, BatchRequest } from "../features/business/types";
 import { useDemoContext } from "../features/demo/useDemo";
@@ -26,8 +26,22 @@ export function BusinessPage() {
   });
   const context = useDemoContext();
   const batch = useBatchPlans(COMPANY);
-  const [date, setDate] = useState("2026-07-09");
+  const [date, setDate] = useState("");
   const [employees, setEmployees] = useState<BatchEmployee[]>(INITIAL_EMPLOYEES);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!context.data || initialized.current) {
+      return;
+    }
+    const suggested = context.data.suggested_target_time;
+    initialized.current = true;
+    setDate(suggested.slice(0, 10));
+    setEmployees((current) => current.map((employee) => ({
+      ...employee,
+      arrival_deadline: suggested.slice(11, 16),
+    })));
+  }, [context.data]);
 
   function updateEmployee(index: number, patch: Partial<BatchEmployee>) {
     setEmployees((current) => current.map(
@@ -91,7 +105,7 @@ export function BusinessPage() {
             <input
               required
               type="date"
-              min={context.data?.scenario_time.slice(0, 10)}
+              min={context.data?.current_time.slice(0, 10)}
               max={context.data?.max_target_time.slice(0, 10)}
               value={date}
               onChange={(event) => setDate(event.target.value)}

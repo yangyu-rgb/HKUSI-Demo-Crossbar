@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from ..clock import Clock
 from ..repositories import DemoRepository
 from ..schemas.batch import BatchRequest
 from ..schemas.prediction import PredictionPreferences, PredictionRequest
@@ -7,15 +8,15 @@ from .prediction import PredictionService
 
 
 class BatchService:
-    def __init__(self, repository: DemoRepository):
+    def __init__(self, repository: DemoRepository, clock: Clock):
         self._repository = repository
-        self._prediction_service = PredictionService(repository)
+        self._prediction_service = PredictionService(repository, clock)
 
     def create_plan(self, request: BatchRequest) -> dict:
         plan = []
         for index, employee in enumerate(request.employees):
             deadline = datetime.fromisoformat(
-                f"{request.date}T{employee.arrival_deadline}:00"
+                f"{request.date.isoformat()}T{employee.arrival_deadline}:00"
             )
             priority = "cheapest" if index % 3 == 0 else "balanced"
             result = self._prediction_service.predict(
@@ -41,7 +42,7 @@ class BatchService:
         high_risk_count = sum(item["late_risk_percent"] >= 20 for item in plan)
         result = {
             "company": request.company,
-            "date": request.date,
+            "date": request.date.isoformat(),
             "plan": plan,
             "summary": {
                 "employee_count": len(plan),
@@ -54,7 +55,7 @@ class BatchService:
         }
         plan_id = self._repository.save_batch_plan(
             request.company,
-            request.date,
+            request.date.isoformat(),
             request.model_dump(mode="json"),
             result,
         )

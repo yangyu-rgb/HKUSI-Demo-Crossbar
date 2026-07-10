@@ -5,8 +5,7 @@
     "port": "罗湖",
     "actual_wait_time": 20,
     "crowd_level": "medium",
-    "timestamp": "2026-07-09T07:19:00",
-    "time_label": "26分钟前",
+    "age_minutes": 26,
     "comment": "人流稳定，团队通道速度较快。"
   },
   {
@@ -15,8 +14,7 @@
     "port": "福田",
     "actual_wait_time": 12,
     "crowd_level": "low",
-    "timestamp": "2026-07-09T07:31:00",
-    "time_label": "14分钟前",
+    "age_minutes": 14,
     "comment": "排队很短，过关顺畅。"
   },
   {
@@ -25,8 +23,7 @@
     "port": "皇岗",
     "actual_wait_time": 46,
     "crowd_level": "high",
-    "timestamp": "2026-07-09T07:37:00",
-    "time_label": "8分钟前",
+    "age_minutes": 8,
     "comment": "跨境巴士同时到站，队伍较长。"
   },
   {
@@ -35,8 +32,7 @@
     "port": "深圳湾",
     "actual_wait_time": 16,
     "crowd_level": "medium",
-    "timestamp": "2026-07-09T07:40:00",
-    "time_label": "5分钟前",
+    "age_minutes": 5,
     "comment": "车流正常，步行通道没有明显积压。"
   }
 ]

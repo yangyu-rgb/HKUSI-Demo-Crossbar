@@ -2,22 +2,26 @@ from datetime import datetime, timezone
 from math import ceil
 
 from ..config import REPORT_DUPLICATE_WINDOW_MINUTES
+from ..clock import Clock, as_hong_kong
 from ..exceptions import ConflictError, DomainValidationError, ErrorCode
 from ..repositories import DemoRepository
 from ..schemas.crowdsource import CrowdsourceReport
-from .report_quality import evaluate_report, evaluate_reports, public_report
+from .report_quality import evaluate_report, public_report
+from .wait_forecast import WaitForecastService
 
 
 class CrowdsourceService:
-    def __init__(self, repository: DemoRepository):
+    def __init__(self, repository: DemoRepository, clock: Clock):
         self._repository = repository
+        self._clock = clock
+        self._forecast = WaitForecastService(repository, clock)
 
     def get_feed(self, limit: int) -> dict:
         safe_limit = min(max(limit, 1), 30)
-        port_state = self._repository.get_port_state()
+        _snapshot, reports = self._forecast.build_snapshot()
         reports = [
             report
-            for report in evaluate_reports(self._repository.get_reports(), port_state)
+            for report in reports
             if report["_active"]
         ]
         return {
@@ -29,7 +33,8 @@ class CrowdsourceService:
         }
 
     def submit(self, report: CrowdsourceReport) -> dict:
-        port_state = self._repository.get_port_state()
+        now = as_hong_kong(self._clock.now()).replace(microsecond=0)
+        port_state, existing_reports = self._forecast.build_snapshot(now)
         normalized = report.port.strip().lower()
         port = next(
             (
@@ -47,20 +52,15 @@ class CrowdsourceService:
                 details={"port": report.port},
             )
 
-        scenario_time = datetime.fromisoformat(port_state["timestamp"])
-        existing_reports = evaluate_reports(
-            self._repository.get_reports(),
-            port_state,
-        )
         duplicate_age = None
-        now = datetime.now(timezone.utc)
+        now_utc = now.astimezone(timezone.utc)
         for item in reversed(existing_reports):
             if item["user_id"] != report.user_id or item["port"] != port["name"]:
                 continue
             created_at = datetime.fromisoformat(item["_created_at"])
             if created_at.tzinfo is None:
                 created_at = created_at.replace(tzinfo=timezone.utc)
-            age = max(0.0, (now - created_at).total_seconds() / 60)
+            age = max(0.0, (now_utc - created_at).total_seconds() / 60)
             if age < REPORT_DUPLICATE_WINDOW_MINUTES:
                 duplicate_age = age
                 break
@@ -83,12 +83,12 @@ class CrowdsourceService:
             "port": port["name"],
             "actual_wait_time": report.actual_wait_time,
             "crowd_level": report.crowd_level,
-            "timestamp": port_state["timestamp"],
+            "timestamp": now.isoformat(),
             "time_label": "刚刚",
             "comment": report.comment or "现场通关反馈",
         }
         stored = self._repository.add_report(record)
-        evaluated = evaluate_report(stored, port, scenario_time)
+        evaluated = evaluate_report(stored, port, now)
         record = public_report(evaluated)
         points = {
             "high": 10,

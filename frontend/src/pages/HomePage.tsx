@@ -4,7 +4,7 @@ import { PortCard } from "../features/realtime/PortCard";
 import { useRealtime } from "../features/realtime/useRealtime";
 import { ErrorState } from "../shared/components/PageState";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
-import { formatDemoDateTime } from "../shared/formatters";
+import { formatHongKongDateTime } from "../shared/formatters";
 import styles from "./HomePage.module.css";
 
 
@@ -25,10 +25,10 @@ export function HomePage() {
         <div className={styles.heroCopy}>
           <span className="sectionKicker">预测驱动的跨境决策</span>
           <h1>提前看见口岸等待，<br />选择更稳的跨境路线。</h1>
-          <p>融合实时口岸状态、未来三小时预测与现场众包反馈，为深港通勤者提供带置信区间和迟到风险的路线建议。</p>
+          <p>融合模拟口岸状态、未来三小时预测与现场众包反馈，为深港通勤者提供带置信区间和迟到风险的路线建议。</p>
           <div className={styles.heroActions}>
             <Link className="button buttonPrimary" to="/planner">立即规划路线</Link>
-            <span>场景时间：{formatDemoDateTime(data.timestamp)}</span>
+            <span>模拟数据计算于：{formatHongKongDateTime(data.timestamp)}</span>
           </div>
         </div>
         <div className={styles.signal} aria-label="平台能力摘要">
@@ -48,7 +48,7 @@ export function HomePage() {
 
       <section className="pageSection">
         <div className="sectionHeading">
-          <div><span className="sectionKicker">Live border pulse</span><h2>四口岸实时态势</h2></div>
+          <div><span className="sectionKicker">Simulated border pulse</span><h2>四口岸动态态势</h2></div>
           <div className={styles.refresh}>
             <span>更新于 {new Date(dataUpdatedAt).toLocaleTimeString("zh-HK")}</span>
             <button onClick={() => void refresh()} disabled={refreshing}>

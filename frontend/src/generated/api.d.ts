@@ -29,8 +29,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 获取确定性 Demo 时间信息
-         * @description 返回场景时间、有效预测范围和轮询间隔。
+         * 获取香港当前时间信息
+         * @description 返回香港当前时间、有效预测范围和轮询间隔。
          */
         get: operations["get_demo_context_api_demo_context_get"];
         put?: never;
@@ -70,7 +70,7 @@ export interface paths {
         };
         /**
          * 获取四口岸 Demo 状态
-         * @description 返回缓存的确定性口岸等待数据和持久化众包数量。
+         * @description 返回按香港当前时间计算的模拟口岸等待数据和众包数量。
          */
         get: operations["realtime_api_realtime_get"];
         put?: never;
@@ -109,7 +109,7 @@ export interface paths {
         put?: never;
         /**
          * 比较四个口岸的路线方案
-         * @description 使用可解释统计 Demo 模型和确定性交通矩阵。
+         * @description 使用时间加权统计 Demo 模型和确定性交通矩阵。
          */
         post: operations["predict_api_predict_post"];
         delete?: never;
@@ -325,7 +325,10 @@ export interface components {
             company: string;
             /** Employees */
             employees: components["schemas"]["BatchEmployee"][];
-            /** Date */
+            /**
+             * Date
+             * Format: date
+             */
             date: string;
         };
         /** BatchResponse */
@@ -334,7 +337,10 @@ export interface components {
             plan_id: string;
             /** Company */
             company: string;
-            /** Date */
+            /**
+             * Date
+             * Format: date
+             */
             date: string;
             /** Plan */
             plan: components["schemas"]["BatchPlanItem"][];
@@ -382,7 +388,10 @@ export interface components {
             comment: string;
             /** Id */
             id: string;
-            /** Timestamp */
+            /**
+             * Timestamp
+             * Format: date-time
+             */
             timestamp: string;
             /** Time Label */
             time_label: string;
@@ -430,15 +439,22 @@ export interface components {
         /** DemoContextResponse */
         DemoContextResponse: {
             /**
-             * Scenario Time
+             * Current Time
              * Format: date-time
              */
-            scenario_time: string;
+            current_time: string;
+            /** Timezone */
+            timezone: string;
             /**
              * Min Target Time
              * Format: date-time
              */
             min_target_time: string;
+            /**
+             * Suggested Target Time
+             * Format: date-time
+             */
+            suggested_target_time: string;
             /**
              * Max Target Time
              * Format: date-time

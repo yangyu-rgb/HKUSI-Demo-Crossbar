@@ -1,5 +1,7 @@
+from datetime import datetime
 from pathlib import Path
 
+from conftest import FROZEN_NOW, FrozenClock
 from app.repositories import DemoRepository
 
 
@@ -58,3 +60,15 @@ def test_empty_dynamic_table_is_not_reseeded_on_restart(tmp_path: Path) -> None:
 
     restarted = DemoRepository(DATA_DIR, database)
     assert restarted.list_subscriptions("demo-user") == []
+
+
+def test_seed_reports_are_relative_to_hong_kong_clock(tmp_path: Path) -> None:
+    repository = DemoRepository(
+        DATA_DIR,
+        tmp_path / "relative-seeds.db",
+        FrozenClock(),
+    )
+    first = repository.get_reports()[0]
+    effective_at = datetime.fromisoformat(first["timestamp"])
+
+    assert int((FROZEN_NOW - effective_at).total_seconds() / 60) == 26

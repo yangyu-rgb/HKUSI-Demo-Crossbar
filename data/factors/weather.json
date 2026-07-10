@@ -1,7 +1,6 @@
 {
-  "date": "2026-07-09",
   "condition": "scattered_thunderstorms",
   "temperature_c": 29,
   "transport_buffer_minutes": 10,
-  "demo_note": "Deterministic weather factor used by the local demo."
+  "demo_note": "Simulated weather profile used by the local demo; this is not live weather."
 }

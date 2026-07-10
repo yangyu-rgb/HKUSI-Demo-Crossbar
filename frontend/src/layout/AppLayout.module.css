@@ -94,6 +94,21 @@
   gap: 7px;
 }
 
+.platformClock {
+  display: grid;
+  gap: 2px;
+  min-width: 154px;
+  color: var(--muted);
+  font-size: 9px;
+  text-align: right;
+}
+
+.platformClock strong {
+  color: var(--ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
 .demoControls button {
   padding: 7px 9px;
   color: var(--muted);
@@ -147,10 +162,19 @@
     min-height: 64px;
     padding-inline: 14px;
     gap: 12px;
+    backdrop-filter: none;
   }
 
   .demoControls {
     display: none;
+  }
+
+  .platformClock {
+    min-width: 116px;
+  }
+
+  .platformClock strong {
+    font-size: 9px;
   }
 
   .navigation {

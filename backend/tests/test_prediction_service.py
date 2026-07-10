@@ -1,17 +1,18 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 
 from app.exceptions import DomainValidationError
 from app.schemas.prediction import PredictionRequest
 from app.services import PredictionService
+from app.services.wait_forecast import WaitForecastService
 
 
 def request(
     *,
     origin_id: str = "hku",
     destination_id: str = "nanshan-tech",
-    target_time: str = "2026-07-09T09:30:00",
+    target_time: str = "2026-07-10T09:30:00",
     priority: str = "balanced",
     max_budget: int | None = 100,
 ) -> PredictionRequest:
@@ -38,10 +39,10 @@ def test_location_matrix_changes_route_time(prediction_service: PredictionServic
 
 def test_preferences_change_recommendation(prediction_service: PredictionService) -> None:
     fastest = prediction_service.predict(
-        request(priority="fastest", target_time="2026-07-09T10:30:00")
+        request(priority="fastest", target_time="2026-07-10T10:30:00")
     )
     cheapest = prediction_service.predict(
-        request(priority="cheapest", target_time="2026-07-09T10:30:00")
+        request(priority="cheapest", target_time="2026-07-10T10:30:00")
     )
 
     assert fastest["recommended"] == "深圳湾"
@@ -57,10 +58,10 @@ def test_departure_and_feasibility_are_calculated(
     assert recommended["on_time"] is True
     assert recommended["buffer_minutes"] > 0
     assert recommended["latest_departure"] < datetime.fromisoformat(
-        "2026-07-09T09:30:00"
+        "2026-07-10T09:30:00+08:00"
     )
     assert recommended["estimated_arrival"] <= datetime.fromisoformat(
-        "2026-07-09T09:30:00"
+        "2026-07-10T09:30:00+08:00"
     )
 
 
@@ -68,7 +69,7 @@ def test_all_routes_late_returns_least_late_warning(
     prediction_service: PredictionService,
 ) -> None:
     result = prediction_service.predict(
-        request(target_time="2026-07-09T08:00:00", max_budget=None)
+        request(target_time="2026-07-10T08:00:00", max_budget=None)
     )
 
     assert result["ports"][0]["on_time"] is False
@@ -90,18 +91,19 @@ def test_unknown_location_is_rejected(prediction_service: PredictionService) -> 
         prediction_service.predict(request(origin_id="unknown"))
 
 
-def test_forecast_is_interpolated_and_interval_uses_history(
+def test_forecast_uses_calendar_history_and_uncertainty(
     prediction_service: PredictionService,
 ) -> None:
     result = prediction_service.predict(
-        request(target_time="2026-07-09T08:15:00", max_budget=None)
+        request(target_time="2026-07-10T08:15:00", max_budget=None)
     )
     luohu = next(item for item in result["ports"] if item["port_id"] == "luohu")
-    forecast_factor = next(
-        factor for factor in luohu["factors"] if factor["code"] == "forecast_trend"
+    history_factor = next(
+        factor for factor in luohu["factors"] if factor["code"] == "historical_calendar"
     )
 
-    assert forecast_factor["value_minutes"] == 26.5
+    assert history_factor["sample_count"] >= 6
+    assert "工作日" in history_factor["detail"]
     assert luohu["historical_sample_count"] >= 6
     assert luohu["confidence_interval"][1] > luohu["confidence_interval"][0]
     assert luohu["uncertainty_minutes"] >= 3
@@ -109,4 +111,49 @@ def test_forecast_is_interpolated_and_interval_uses_history(
 
 def test_target_window_is_enforced(prediction_service: PredictionService) -> None:
     with pytest.raises(DomainValidationError, match="目标时间超出"):
-        prediction_service.predict(request(target_time="2026-07-10T12:00:00"))
+        prediction_service.predict(request(target_time="2026-07-11T12:00:00"))
+
+
+def test_calendar_model_changes_with_hour_and_day_type(repository, clock) -> None:
+    forecast = WaitForecastService(repository, clock)
+    weekday_peak = forecast.estimate(
+        "罗湖",
+        datetime.fromisoformat("2026-07-10T08:30:00+08:00"),
+        clock.now(),
+        [],
+    )
+    weekday_midday = forecast.estimate(
+        "罗湖",
+        datetime.fromisoformat("2026-07-10T13:00:00+08:00"),
+        clock.now(),
+        [],
+    )
+    weekend_peak = forecast.estimate(
+        "罗湖",
+        datetime.fromisoformat("2026-07-11T08:30:00+08:00"),
+        clock.now(),
+        [],
+    )
+
+    assert weekday_peak["value"] > weekday_midday["value"]
+    assert weekday_peak["value"] > weekend_peak["value"]
+
+
+def test_crowdsource_weight_decays_for_longer_horizons(repository, clock) -> None:
+    forecast = WaitForecastService(repository, clock)
+    _snapshot, reports = forecast.build_snapshot(clock.now())
+    current = forecast.estimate("福田", clock.now(), clock.now(), reports)
+    future = forecast.estimate(
+        "福田",
+        clock.now() + timedelta(hours=3),
+        clock.now(),
+        reports,
+    )
+    current_crowd = next(
+        factor for factor in current["factors"] if factor["code"] == "crowdsource"
+    )
+    future_crowd = next(
+        factor for factor in future["factors"] if factor["code"] == "crowdsource"
+    )
+
+    assert current_crowd["effective_weight"] > future_crowd["effective_weight"]

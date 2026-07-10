@@ -17,9 +17,11 @@ const locations = {
 };
 
 const context = {
-  scenario_time: "2026-07-09T07:45:00",
-  min_target_time: "2026-07-09T08:00:00",
-  max_target_time: "2026-07-09T10:45:00",
+  current_time: "2026-07-10T07:45:00+08:00",
+  timezone: "Asia/Hong_Kong",
+  min_target_time: "2026-07-10T08:00:00+08:00",
+  suggested_target_time: "2026-07-10T09:45:00+08:00",
+  max_target_time: "2026-07-11T07:45:00+08:00",
   poll_interval_seconds: 60,
 };
 
@@ -29,7 +31,7 @@ const prediction = {
     origin_name: "香港大学",
     destination_id: "nanshan-tech",
     destination_name: "深圳南山科技园",
-    target_time: "2026-07-09T09:30:00",
+    target_time: "2026-07-10T09:45:00+08:00",
     priority: "balanced",
     max_budget: 100,
   },
@@ -44,8 +46,8 @@ const prediction = {
       late_risk_percent: 12,
       total_time: 84,
       total_cost: 49,
-      estimated_arrival: "2026-07-09T09:09:00",
-      latest_departure: "2026-07-09T07:56:00",
+      estimated_arrival: "2026-07-10T09:09:00+08:00",
+      latest_departure: "2026-07-10T07:56:00+08:00",
       buffer_minutes: 21,
       on_time: true,
       within_budget: true,
@@ -61,8 +63,8 @@ const prediction = {
       anomalies: [],
       factors: [
         {
-          code: "forecast_trend",
-          label: "口岸趋势预测",
+          code: "historical_calendar",
+          label: "时间匹配历史基线",
           value_minutes: 18,
           effective_weight: 0.6,
         },
@@ -75,8 +77,8 @@ const prediction = {
   recommended_port_id: "futian",
   reason: "福田在当前偏好下综合最优。",
   warnings: [],
-  generated_at: "2026-07-09T07:45:00",
-  model_version: "demo-statistical-v1",
+  generated_at: "2026-07-10T07:45:00+08:00",
+  model_version: "time-weighted-statistical-demo-v2",
   confidence_level: 0.9,
   demo_notice: "本地确定性演示。",
 };
@@ -170,8 +172,10 @@ describe("application routes", () => {
     renderRoute("/planner");
     await screen.findByText("本次推荐");
     const target = screen.getByLabelText("最迟到达");
-    expect(target).toHaveAttribute("min", "2026-07-09T08:00");
-    expect(target).toHaveAttribute("max", "2026-07-09T10:45");
+    expect(target).toHaveAttribute("min", "2026-07-10T08:00");
+    expect(target).toHaveAttribute("max", "2026-07-11T07:45");
+    expect(target).toHaveValue("2026-07-10T09:45");
+    expect(screen.getByText("香港时间")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("出发地"), { target: { value: "central" } });
     fireEvent.click(screen.getByRole("button", { name: "生成 AI 建议" }));
@@ -196,7 +200,7 @@ describe("application routes", () => {
 
   it("shows report quality and explains duplicate crowdsource rejection", async () => {
     const realtime = {
-      timestamp: "2026-07-09T07:45:00",
+      timestamp: "2026-07-10T07:45:00+08:00",
       source: "test",
       ports: [{
         id: "futian",
@@ -224,11 +228,11 @@ describe("application routes", () => {
         actual_wait_time: 13,
         crowd_level: "low",
         comment: "通关顺畅",
-        timestamp: "2026-07-09T07:40:00",
+        timestamp: "2026-07-10T07:40:00+08:00",
         time_label: "5分钟前",
         quality_score: 95,
         quality_level: "high",
-        expires_at: "2026-07-09T09:10:00",
+        expires_at: "2026-07-10T09:10:00+08:00",
         used_for_prediction: true,
       }],
       total: 1,
@@ -278,8 +282,8 @@ describe("application routes", () => {
         anomaly_alert: true,
         better_route_alert: true,
       },
-      created_at: "2026-07-09T07:45:00",
-      updated_at: "2026-07-09T07:45:00",
+      created_at: "2026-07-10T07:45:00+08:00",
+      updated_at: "2026-07-10T07:45:00+08:00",
       next_alert: "周一 09:00",
       message: null,
     }];

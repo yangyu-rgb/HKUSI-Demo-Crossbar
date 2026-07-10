@@ -4,8 +4,10 @@ from pydantic import BaseModel
 
 
 class DemoContextResponse(BaseModel):
-    scenario_time: datetime
+    current_time: datetime
+    timezone: str
     min_target_time: datetime
+    suggested_target_time: datetime
     max_target_time: datetime
     poll_interval_seconds: int
 
