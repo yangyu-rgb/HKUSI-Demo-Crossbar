@@ -2,6 +2,9 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from .common import Priority
+from .prediction import PredictionPreferences
+
 
 class BatchEmployee(BaseModel):
     id: int | str
@@ -9,12 +12,14 @@ class BatchEmployee(BaseModel):
     origin_id: str = Field(min_length=1)
     destination_id: str = Field(min_length=1)
     arrival_deadline: str = Field(pattern=r"^\d{2}:\d{2}$")
+    preferences: PredictionPreferences | None = None
 
 
 class BatchRequest(BaseModel):
     company: str = Field(min_length=1)
     employees: list[BatchEmployee] = Field(min_length=1, max_length=100)
     date: date
+    preferences: PredictionPreferences = Field(default_factory=PredictionPreferences)
 
 
 class BatchPlanItem(BaseModel):
@@ -23,6 +28,9 @@ class BatchPlanItem(BaseModel):
     departure_time: str
     total_time: int
     late_risk_percent: int
+    priority: Priority
+    max_budget: int | None
+    within_budget: bool
 
 
 class BatchSummary(BaseModel):

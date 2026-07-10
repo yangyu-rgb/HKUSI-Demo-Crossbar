@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 
 from ..schemas.subscription import (
     SubscriptionListResponse,
+    SubscriptionEvaluationResponse,
     SubscriptionRecord,
     SubscriptionRequest,
     SubscriptionUpdate,
@@ -66,6 +67,19 @@ def update_subscription(
     service: SubscriptionService = Depends(get_subscription_service),
 ) -> dict:
     return service.update(subscription_id, request)
+
+
+@router.get(
+    "/subscriptions/{subscription_id}/preview",
+    response_model=SubscriptionEvaluationResponse,
+    summary="预览下一次智能提醒",
+    response_description="评估成功",
+)
+def preview_subscription(
+    subscription_id: str,
+    service: SubscriptionService = Depends(get_subscription_service),
+) -> dict:
+    return service.evaluate(subscription_id)
 
 
 @router.delete(

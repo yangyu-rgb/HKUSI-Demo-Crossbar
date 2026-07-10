@@ -28,6 +28,7 @@
 
 - `GET /api/health`：返回服务状态和 Demo 模式。
 - `GET /api/demo/context`：返回 `Asia/Hong_Kong` 当前时间、建议目标时间、有效预测范围和轮询间隔。
+- `GET /api/demo/model-shadow-summary`：返回 AI v1 影子观测总量、可用/降级次数与各口岸的平均差异，仅用于本地审阅。
 - `POST /api/demo/reset`：清空 SQLite 动态数据，并按当前香港时间重新生成反馈和订阅种子。
 
 ## 实时状态与地点
@@ -63,7 +64,7 @@
 - 路线步骤、异常信息、众包数量、历史样本数量和不确定性。
 - 可解释因素，包括时间匹配历史基线、样本数量、可用众包值及其衰减后的实际权重。
 
-Demo 模型为每个目标时间筛选相同工作日或周末、目标小时前后 1 小时和模拟天气的历史记录。精确小时权重为 `1.0`，相邻小时为 `0.5`，历史新近度使用 28 天半衰期。有效众包等待按质量分加权，最大修正权重为 15%，并随反馈新鲜度和预测跨度衰减。加权历史标准差和局部趋势决定区间宽度，正态分布用于把剩余通关时间换算为迟到概率。
+Demo 模型为每个目标时间筛选相同工作日、周末或节假日，目标小时前后 1 小时和模拟天气的历史记录。精确小时权重为 `1.0`，相邻小时为 `0.5`，历史新近度使用 28 天半衰期。`data/factors/events.json` 中的重复事件会按影响等级调整指定口岸的基线，并作为预测依据与实时异常返回。有效众包等待按质量分加权，最大修正权重为 15%，并随反馈新鲜度和预测跨度衰减。加权历史标准差和局部趋势决定区间宽度，正态分布用于把剩余通关时间换算为迟到概率。
 
 推荐顺序：
 
@@ -86,13 +87,14 @@ Demo 模型为每个目标时间筛选相同工作日或周末、目标小时前
 - `GET /api/subscriptions?user_id=demo-user`
 - `POST /api/subscriptions`
 - `PATCH /api/subscriptions/{subscription_id}`
+- `GET /api/subscriptions/{subscription_id}/preview`
 - `DELETE /api/subscriptions/{subscription_id}`
 
-订阅使用稳定的 `origin_id` 和 `destination_id`，并持久化到 SQLite。`POST /api/subscription` 仅作为已弃用的兼容路径保留。
+订阅使用稳定的 `origin_id` 和 `destination_id`，可选择一周七天与三类提醒开关，并持久化到 SQLite。预览接口计算下一次有效通勤日，以到达前三小时内的预测窗口返回推荐口岸、最晚出发、出发前提醒、异常拥堵和更优路线的触发状态；它只用于预览，不发送真实通知。`POST /api/subscription` 仅作为已弃用的兼容路径保留。
 
 ## 企业方案
 
-- `POST /api/batch`：验证最多 100 名可编辑员工，按香港当前预测窗口生成方案，并把请求和结果保存到 SQLite。
+- `POST /api/batch`：验证最多 100 名可编辑员工；请求可提供批次 `preferences`，员工可用同名字段覆盖默认路线偏好和预算。结果会回显每名员工实际使用的偏好、预算和预算满足状态，并保存到 SQLite。
 - `GET /api/batch/plans?company=...&limit=10`：返回近期保存的方案，前端可载入输入并重新生成。
 
 ## Demo 边界

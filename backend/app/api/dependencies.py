@@ -56,8 +56,14 @@ def get_demo_service(
 
 def get_subscription_service(
     repository: DemoRepository = Depends(get_repository),
+    clock: Clock = Depends(get_clock),
+    shadow_model: ShadowWaitModel = Depends(get_shadow_model),
 ) -> SubscriptionService:
-    return SubscriptionService(repository)
+    return SubscriptionService(
+        repository,
+        clock,
+        PredictionService(repository, clock, shadow_model=shadow_model),
+    )
 
 
 def get_batch_service(

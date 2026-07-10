@@ -1,4 +1,4 @@
 {
-  "dates": [],
-  "demo_note": "No public-holiday multiplier is applied to the July 9 demo scenario."
+  "dates": ["2026-06-19", "2026-07-01"],
+  "demo_note": "Simulated calendar dates are used to select matching holiday history; this is not a live public-holiday feed."
 }

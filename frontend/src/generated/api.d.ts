@@ -41,6 +41,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/demo/model-shadow-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取 AI v1 影子观测汇总 */
+        get: operations["get_model_shadow_summary_api_demo_model_shadow_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/demo/reset": {
         parameters: {
             query?: never;
@@ -208,6 +225,23 @@ export interface paths {
         patch: operations["update_subscription_api_subscriptions__subscription_id__patch"];
         trace?: never;
     };
+    "/api/subscriptions/{subscription_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 预览下一次智能提醒 */
+        get: operations["preview_subscription_api_subscriptions__subscription_id__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/batch": {
         parameters: {
             query?: never;
@@ -264,6 +298,21 @@ export interface components {
              */
             better_route_alert: boolean;
         };
+        /** AlertPreview */
+        AlertPreview: {
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Triggered */
+            triggered: boolean;
+            /** Scheduled At */
+            scheduled_at?: string | null;
+        };
         /** BatchEmployee */
         BatchEmployee: {
             /** Id */
@@ -279,6 +328,7 @@ export interface components {
             destination_id: string;
             /** Arrival Deadline */
             arrival_deadline: string;
+            preferences?: components["schemas"]["PredictionPreferences"] | null;
         };
         /** BatchHistoryRecord */
         BatchHistoryRecord: {
@@ -318,6 +368,11 @@ export interface components {
             total_time: number;
             /** Late Risk Percent */
             late_risk_percent: number;
+            priority: components["schemas"]["Priority"];
+            /** Max Budget */
+            max_budget: number | null;
+            /** Within Budget */
+            within_budget: boolean;
         };
         /** BatchRequest */
         BatchRequest: {
@@ -330,6 +385,7 @@ export interface components {
              * Format: date
              */
             date: string;
+            preferences?: components["schemas"]["PredictionPreferences"];
         };
         /** BatchResponse */
         BatchResponse: {
@@ -713,7 +769,7 @@ export interface components {
             /** Destination Id */
             destination_id: string;
             /** Days */
-            days: string[];
+            days: components["schemas"]["Weekday"][];
             /** Arrival Deadline */
             arrival_deadline: string;
             /** @default balanced */
@@ -726,6 +782,74 @@ export interface components {
             /** Message */
             message: string;
             severity: components["schemas"]["RiskLevel"];
+        };
+        /** ShadowObservationPortSummary */
+        ShadowObservationPortSummary: {
+            /** Port Id */
+            port_id: string;
+            /** Port Name */
+            port_name: string;
+            /** Observation Count */
+            observation_count: number;
+            /** Average Difference Minutes */
+            average_difference_minutes?: number | null;
+            /** Average Absolute Difference Minutes */
+            average_absolute_difference_minutes?: number | null;
+        };
+        /** ShadowObservationSummaryResponse */
+        ShadowObservationSummaryResponse: {
+            /** Total Observations */
+            total_observations: number;
+            /** Available Observations */
+            available_observations: number;
+            /** Unavailable Observations */
+            unavailable_observations: number;
+            /** Latest Observed At */
+            latest_observed_at?: string | null;
+            /** Ports */
+            ports: components["schemas"]["ShadowObservationPortSummary"][];
+        };
+        /** SubscriptionEvaluationResponse */
+        SubscriptionEvaluationResponse: {
+            /** Subscription Id */
+            subscription_id: string;
+            /**
+             * Evaluated At
+             * Format: date-time
+             */
+            evaluated_at: string;
+            /**
+             * Evaluation Time
+             * Format: date-time
+             */
+            evaluation_time: string;
+            /**
+             * Commute Date
+             * Format: date
+             */
+            commute_date: string;
+            /**
+             * Target Time
+             * Format: date-time
+             */
+            target_time: string;
+            /** Recommended Port */
+            recommended_port: string;
+            /** Recommended Port Id */
+            recommended_port_id: string;
+            /**
+             * Latest Departure
+             * Format: date-time
+             */
+            latest_departure: string;
+            /** Next Alert */
+            next_alert?: string | null;
+            /** Alternative Port */
+            alternative_port?: string | null;
+            /** Alerts */
+            alerts: components["schemas"]["AlertPreview"][];
+            /** Warnings */
+            warnings: string[];
         };
         /** SubscriptionListResponse */
         SubscriptionListResponse: {
@@ -766,6 +890,11 @@ export interface components {
             routine: components["schemas"]["Routine"];
             alerts?: components["schemas"]["AlertPreferences"];
         };
+        /**
+         * Weekday
+         * @enum {string}
+         */
+        Weekday: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
     };
     responses: never;
     parameters: never;
@@ -847,6 +976,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemoContextResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_model_shadow_summary_api_demo_model_shadow_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 请求成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShadowObservationSummaryResponse"];
                 };
             };
             /** @description 请求的资源不存在 */
@@ -1489,6 +1674,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubscriptionRecord"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_subscription_api_subscriptions__subscription_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 评估成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEvaluationResponse"];
                 };
             };
             /** @description 请求的资源不存在 */

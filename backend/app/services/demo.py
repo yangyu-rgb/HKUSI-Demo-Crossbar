@@ -37,3 +37,6 @@ class DemoService:
             "seeded": self._repository.reset_dynamic_data(),
             "message": "Demo 数据已按当前香港时间恢复为初始状态。",
         }
+
+    def get_model_shadow_summary(self) -> dict:
+        return self._repository.get_shadow_observation_summary()

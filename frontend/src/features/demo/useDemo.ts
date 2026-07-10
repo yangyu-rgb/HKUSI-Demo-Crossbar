@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../../shared/queryKeys";
-import { fetchDemoContext, resetDemo } from "./api";
+import { fetchDemoContext, fetchModelShadowSummary, resetDemo } from "./api";
 
 
 export function useDemoContext() {
@@ -8,6 +8,16 @@ export function useDemoContext() {
     queryKey: queryKeys.demoContext,
     queryFn: fetchDemoContext,
     staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+  });
+}
+
+
+export function useModelShadowSummary() {
+  return useQuery({
+    queryKey: queryKeys.modelShadowSummary,
+    queryFn: fetchModelShadowSummary,
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
   });

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 from statistics import NormalDist
 
@@ -69,6 +69,7 @@ class PredictionService:
         max_budget: int | None,
         reports: list[dict],
         shadow_observations: list[dict],
+        record_shadow: bool,
     ) -> dict:
         access = self._repository.get_access_leg(origin_id, port["id"])
         onward = self._repository.get_onward_leg(port["id"], destination_id)
@@ -79,13 +80,14 @@ class PredictionService:
             reports,
         )
         predicted_value = estimate["value"]
-        self._append_shadow_observation(
-            shadow_observations=shadow_observations,
-            port=port,
-            target_time=target_time,
-            current_time=current_time,
-            statistical_wait=predicted_value,
-        )
+        if record_shadow:
+            self._append_shadow_observation(
+                shadow_observations=shadow_observations,
+                port=port,
+                target_time=target_time,
+                current_time=current_time,
+                statistical_wait=predicted_value,
+            )
         sigma = estimate["standard_deviation"]
         z_score = NormalDist().inv_cdf(0.5 + CONFIDENCE_LEVEL / 2)
         lower = max(1, round(predicted_value - z_score * sigma))
@@ -245,7 +247,13 @@ class PredictionService:
             ),
         ), warnings
 
-    def predict(self, request: PredictionRequest) -> dict:
+    def predict(
+        self,
+        request: PredictionRequest,
+        *,
+        current_time: datetime | None = None,
+        record_shadow: bool = True,
+    ) -> dict:
         origin = self._repository.find_location(request.origin_id, "origins")
         if origin is None:
             raise DomainValidationError(
@@ -264,7 +272,9 @@ class PredictionService:
                 details={"destination_id": request.destination_id},
             )
 
-        current_time = as_hong_kong(self._clock.now()).replace(microsecond=0)
+        current_time = as_hong_kong(
+            current_time or self._clock.now()
+        ).replace(microsecond=0)
         target_time = as_hong_kong(request.target_time)
         minimum = ceil_minutes(
             current_time + timedelta(minutes=MIN_TARGET_LEAD_MINUTES),
@@ -293,6 +303,7 @@ class PredictionService:
                 request.preferences.max_budget,
                 reports,
                 shadow_observations,
+                record_shadow,
             )
             for port in snapshot["ports"]
         ]

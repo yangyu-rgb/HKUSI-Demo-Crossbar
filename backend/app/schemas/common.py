@@ -10,6 +10,16 @@ class Priority(str, Enum):
     BALANCED = "balanced"
 
 
+class Weekday(str, Enum):
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
+
+
 class CrowdLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"

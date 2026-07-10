@@ -15,6 +15,7 @@ export function useBatchPlans(company: string) {
     mutationFn: (payload: BatchRequest) => createBatchPlan(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.batchPlans(company) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.modelShadowSummary });
     },
   });
   const error = history.error ?? generate.error;

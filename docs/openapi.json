@@ -128,6 +128,67 @@
         }
       }
     },
+    "/api/demo/model-shadow-summary": {
+      "get": {
+        "tags": [
+          "Demo 控制"
+        ],
+        "summary": "获取 AI v1 影子观测汇总",
+        "operationId": "get_model_shadow_summary_api_demo_model_shadow_summary_get",
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShadowObservationSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/demo/reset": {
       "post": {
         "tags": [
@@ -890,6 +951,78 @@
         }
       }
     },
+    "/api/subscriptions/{subscription_id}/preview": {
+      "get": {
+        "tags": [
+          "提醒订阅"
+        ],
+        "summary": "预览下一次智能提醒",
+        "operationId": "preview_subscription_api_subscriptions__subscription_id__preview_get",
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "评估成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionEvaluationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/batch": {
       "post": {
         "tags": [
@@ -1070,6 +1203,51 @@
         "type": "object",
         "title": "AlertPreferences"
       },
+      "AlertPreview": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "triggered": {
+            "type": "boolean",
+            "title": "Triggered"
+          },
+          "scheduled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "title",
+          "message",
+          "enabled",
+          "triggered"
+        ],
+        "title": "AlertPreview"
+      },
       "BatchEmployee": {
         "properties": {
           "id": {
@@ -1103,6 +1281,16 @@
             "type": "string",
             "pattern": "^\\d{2}:\\d{2}$",
             "title": "Arrival Deadline"
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PredictionPreferences"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -1203,6 +1391,24 @@
           "late_risk_percent": {
             "type": "integer",
             "title": "Late Risk Percent"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/Priority"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Budget"
+          },
+          "within_budget": {
+            "type": "boolean",
+            "title": "Within Budget"
           }
         },
         "type": "object",
@@ -1211,7 +1417,10 @@
           "recommended_port",
           "departure_time",
           "total_time",
-          "late_risk_percent"
+          "late_risk_percent",
+          "priority",
+          "max_budget",
+          "within_budget"
         ],
         "title": "BatchPlanItem"
       },
@@ -1235,6 +1444,9 @@
             "type": "string",
             "format": "date",
             "title": "Date"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PredictionPreferences"
           }
         },
         "type": "object",
@@ -2155,7 +2367,7 @@
           },
           "days": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/Weekday"
             },
             "type": "array",
             "minItems": 1,
@@ -2201,6 +2413,186 @@
           "severity"
         ],
         "title": "ServiceAlert"
+      },
+      "ShadowObservationPortSummary": {
+        "properties": {
+          "port_id": {
+            "type": "string",
+            "title": "Port Id"
+          },
+          "port_name": {
+            "type": "string",
+            "title": "Port Name"
+          },
+          "observation_count": {
+            "type": "integer",
+            "title": "Observation Count"
+          },
+          "average_difference_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Difference Minutes"
+          },
+          "average_absolute_difference_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Absolute Difference Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "port_id",
+          "port_name",
+          "observation_count"
+        ],
+        "title": "ShadowObservationPortSummary"
+      },
+      "ShadowObservationSummaryResponse": {
+        "properties": {
+          "total_observations": {
+            "type": "integer",
+            "title": "Total Observations"
+          },
+          "available_observations": {
+            "type": "integer",
+            "title": "Available Observations"
+          },
+          "unavailable_observations": {
+            "type": "integer",
+            "title": "Unavailable Observations"
+          },
+          "latest_observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Observed At"
+          },
+          "ports": {
+            "items": {
+              "$ref": "#/components/schemas/ShadowObservationPortSummary"
+            },
+            "type": "array",
+            "title": "Ports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_observations",
+          "available_observations",
+          "unavailable_observations",
+          "ports"
+        ],
+        "title": "ShadowObservationSummaryResponse"
+      },
+      "SubscriptionEvaluationResponse": {
+        "properties": {
+          "subscription_id": {
+            "type": "string",
+            "title": "Subscription Id"
+          },
+          "evaluated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Evaluated At"
+          },
+          "evaluation_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Evaluation Time"
+          },
+          "commute_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Commute Date"
+          },
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "recommended_port": {
+            "type": "string",
+            "title": "Recommended Port"
+          },
+          "recommended_port_id": {
+            "type": "string",
+            "title": "Recommended Port Id"
+          },
+          "latest_departure": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Latest Departure"
+          },
+          "next_alert": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Alert"
+          },
+          "alternative_port": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative Port"
+          },
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/AlertPreview"
+            },
+            "type": "array",
+            "title": "Alerts"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subscription_id",
+          "evaluated_at",
+          "evaluation_time",
+          "commute_date",
+          "target_time",
+          "recommended_port",
+          "recommended_port_id",
+          "latest_departure",
+          "alerts",
+          "warnings"
+        ],
+        "title": "SubscriptionEvaluationResponse"
       },
       "SubscriptionListResponse": {
         "properties": {
@@ -2250,7 +2642,8 @@
           "next_alert": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               },
               {
                 "type": "null"
@@ -2316,6 +2709,19 @@
           "routine"
         ],
         "title": "SubscriptionUpdate"
+      },
+      "Weekday": {
+        "type": "string",
+        "enum": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday"
+        ],
+        "title": "Weekday"
       }
     }
   }

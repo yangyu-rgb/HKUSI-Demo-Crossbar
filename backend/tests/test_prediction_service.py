@@ -157,3 +157,35 @@ def test_crowdsource_weight_decays_for_longer_horizons(repository, clock) -> Non
     )
 
     assert current_crowd["effective_weight"] > future_crowd["effective_weight"]
+
+
+def test_holiday_calendar_is_used_and_explained(repository, clock) -> None:
+    forecast = WaitForecastService(repository, clock)
+
+    estimate = forecast.estimate(
+        "罗湖",
+        datetime.fromisoformat("2026-07-01T08:30:00+08:00"),
+        clock.now(),
+        [],
+    )
+
+    holiday_factor = next(
+        factor for factor in estimate["factors"] if factor["code"] == "holiday_calendar"
+    )
+    assert holiday_factor["detail"] == "按节假日历史样本计算基线"
+
+
+def test_recurring_event_is_applied_and_visible_in_realtime(repository, clock) -> None:
+    forecast = WaitForecastService(repository, clock)
+    event_time = datetime.fromisoformat("2026-07-10T09:00:00+08:00")
+
+    estimate = forecast.estimate("罗湖", event_time, event_time, [])
+    snapshot, _reports = forecast.build_snapshot(event_time)
+    luohu = next(port for port in snapshot["ports"] if port["id"] == "luohu")
+    event_factor = next(
+        factor for factor in estimate["factors"] if factor["code"] == "recurring_event"
+    )
+
+    assert event_factor["value_multiplier"] == 1.12
+    assert "Morning cross-border commuter peak" in event_factor["detail"]
+    assert any("周期性事件影响" in anomaly for anomaly in luohu["anomalies"])

@@ -1,6 +1,7 @@
 import { request } from "../../shared/api/client";
 import type {
   SubscriptionInput,
+  SubscriptionEvaluation,
   SubscriptionListResponse,
   SubscriptionRecord,
   SubscriptionUpdate,
@@ -19,6 +20,13 @@ export function createSubscription(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+
+export function fetchSubscriptionPreview(
+  subscriptionId: string,
+): Promise<SubscriptionEvaluation> {
+  return request(`/api/subscriptions/${subscriptionId}/preview`);
 }
 
 

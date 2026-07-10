@@ -1,20 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, type FormEvent } from "react";
 import { fetchLocations } from "../features/prediction/api";
 import type { Priority } from "../features/prediction/types";
+import { fetchSubscriptionPreview } from "../features/subscription/api";
 import { useSubscriptions } from "../features/subscription/useSubscriptions";
-import type { SubscriptionRecord } from "../features/subscription/types";
+import type { SubscriptionRecord, Weekday } from "../features/subscription/types";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
+import { formatClock, formatHongKongDateTime } from "../shared/formatters";
 import { queryKeys } from "../shared/queryKeys";
 import styles from "./AlertsPage.module.css";
 
 
 const USER_ID = "demo-user";
-const DAYS = [
+const DAYS: Array<[Weekday, string]> = [
   ["monday", "周一"],
+  ["tuesday", "周二"],
   ["wednesday", "周三"],
+  ["thursday", "周四"],
   ["friday", "周五"],
-] as const;
+  ["saturday", "周六"],
+  ["sunday", "周日"],
+];
+
+
+function formatNextAlert(value: string) {
+  if (/^\d{2}:\d{2}$/.test(value) || Number.isNaN(new Date(value).getTime())) {
+    return value;
+  }
+  return formatHongKongDateTime(value);
+}
 
 
 export function AlertsPage() {
@@ -24,13 +38,30 @@ export function AlertsPage() {
     staleTime: Infinity,
   });
   const subscriptions = useSubscriptions(USER_ID);
+  const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [originId, setOriginId] = useState("hku");
   const [destinationId, setDestinationId] = useState("nanshan-tech");
   const [arrivalDeadline, setArrivalDeadline] = useState("09:30");
   const [priority, setPriority] = useState<Priority>("balanced");
-  const [days, setDays] = useState<string[]>(["monday", "wednesday", "friday"]);
+  const [days, setDays] = useState<Weekday[]>(["monday", "wednesday", "friday"]);
+  const [advanceReminder, setAdvanceReminder] = useState(true);
+  const [anomalyAlert, setAnomalyAlert] = useState(true);
+  const [betterRouteAlert, setBetterRouteAlert] = useState(true);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const preview = useQuery({
+    queryKey: queryKeys.subscriptionPreview(previewId ?? ""),
+    queryFn: () => fetchSubscriptionPreview(previewId!),
+    enabled: Boolean(previewId),
+  });
+
+  useEffect(() => {
+    if (previewId && subscriptions.subscriptions.some((item) => item.subscription_id === previewId)) {
+      return;
+    }
+    setPreviewId(subscriptions.subscriptions[0]?.subscription_id ?? null);
+  }, [previewId, subscriptions.subscriptions]);
 
   function resetForm() {
     setEditingId(null);
@@ -39,6 +70,9 @@ export function AlertsPage() {
     setArrivalDeadline("09:30");
     setPriority("balanced");
     setDays(["monday", "wednesday", "friday"]);
+    setAdvanceReminder(true);
+    setAnomalyAlert(true);
+    setBetterRouteAlert(true);
   }
 
   function beginEdit(item: SubscriptionRecord) {
@@ -48,6 +82,10 @@ export function AlertsPage() {
     setArrivalDeadline(item.routine.arrival_deadline);
     setPriority(item.routine.priority);
     setDays(item.routine.days);
+    setAdvanceReminder(item.alerts.advance_reminder);
+    setAnomalyAlert(item.alerts.anomaly_alert);
+    setBetterRouteAlert(item.alerts.better_route_alert);
+    setPreviewId(item.subscription_id);
     setMessage("");
   }
 
@@ -63,17 +101,25 @@ export function AlertsPage() {
         priority,
       },
       alerts: {
-        advance_reminder: true,
-        anomaly_alert: true,
-        better_route_alert: true,
+        advance_reminder: advanceReminder,
+        anomaly_alert: anomalyAlert,
+        better_route_alert: betterRouteAlert,
       },
     };
     try {
       if (editingId) {
         await subscriptions.update({ subscriptionId: editingId, payload });
+        setPreviewId(editingId);
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.subscriptionPreview(editingId),
+        });
         setMessage("订阅已更新。");
       } else {
-        await subscriptions.create({ user_id: USER_ID, ...payload });
+        const created = await subscriptions.create({ user_id: USER_ID, ...payload });
+        setPreviewId(created.subscription_id);
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.subscriptionPreview(created.subscription_id),
+        });
         setMessage("订阅已创建。");
       }
       resetForm();
@@ -162,10 +208,10 @@ export function AlertsPage() {
               </label>
             ))}
           </fieldset>
-          <div className={styles.checkList}>
-            <span>✓ 出发前30分钟</span>
-            <span>✓ 异常拥堵</span>
-            <span>✓ 更优路线</span>
+          <div className={styles.alertOptions}>
+            <label><input type="checkbox" checked={advanceReminder} onChange={(event) => setAdvanceReminder(event.target.checked)} /> 出发前30分钟</label>
+            <label><input type="checkbox" checked={anomalyAlert} onChange={(event) => setAnomalyAlert(event.target.checked)} /> 异常拥堵</label>
+            <label><input type="checkbox" checked={betterRouteAlert} onChange={(event) => setBetterRouteAlert(event.target.checked)} /> 更优路线</label>
           </div>
           <div className={styles.actions}>
             <button className="button buttonLight" disabled={subscriptions.saving || days.length === 0}>
@@ -179,12 +225,13 @@ export function AlertsPage() {
           {subscriptions.error && <p className={styles.error}>{subscriptions.error}</p>}
         </form>
 
-        <div className={styles.list}>
-          <div className={styles.listHeading}>
-            <h2>已有订阅</h2>
-            <span>{subscriptions.subscriptions.length} 条</span>
-          </div>
-          {subscriptions.subscriptions.map((item) => {
+        <div className={styles.sideColumn}>
+          <div className={styles.list}>
+            <div className={styles.listHeading}>
+              <h2>已有订阅</h2>
+              <span>{subscriptions.subscriptions.length} 条</span>
+            </div>
+            {subscriptions.subscriptions.map((item) => {
             const origin = locations.data?.origins.find((entry) => entry.id === item.routine.origin_id);
             const destination = locations.data?.destinations.find((entry) => entry.id === item.routine.destination_id);
             return (
@@ -193,14 +240,40 @@ export function AlertsPage() {
                   <strong>{origin?.name} → {destination?.name}</strong>
                   <span>{item.routine.days.length}天/周 · {item.routine.arrival_deadline}前到达</span>
                 </div>
-                <b>下次提醒约 {item.next_alert}</b>
-                <div className={styles.itemActions}>
+                  <b>下次提醒约 {item.next_alert ? formatNextAlert(item.next_alert) : "已关闭"}</b>
+                  <div className={styles.itemActions}>
+                  <button onClick={() => setPreviewId(item.subscription_id)}>预览</button>
                   <button onClick={() => beginEdit(item)}>编辑</button>
                   <button onClick={() => void handleDelete(item.subscription_id)} disabled={subscriptions.deleting}>删除</button>
                 </div>
               </article>
             );
-          })}
+            })}
+          </div>
+          <section className={styles.preview}>
+            <div className={styles.previewHeading}>
+              <div><span className="sectionKicker">Next commute</span><h2>提醒预览</h2></div>
+              {preview.data && <b>{preview.data.recommended_port}口岸</b>}
+            </div>
+            {!previewId && <p>创建或选择一条订阅以查看下一次提醒。</p>}
+            {preview.isPending && <p>正在评估下一次通勤…</p>}
+            {preview.error && <p className={styles.previewError}>暂时无法生成提醒预览。</p>}
+            {preview.data && (
+              <>
+                <p className={styles.previewMeta}>计划于 {formatHongKongDateTime(preview.data.target_time)} 前到达；最晚建议 {formatClock(preview.data.latest_departure)} 出发。</p>
+                <div className={styles.previewCards}>
+                  {preview.data.alerts.map((alert) => (
+                    <article className={alert.triggered ? styles.previewActive : styles.previewInactive} key={alert.kind}>
+                      <div><strong>{alert.title}</strong><span>{alert.triggered ? "将发送" : alert.enabled ? "当前未触发" : "未启用"}</span></div>
+                      <p>{alert.message}</p>
+                      {alert.scheduled_at && <small>评估/发送时间：{formatHongKongDateTime(alert.scheduled_at)}</small>}
+                    </article>
+                  ))}
+                </div>
+                {preview.data.alternative_port && <p className={styles.alternative}>备用口岸：{preview.data.alternative_port}</p>}
+              </>
+            )}
+          </section>
         </div>
       </section>
     </main>

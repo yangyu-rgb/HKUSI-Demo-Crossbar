@@ -37,6 +37,7 @@ class DemoRepository:
         self._history = self._load_history()
         self._weather = load_json(data_dir / "factors" / "weather.json")
         self._holidays = load_json(data_dir / "factors" / "holidays.json")
+        self._events = load_json(data_dir / "factors" / "events.json")
         self._initialize_database()
 
     def _utc_now(self) -> str:
@@ -203,6 +204,9 @@ class DemoRepository:
 
     def get_holidays(self) -> dict:
         return deepcopy(self._holidays)
+
+    def get_events(self) -> dict:
+        return deepcopy(self._events)
 
     def get_history_path(self) -> Path:
         return self._history_path
@@ -479,6 +483,68 @@ class DemoRepository:
             return [dict(row) for row in rows]
         except sqlite3.Error as error:
             raise PersistenceError() from error
+
+    def get_shadow_observation_summary(self) -> dict:
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT generated_at, port_id, port_name, shadow_wait_minutes,
+                           difference_minutes, status
+                    FROM shadow_model_observations
+                    ORDER BY generated_at DESC, id DESC
+                    """
+                ).fetchall()
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+        by_port: dict[str, dict] = {}
+        for row in rows:
+            item = by_port.setdefault(
+                row["port_id"],
+                {
+                    "port_id": row["port_id"],
+                    "port_name": row["port_name"],
+                    "observation_count": 0,
+                    "differences": [],
+                },
+            )
+            item["observation_count"] += 1
+            if row["shadow_wait_minutes"] is not None:
+                item["differences"].append(float(row["difference_minutes"]))
+
+        ports = []
+        for item in sorted(by_port.values(), key=lambda value: value["port_id"]):
+            differences = item.pop("differences")
+            ports.append(
+                {
+                    **item,
+                    "average_difference_minutes": (
+                        round(sum(differences) / len(differences), 2)
+                        if differences
+                        else None
+                    ),
+                    "average_absolute_difference_minutes": (
+                        round(
+                            sum(abs(value) for value in differences) / len(differences),
+                            2,
+                        )
+                        if differences
+                        else None
+                    ),
+                }
+            )
+        return {
+            "total_observations": len(rows),
+            "available_observations": sum(
+                row["status"] == "available" for row in rows
+            ),
+            "unavailable_observations": sum(
+                row["status"] != "available" for row in rows
+            ),
+            "latest_observed_at": rows[0]["generated_at"] if rows else None,
+            "ports": ports,
+        }
 
     def reset_dynamic_data(self) -> dict:
         try:

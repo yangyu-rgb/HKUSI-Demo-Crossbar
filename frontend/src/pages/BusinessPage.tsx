@@ -2,14 +2,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useBatchPlans } from "../features/business/useBatchPlans";
 import type { BatchEmployee, BatchRequest } from "../features/business/types";
-import { useDemoContext } from "../features/demo/useDemo";
+import { useDemoContext, useModelShadowSummary } from "../features/demo/useDemo";
 import { fetchLocations } from "../features/prediction/api";
+import type { Priority } from "../features/prediction/types";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
 import { queryKeys } from "../shared/queryKeys";
 import styles from "./BusinessPage.module.css";
 
 
 const COMPANY = "大湾区跨境服务有限公司";
+const PRIORITY_LABELS: Record<Priority, string> = {
+  balanced: "稳妥均衡",
+  fastest: "时间最快",
+  cheapest: "费用最低",
+};
 const INITIAL_EMPLOYEES: BatchEmployee[] = [
   { id: "E-101", name: "员工101", origin_id: "hku", destination_id: "nanshan-tech", arrival_deadline: "09:30" },
   { id: "E-102", name: "员工102", origin_id: "central", destination_id: "nanshan-tech", arrival_deadline: "09:30" },
@@ -25,9 +31,12 @@ export function BusinessPage() {
     staleTime: Infinity,
   });
   const context = useDemoContext();
+  const shadowSummary = useModelShadowSummary();
   const batch = useBatchPlans(COMPANY);
   const [date, setDate] = useState("");
   const [employees, setEmployees] = useState<BatchEmployee[]>(INITIAL_EMPLOYEES);
+  const [batchPriority, setBatchPriority] = useState<Priority>("balanced");
+  const [batchBudget, setBatchBudget] = useState("");
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -65,7 +74,15 @@ export function BusinessPage() {
 
   async function generatePlan() {
     try {
-      await batch.generate({ company: COMPANY, date, employees });
+      await batch.generate({
+        company: COMPANY,
+        date,
+        employees,
+        preferences: {
+          priority: batchPriority,
+          max_budget: batchBudget === "" ? null : Number(batchBudget),
+        },
+      });
     } catch {
       // The mutation exposes the normalized API error below the editor.
     }
@@ -80,6 +97,8 @@ export function BusinessPage() {
     const saved = request as unknown as BatchRequest;
     setDate(saved.date);
     setEmployees(saved.employees);
+    setBatchPriority(saved.preferences?.priority ?? "balanced");
+    setBatchBudget(saved.preferences?.max_budget?.toString() ?? "");
     batch.clearPlan();
   }
 
@@ -111,6 +130,20 @@ export function BusinessPage() {
               onChange={(event) => setDate(event.target.value)}
             />
           </label>
+          <div className={styles.batchPreferences}>
+            <label>
+              <span>默认路线偏好</span>
+              <select value={batchPriority} onChange={(event) => setBatchPriority(event.target.value as Priority)}>
+                <option value="balanced">稳妥均衡</option>
+                <option value="fastest">时间最快</option>
+                <option value="cheapest">费用最低</option>
+              </select>
+            </label>
+            <label>
+              <span>默认预算上限（HK$）</span>
+              <input min="0" type="number" value={batchBudget} placeholder="不限" onChange={(event) => setBatchBudget(event.target.value)} />
+            </label>
+          </div>
         </div>
         <div className={styles.employeeTable}>
           {employees.map((employee, index) => (
@@ -148,6 +181,40 @@ export function BusinessPage() {
                 value={employee.arrival_deadline}
                 onChange={(event) => updateEmployee(index, { arrival_deadline: event.target.value })}
               />
+              <select
+                aria-label={`员工${index + 1}路线偏好`}
+                value={employee.preferences?.priority ?? "batch"}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  updateEmployee(index, {
+                    preferences: value === "batch"
+                      ? undefined
+                      : {
+                        priority: value as Priority,
+                        max_budget: employee.preferences?.max_budget ?? null,
+                      },
+                  });
+                }}
+              >
+                <option value="batch">使用批次默认</option>
+                <option value="balanced">个人：稳妥均衡</option>
+                <option value="fastest">个人：时间最快</option>
+                <option value="cheapest">个人：费用最低</option>
+              </select>
+              <input
+                aria-label={`员工${index + 1}预算上限`}
+                min="0"
+                type="number"
+                disabled={!employee.preferences}
+                value={employee.preferences?.max_budget ?? ""}
+                placeholder="批次默认"
+                onChange={(event) => updateEmployee(index, {
+                  preferences: {
+                    priority: employee.preferences?.priority ?? batchPriority,
+                    max_budget: event.target.value === "" ? null : Number(event.target.value),
+                  },
+                })}
+              />
               <button
                 type="button"
                 className={styles.remove}
@@ -177,7 +244,7 @@ export function BusinessPage() {
           </div>
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span>员工</span><span>推荐口岸</span><span>出发时间</span><span>通勤时间</span><span>风险</span>
+              <span>员工</span><span>推荐口岸</span><span>出发时间</span><span>通勤时间</span><span>风险</span><span>偏好/预算</span>
             </div>
             {batch.plan.plan.map((item) => (
               <div className={styles.tableRow} key={item.employee_id}>
@@ -186,12 +253,40 @@ export function BusinessPage() {
                 <span>{item.departure_time}</span>
                 <span>{item.total_time} 分钟</span>
                 <span>{item.late_risk_percent}%</span>
+                <span>{PRIORITY_LABELS[item.priority]} · {item.max_budget === null ? "不限" : `HK$${item.max_budget}`}</span>
               </div>
             ))}
           </div>
           <p className={styles.recommendation}>{batch.plan.summary.recommendation}</p>
         </section>
       )}
+
+      <section className={styles.shadowSummary}>
+        <div className={styles.shadowHeading}>
+          <div><span className="sectionKicker">AI v1 shadow</span><h2>模型差异观测</h2></div>
+          <span>不影响当前用户推荐</span>
+        </div>
+        {shadowSummary.isPending && <p>正在读取影子观测…</p>}
+        {shadowSummary.error && <p>暂时无法读取影子观测。</p>}
+        {shadowSummary.data && (
+          <>
+            <div className={styles.shadowStats}>
+              <div><strong>{shadowSummary.data.total_observations}</strong><span>预测点</span></div>
+              <div><strong>{shadowSummary.data.available_observations}</strong><span>AI 可用</span></div>
+              <div><strong>{shadowSummary.data.unavailable_observations}</strong><span>已降级</span></div>
+            </div>
+            {shadowSummary.data.ports.length === 0 ? (
+              <p>尚无观测；生成方案或完成路线预测后会在此汇总统计模型与 AI v1 的差异。</p>
+            ) : (
+              <div className={styles.shadowPorts}>
+                {shadowSummary.data.ports.map((port) => (
+                  <span key={port.port_id}>{port.port_name} · 平均绝对差 {port.average_absolute_difference_minutes ?? "—"} 分钟</span>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
       <section className={styles.history}>
         <div><h2>最近方案</h2><span>{batch.history.length} 条</span></div>

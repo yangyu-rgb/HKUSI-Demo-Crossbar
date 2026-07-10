@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends
 
-from ..schemas.demo import DemoContextResponse, DemoResetResponse
+from ..schemas.demo import (
+    DemoContextResponse,
+    DemoResetResponse,
+    ShadowObservationSummaryResponse,
+)
 from ..services import DemoService
 from .dependencies import get_demo_service
 
@@ -19,6 +23,18 @@ def get_demo_context(
     service: DemoService = Depends(get_demo_service),
 ) -> dict:
     return service.get_context()
+
+
+@router.get(
+    "/model-shadow-summary",
+    response_model=ShadowObservationSummaryResponse,
+    summary="获取 AI v1 影子观测汇总",
+    response_description="请求成功",
+)
+def get_model_shadow_summary(
+    service: DemoService = Depends(get_demo_service),
+) -> dict:
+    return service.get_model_shadow_summary()
 
 
 @router.post(

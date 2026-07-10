@@ -6,7 +6,7 @@ from .common import Priority, RiskLevel
 
 
 class PredictionPreferences(BaseModel):
-    priority: Priority = "balanced"
+    priority: Priority = Priority.BALANCED
     max_budget: int | None = Field(default=None, ge=0)
 
 
