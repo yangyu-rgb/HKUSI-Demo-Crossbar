@@ -231,6 +231,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/demo/scenarios/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 对比默认与候选场景 AI 方案 */
+        post: operations["compare_scenarios_api_demo_scenarios_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/demo/scenarios/reset": {
         parameters: {
             query?: never;
@@ -1126,8 +1143,19 @@ export interface components {
         ForecastPoint: {
             /** Offset Minutes */
             offset_minutes: number;
+            /**
+             * Forecast At
+             * Format: date-time
+             */
+            forecast_at: string;
             /** Wait */
             wait: number;
+            /** Lower Bound */
+            lower_bound: number;
+            /** Upper Bound */
+            upper_bound: number;
+            /** Change From Now */
+            change_from_now: number;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -1285,6 +1313,17 @@ export interface components {
             anomalies: string[];
             /** Crowdsource Count */
             crowdsource_count: number;
+            /** Trend */
+            trend: string;
+            /** Change Next Hour */
+            change_next_hour: number;
+            /** Peak Wait */
+            peak_wait: number;
+            /**
+             * Peak At
+             * Format: date-time
+             */
+            peak_at: string;
         };
         /** PredictionPreferences */
         PredictionPreferences: {
@@ -1382,6 +1421,31 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
+        /** RealtimeOverview */
+        RealtimeOverview: {
+            /** Smoothest Port Id */
+            smoothest_port_id: string;
+            /** Smoothest Port Name */
+            smoothest_port_name: string;
+            /** Smoothest Wait */
+            smoothest_wait: number;
+            /** Highest Pressure Port Id */
+            highest_pressure_port_id: string;
+            /** Highest Pressure Port Name */
+            highest_pressure_port_name: string;
+            /** Highest Pressure Wait */
+            highest_pressure_wait: number;
+            /** Fastest Rising Port Id */
+            fastest_rising_port_id: string;
+            /** Fastest Rising Port Name */
+            fastest_rising_port_name: string;
+            /** Fastest Rising Change */
+            fastest_rising_change: number;
+            /** Active Anomaly Count */
+            active_anomaly_count: number;
+            /** Crowdsource Report Count */
+            crowdsource_report_count: number;
+        };
         /** RealtimeResponse */
         RealtimeResponse: {
             /**
@@ -1397,6 +1461,7 @@ export interface components {
             ports: components["schemas"]["PortStatus"][];
             /** Alerts */
             alerts: components["schemas"]["ServiceAlert"][];
+            overview: components["schemas"]["RealtimeOverview"];
         };
         /**
          * ReportQualityLevel
@@ -1431,6 +1496,54 @@ export interface components {
             arrival_deadline: string;
             /** @default balanced */
             priority: components["schemas"]["Priority"];
+        };
+        /** ScenarioComparisonPort */
+        ScenarioComparisonPort: {
+            /** Port Id */
+            port_id: string;
+            /** Port Name */
+            port_name: string;
+            /** Baseline Wait Minutes */
+            baseline_wait_minutes: number;
+            /** Candidate Wait Minutes */
+            candidate_wait_minutes: number;
+            /** Wait Delta Minutes */
+            wait_delta_minutes: number;
+            /** Baseline Late Risk Percent */
+            baseline_late_risk_percent: number;
+            /** Candidate Late Risk Percent */
+            candidate_late_risk_percent: number;
+            /** Late Risk Delta Percent */
+            late_risk_delta_percent: number;
+            /** Total Time Delta Minutes */
+            total_time_delta_minutes: number;
+        };
+        /** ScenarioComparisonRequest */
+        ScenarioComparisonRequest: {
+            /** Origin Id */
+            origin_id: string;
+            /** Destination Id */
+            destination_id: string;
+            /**
+             * Target Time
+             * Format: date-time
+             */
+            target_time: string;
+            preferences?: components["schemas"]["PredictionPreferences"];
+            scenario: components["schemas"]["ScenarioWrite"];
+        };
+        /** ScenarioComparisonResponse */
+        ScenarioComparisonResponse: {
+            baseline: components["schemas"]["PredictionResponse"];
+            candidate: components["schemas"]["PredictionResponse"];
+            /** Recommended Changed */
+            recommended_changed: boolean;
+            /** Baseline Recommended Port Id */
+            baseline_recommended_port_id: string;
+            /** Candidate Recommended Port Id */
+            candidate_recommended_port_id: string;
+            /** Ports */
+            ports: components["schemas"]["ScenarioComparisonPort"][];
         };
         /** ScenarioDay */
         ScenarioDay: {
@@ -2552,6 +2665,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioListResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    compare_scenarios_api_demo_scenarios_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioComparisonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioComparisonResponse"];
                 };
             };
             /** @description 请求的资源不存在 */

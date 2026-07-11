@@ -127,13 +127,33 @@ class PredictionService:
                 weather="clear", is_holiday=False, event_impact="none",
             )
             if v2_result is not None:
-                predicted_value, residual_q90 = v2_result
+                raw_v2_value, residual_q90 = v2_result
+                crowd_mean = estimate["crowdsource_mean"]
+                crowd_weight = estimate["crowdsource_weight"]
+                predicted_value = raw_v2_value
+                if crowd_mean is not None:
+                    predicted_value = (
+                        raw_v2_value * (1 - crowd_weight)
+                        + crowd_mean * crowd_weight
+                    )
                 sigma = max(1.0, residual_q90 / 1.645)
                 prediction_engine = "v2"
                 if default_result is not None:
-                    scenario_delta = round(predicted_value - default_result[0])
+                    default_value = default_result[0]
+                    if crowd_mean is not None:
+                        default_value = (
+                            default_value * (1 - crowd_weight)
+                            + crowd_mean * crowd_weight
+                        )
+                    scenario_delta = round(predicted_value - default_value)
                 estimate["factors"] = [
-                    {"code": "ai_v2", "label": "AI V2 场景预测", "detail": f"{scenario['weather']} · {'节假日' if scenario['is_holiday'] else '普通日期'} · 事件强度 {event_impact}"},
+                    {
+                        "code": "ai_v2",
+                        "label": "AI V2 场景预测",
+                        "value_minutes": round(raw_v2_value, 1),
+                        "calibrated_value_minutes": round(predicted_value, 1),
+                        "detail": f"{scenario['weather']} · {'节假日' if scenario['is_holiday'] else '普通日期'} · 事件强度 {event_impact}",
+                    },
                     {"code": "scenario_delta", "label": "相对默认场景变化", "value_minutes": scenario_delta, "detail": "与同一口岸、方向和时间的晴天无事件场景比较"},
                     {"code": "uncertainty", "label": "V2 验证残差区间", "standard_deviation_minutes": round(sigma, 2)},
                 ] + [factor for factor in estimate["factors"] if factor["code"] not in {"uncertainty"}]
@@ -204,6 +224,7 @@ class PredictionService:
             "uncertainty_minutes": round(sigma, 2),
             "prediction_engine": prediction_engine,
             "scenario_delta_minutes": scenario_delta,
+            "_statistical_wait_minutes": statistical_value,
         }
 
     def _append_shadow_observation(
@@ -318,7 +339,10 @@ class PredictionService:
                 "statistical_predictions": [
                     {
                         "port_id": prediction["port_id"],
-                        "predicted_wait_time": prediction["predicted_wait_time"],
+                        "predicted_wait_time": round(
+                            prediction["_statistical_wait_minutes"], 4
+                        ),
+                        "primary_wait_time": prediction["predicted_wait_time"],
                         "historical_sample_count": prediction[
                             "historical_sample_count"
                         ],
@@ -355,7 +379,12 @@ class PredictionService:
                 {
                     "port_id": prediction["port_id"],
                     "port_name": prediction["name"],
-                    "statistical_wait_minutes": prediction["predicted_wait_time"],
+                    "statistical_wait_minutes": prediction[
+                        "_statistical_wait_minutes"
+                    ],
+                    "primary_wait_minutes": prediction["predicted_wait_time"],
+                    "prediction_engine": prediction["prediction_engine"],
+                    "scenario_version": prediction_inputs["scenario"]["version"],
                     "shadow_wait_minutes": (
                         shadow["shadow_wait_minutes"] if shadow else None
                     ),
@@ -374,7 +403,11 @@ class PredictionService:
                         "event_factors": [
                             factor
                             for factor in prediction["factors"]
-                            if factor["code"] in {"holiday_calendar", "recurring_event"}
+                            if factor["code"] in {
+                                "holiday_calendar",
+                                "recurring_event",
+                                "scenario_event",
+                            }
                         ],
                         "official_features": official_by_port[prediction["port_id"]],
                     },
@@ -451,6 +484,8 @@ class PredictionService:
         *,
         current_time: datetime | None = None,
         record_shadow: bool = True,
+        scenario_override: dict | None = None,
+        use_default_scenario: bool = False,
     ) -> dict:
         origin = self._repository.find_location(request.origin_id, "origins")
         if origin is None:
@@ -504,7 +539,11 @@ class PredictionService:
             )
 
         snapshot, reports = self._forecast.build_snapshot(current_time)
-        prediction_inputs = self._repository.get_prediction_input_context(target_time)
+        prediction_inputs = self._repository.get_prediction_input_context(
+            target_time,
+            scenario_override,
+            use_default_scenario=use_default_scenario,
+        )
         shadow_observations: list[dict] = []
         predictions = [
             self._prediction_for_port(

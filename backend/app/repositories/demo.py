@@ -25,7 +25,7 @@ from ..providers import (
 )
 
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 
 def load_json(path: Path) -> dict | list:
@@ -220,6 +220,21 @@ class DemoRepository:
                 "ALTER TABLE batch_plans ADD COLUMN organization_id TEXT NOT NULL "
                 "DEFAULT 'demo-org'"
             )
+
+        forecast_port_columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(forecast_run_ports)")
+        }
+        forecast_port_additions = {
+            "primary_wait_minutes": "REAL",
+            "prediction_engine": "TEXT NOT NULL DEFAULT 'statistical_fallback'",
+            "scenario_version": "TEXT",
+        }
+        for name, declaration in forecast_port_additions.items():
+            if name not in forecast_port_columns:
+                connection.execute(
+                    f"ALTER TABLE forecast_run_ports ADD COLUMN {name} {declaration}"
+                )
 
         external_columns = {
             row["name"]
@@ -506,8 +521,27 @@ class DemoRepository:
             for provider in self._providers.values()
         ]
 
-    def get_prediction_input_context(self, target_time: datetime) -> dict:
-        scenario = self.get_scenario(target_time.date().isoformat())
+    def get_prediction_input_context(
+        self,
+        target_time: datetime,
+        scenario_override: dict | None = None,
+        *,
+        use_default_scenario: bool = False,
+    ) -> dict:
+        scenario_date = target_time.date().isoformat()
+        if use_default_scenario:
+            scenario = self._default_scenario(scenario_date)
+        elif scenario_override is not None:
+            scenario = self._version_scenario(
+                {
+                    **scenario_override,
+                    "date": scenario_date,
+                    "is_override": False,
+                    "is_preview": True,
+                }
+            )
+        else:
+            scenario = self.get_scenario(scenario_date)
         return {
             "weather": scenario["weather"],
             "is_holiday": scenario["is_holiday"],
@@ -1191,9 +1225,11 @@ class DemoRepository:
                     """
                     INSERT OR IGNORE INTO forecast_run_ports(
                         forecast_run_id, port_id, port_name, target_time,
-                        statistical_wait_minutes, shadow_wait_minutes,
-                        shadow_status, shadow_reason, features_json
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        statistical_wait_minutes, primary_wait_minutes,
+                        prediction_engine, scenario_version,
+                        shadow_wait_minutes, shadow_status, shadow_reason,
+                        features_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     [
                         (
@@ -1202,6 +1238,12 @@ class DemoRepository:
                             port["port_name"],
                             run["target_time"],
                             port["statistical_wait_minutes"],
+                            port.get(
+                                "primary_wait_minutes",
+                                port["statistical_wait_minutes"],
+                            ),
+                            port.get("prediction_engine", "statistical_fallback"),
+                            port.get("scenario_version"),
                             port["shadow_wait_minutes"],
                             port["shadow_status"],
                             port["shadow_reason"],
@@ -1221,6 +1263,8 @@ class DemoRepository:
                     SELECT ports.forecast_run_id, ports.port_id, ports.port_name,
                            ports.target_time, runs.direction,
                            ports.statistical_wait_minutes,
+                           ports.primary_wait_minutes,
+                           ports.prediction_engine, ports.scenario_version,
                            ports.shadow_wait_minutes, ports.shadow_status,
                            ports.shadow_reason, ports.features_json,
                            ports.observed_wait_minutes, ports.observed_report_id,
@@ -1346,7 +1390,9 @@ class DemoRepository:
                     SELECT runs.id AS forecast_run_id, runs.generated_at,
                            runs.target_time AS run_target_time, runs.model_version,
                            runs.data_version, ports.port_id, ports.port_name,
-                           ports.statistical_wait_minutes, ports.shadow_wait_minutes,
+                           ports.statistical_wait_minutes,
+                           ports.primary_wait_minutes, ports.prediction_engine,
+                           ports.scenario_version, ports.shadow_wait_minutes,
                            ports.shadow_status, ports.features_json,
                            ports.observed_wait_minutes, ports.observed_report_id,
                            ports.observed_at, ports.observed_quality_score,

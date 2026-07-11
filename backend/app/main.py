@@ -78,7 +78,11 @@ def create_app(
             "explicit": persona_header is not None,
         }
         response = await call_next(request)
-        if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        read_only_posts = {"/api/demo/scenarios/compare"}
+        if (
+            request.method in {"POST", "PUT", "PATCH", "DELETE"}
+            and request.url.path not in read_only_posts
+        ):
             app.state.repository.record_audit_event(
                 {
                     "request_id": request_id,

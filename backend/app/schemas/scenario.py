@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field, model_validator
 
 from .common import TravelDirection
+from .prediction import PredictionPreferences, PredictionResponse
 
 
 class ScenarioWeather(str, Enum):
@@ -58,3 +59,32 @@ class ScenarioListResponse(BaseModel):
 class ScenarioResetResponse(BaseModel):
     success: bool
     scenarios: list[ScenarioDay]
+
+
+class ScenarioComparisonRequest(BaseModel):
+    origin_id: str = Field(min_length=1)
+    destination_id: str = Field(min_length=1)
+    target_time: datetime
+    preferences: PredictionPreferences = Field(default_factory=PredictionPreferences)
+    scenario: ScenarioWrite
+
+
+class ScenarioComparisonPort(BaseModel):
+    port_id: str
+    port_name: str
+    baseline_wait_minutes: int
+    candidate_wait_minutes: int
+    wait_delta_minutes: int
+    baseline_late_risk_percent: int
+    candidate_late_risk_percent: int
+    late_risk_delta_percent: int
+    total_time_delta_minutes: int
+
+
+class ScenarioComparisonResponse(BaseModel):
+    baseline: PredictionResponse
+    candidate: PredictionResponse
+    recommended_changed: bool
+    baseline_recommended_port_id: str
+    candidate_recommended_port_id: str
+    ports: list[ScenarioComparisonPort]

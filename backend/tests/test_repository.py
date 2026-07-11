@@ -121,6 +121,12 @@ def test_labeled_snapshot_contains_feedback_and_auditable_metadata(
             }
         ],
     )
+    stored_run = repository.get_forecast_run_port(
+        "forecast-snapshot-test",
+        "luohu",
+    )
+    assert stored_run["primary_wait_minutes"] == 20
+    assert stored_run["prediction_engine"] == "statistical_fallback"
     repository.add_report(
         {
             "id": "report-snapshot-test",
@@ -156,7 +162,7 @@ def test_labeled_snapshot_contains_feedback_and_auditable_metadata(
     assert "crowdsource_observation" in Path(result["csv_path"]).read_text(encoding="utf-8")
     assert metadata["sha256"] == result["sha256"]
     assert metadata["readiness"]["label_count"] == 1
-    assert metadata["schema_version"] == 3
+    assert metadata["schema_version"] == 4
 
 
 def test_existing_database_adds_provenance_columns_conservatively(
@@ -199,5 +205,5 @@ def test_existing_database_adds_provenance_columns_conservatively(
     assert legacy["source_type"] == "demo_seed"
     with sqlite3.connect(database) as connection:
         assert connection.execute(
-            "SELECT COUNT(*) FROM schema_version WHERE version = 13"
+            "SELECT COUNT(*) FROM schema_version WHERE version = 14"
         ).fetchone()[0] == 1

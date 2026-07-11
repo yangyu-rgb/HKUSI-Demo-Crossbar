@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from math import exp, sqrt
+from statistics import NormalDist
 
 from ..clock import Clock, as_hong_kong
 from ..config import (
@@ -12,6 +13,7 @@ from ..config import (
     MAX_COMBINED_EVENT_MULTIPLIER,
     REPORT_EXPIRY_MINUTES,
     TREND_UNCERTAINTY_FACTOR,
+    CONFIDENCE_LEVEL,
 )
 from ..repositories import DemoRepository
 from .report_quality import evaluate_reports, quality_weighted_wait
@@ -234,11 +236,14 @@ class WaitForecastService:
         )
         return {
             "value": value,
+            "uncalibrated_value": event_adjusted_baseline,
             "standard_deviation": sigma,
             "sample_count": baseline["sample_count"],
             "slope": slope,
             "factors": factors,
             "crowdsource_count": len(active_reports),
+            "crowdsource_mean": crowd_mean,
+            "crowdsource_weight": crowd_weight,
             "event_names": [event["name"] for event in event_context["events"]],
         }
 
@@ -252,8 +257,8 @@ class WaitForecastService:
         reports = evaluate_reports(self._repository.get_reports(), quality_ports, now)
 
         ports = []
+        z_score = NormalDist().inv_cdf(0.5 + CONFIDENCE_LEVEL / 2)
         for port in metadata["ports"]:
-            forecast = []
             estimates = []
             for offset in (0, 60, 120, 180):
                 estimate = self.estimate(
@@ -263,8 +268,30 @@ class WaitForecastService:
                     reports,
                 )
                 estimates.append(estimate)
-                forecast.append({"offset_minutes": offset, "wait": max(1, round(estimate["value"]))})
-            current_wait = forecast[0]["wait"]
+            waits = [max(1, round(estimate["value"])) for estimate in estimates]
+            current_wait = waits[0]
+            forecast = []
+            for offset, wait, estimate in zip((0, 60, 120, 180), waits, estimates):
+                forecast_at = now + timedelta(minutes=offset)
+                forecast.append(
+                    {
+                        "offset_minutes": offset,
+                        "forecast_at": forecast_at,
+                        "wait": wait,
+                        "lower_bound": max(
+                            1,
+                            round(
+                                estimate["value"]
+                                - z_score * estimate["standard_deviation"]
+                            ),
+                        ),
+                        "upper_bound": round(
+                            estimate["value"]
+                            + z_score * estimate["standard_deviation"]
+                        ),
+                        "change_from_now": wait - current_wait,
+                    }
+                )
             crowd_level = "high" if current_wait >= 35 else "medium" if current_wait >= 18 else "low"
             passenger_flow = {"high": "拥挤", "medium": "较繁忙", "low": "畅通"}[crowd_level]
             anomalies = []
@@ -276,6 +303,13 @@ class WaitForecastService:
                 anomalies.append("当前模拟等待处于高位")
             if forecast[1]["wait"] - current_wait >= 8:
                 anomalies.append("未来60分钟模拟等待预计明显上升")
+            change_next_hour = forecast[1]["wait"] - current_wait
+            trend = (
+                "rising"
+                if change_next_hour >= 3
+                else "falling" if change_next_hour <= -3 else "stable"
+            )
+            peak = max(forecast, key=lambda item: item["wait"])
             ports.append(
                 {
                     **port,
@@ -285,12 +319,36 @@ class WaitForecastService:
                     "forecast": forecast,
                     "anomalies": anomalies,
                     "crowdsource_count": estimates[0]["crowdsource_count"],
+                    "trend": trend,
+                    "change_next_hour": change_next_hour,
+                    "peak_wait": peak["wait"],
+                    "peak_at": peak["forecast_at"],
                 }
             )
+        smoothest = min(ports, key=lambda item: item["current_wait"])
+        highest_pressure = max(ports, key=lambda item: item["current_wait"])
+        fastest_rising = max(ports, key=lambda item: item["change_next_hour"])
         return {
             "timestamp": now,
             "source": metadata["source"],
             "data_sources": self._repository.get_provider_statuses(),
             "ports": ports,
             "alerts": metadata["alerts"],
+            "overview": {
+                "smoothest_port_id": smoothest["id"],
+                "smoothest_port_name": smoothest["name"],
+                "smoothest_wait": smoothest["current_wait"],
+                "highest_pressure_port_id": highest_pressure["id"],
+                "highest_pressure_port_name": highest_pressure["name"],
+                "highest_pressure_wait": highest_pressure["current_wait"],
+                "fastest_rising_port_id": fastest_rising["id"],
+                "fastest_rising_port_name": fastest_rising["name"],
+                "fastest_rising_change": fastest_rising["change_next_hour"],
+                "active_anomaly_count": sum(
+                    len(port["anomalies"]) for port in ports
+                ),
+                "crowdsource_report_count": sum(
+                    port["crowdsource_count"] for port in ports
+                ),
+            },
         }, reports

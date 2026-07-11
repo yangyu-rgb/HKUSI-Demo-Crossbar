@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from ..clock import Clock, as_hong_kong
 from ..exceptions import DomainValidationError
 from ..repositories import DemoRepository
+from ..schemas.prediction import PredictionRequest
 
 
 PORT_NAMES = {"罗湖", "福田", "皇岗", "深圳湾"}
@@ -57,3 +58,58 @@ class ScenarioService:
         for offset in range(14):
             self._repository.delete_scenario((start + timedelta(days=offset)).isoformat())
         return {"success": True, "scenarios": self._repository.list_scenarios(start.isoformat(), 14)}
+
+    def compare(self, data, prediction_service) -> dict:
+        request = PredictionRequest(
+            origin_id=data.origin_id,
+            destination_id=data.destination_id,
+            target_time=data.target_time,
+            preferences=data.preferences,
+        )
+        baseline = prediction_service.predict(
+            request,
+            record_shadow=False,
+            use_default_scenario=True,
+        )
+        candidate = prediction_service.predict(
+            request,
+            record_shadow=False,
+            scenario_override=self._payload(data.scenario),
+        )
+        baseline_ports = {item["port_id"]: item for item in baseline["ports"]}
+        candidate_ports = {item["port_id"]: item for item in candidate["ports"]}
+        ports = []
+        for port_id in sorted(baseline_ports):
+            before = baseline_ports[port_id]
+            after = candidate_ports[port_id]
+            ports.append(
+                {
+                    "port_id": port_id,
+                    "port_name": after["name"],
+                    "baseline_wait_minutes": before["predicted_wait_time"],
+                    "candidate_wait_minutes": after["predicted_wait_time"],
+                    "wait_delta_minutes": (
+                        after["predicted_wait_time"]
+                        - before["predicted_wait_time"]
+                    ),
+                    "baseline_late_risk_percent": before["late_risk_percent"],
+                    "candidate_late_risk_percent": after["late_risk_percent"],
+                    "late_risk_delta_percent": (
+                        after["late_risk_percent"] - before["late_risk_percent"]
+                    ),
+                    "total_time_delta_minutes": (
+                        after["total_time"] - before["total_time"]
+                    ),
+                }
+            )
+        return {
+            "baseline": baseline,
+            "candidate": candidate,
+            "recommended_changed": (
+                baseline["recommended_port_id"]
+                != candidate["recommended_port_id"]
+            ),
+            "baseline_recommended_port_id": baseline["recommended_port_id"],
+            "candidate_recommended_port_id": candidate["recommended_port_id"],
+            "ports": ports,
+        }

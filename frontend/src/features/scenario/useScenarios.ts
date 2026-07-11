@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../../shared/queryKeys";
-import { fetchScenarios, resetScenarios, restoreScenario, saveScenario, type ScenarioWrite } from "./api";
+import { compareScenarios, fetchScenarios, resetScenarios, restoreScenario, saveScenario, type ScenarioComparisonRequest, type ScenarioWrite } from "./api";
 
 
 export function useScenarios() {
@@ -10,5 +10,6 @@ export function useScenarios() {
   const save = useMutation({ mutationFn: ({ date, payload }: { date: string; payload: ScenarioWrite }) => saveScenario(date, payload), onSuccess: invalidate });
   const restore = useMutation({ mutationFn: restoreScenario, onSuccess: invalidate });
   const reset = useMutation({ mutationFn: resetScenarios, onSuccess: invalidate });
-  return { scenarios, save, restore, reset };
+  const compare = useMutation({ mutationFn: (payload: ScenarioComparisonRequest) => compareScenarios(payload) });
+  return { scenarios, save, restore, reset, compare };
 }

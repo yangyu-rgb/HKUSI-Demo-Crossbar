@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 
 
 def test_health_realtime_and_locations(client: TestClient) -> None:
@@ -13,6 +14,20 @@ def test_health_realtime_and_locations(client: TestClient) -> None:
     assert len(locations.json()["origins"]) == 10
     assert len(locations.json()["destinations"]) == 10
     assert len(locations.json()["directions"]) == 2
+    realtime_payload = realtime.json()
+    waits = [port["current_wait"] for port in realtime_payload["ports"]]
+    assert realtime_payload["overview"]["smoothest_wait"] == min(waits)
+    assert realtime_payload["overview"]["highest_pressure_wait"] == max(waits)
+    assert realtime_payload["overview"]["crowdsource_report_count"] == sum(
+        port["crowdsource_count"] for port in realtime_payload["ports"]
+    )
+    for port in realtime_payload["ports"]:
+        assert port["trend"] in {"rising", "stable", "falling"}
+        assert port["peak_wait"] == max(point["wait"] for point in port["forecast"])
+        assert len(port["forecast"]) == 4
+        for point in port["forecast"]:
+            assert point["lower_bound"] <= point["wait"] <= point["upper_bound"]
+            assert point["forecast_at"].endswith("+08:00")
     assert health.headers["X-Content-Type-Options"] == "nosniff"
 
 
@@ -239,6 +254,28 @@ def test_prediction_contract(client: TestClient) -> None:
         if factor["code"] == "crowdsource"
     )
     assert crowd_factor["average_quality_score"] >= 50
+    ai_factor = next(
+        factor
+        for factor in payload["ports"][0]["factors"]
+        if factor["code"] == "ai_v2"
+    )
+    expected_calibrated = (
+        ai_factor["value_minutes"] * (1 - crowd_factor["effective_weight"])
+        + crowd_factor["value_minutes"] * crowd_factor["effective_weight"]
+    )
+    assert ai_factor["calibrated_value_minutes"] == pytest.approx(
+        expected_calibrated,
+        abs=0.2,
+    )
+    stored = client.app.state.repository.get_forecast_run_port(
+        payload["forecast_run_id"],
+        payload["ports"][0]["port_id"],
+    )
+    assert stored["primary_wait_minutes"] == payload["ports"][0][
+        "predicted_wait_time"
+    ]
+    assert stored["prediction_engine"] == "v2"
+    assert stored["scenario_version"] == payload["scenario"]["version"]
 
 
 def test_scenario_override_changes_v2_prediction_and_can_reset(client: TestClient) -> None:
@@ -288,6 +325,51 @@ def test_only_operator_can_modify_scenarios(client: TestClient) -> None:
     )
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "FORBIDDEN"
+
+
+def test_scenario_comparison_is_side_effect_free_and_switches_recommendation(
+    client: TestClient,
+) -> None:
+    audit_before = client.get("/api/demo/audit").json()["total"]
+    shadow_before = client.get("/api/demo/model-shadow-summary").json()[
+        "total_observations"
+    ]
+    response = client.post(
+        "/api/demo/scenarios/compare",
+        json={
+            "origin_id": "hku",
+            "destination_id": "nanshan-tech",
+            "target_time": "2026-07-10T09:30:00",
+            "preferences": {"priority": "balanced", "max_budget": 100},
+            "scenario": {
+                "weather": "heavy_rain",
+                "is_holiday": True,
+                "events": [{
+                    "name": "深圳湾大型活动",
+                    "preset": "classroom_demo",
+                    "direction": "hong_kong_to_shenzhen",
+                    "affected_ports": ["深圳湾"],
+                    "start_time": "08:00",
+                    "end_time": "12:00",
+                    "impact": "high",
+                }],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["recommended_changed"] is True
+    assert payload["baseline_recommended_port_id"] == "shenzhen-bay"
+    assert payload["candidate_recommended_port_id"] != "shenzhen-bay"
+    bay = next(item for item in payload["ports"] if item["port_id"] == "shenzhen-bay")
+    assert bay["wait_delta_minutes"] > 10
+    assert payload["baseline"]["forecast_run_id"] is None
+    assert payload["candidate"]["forecast_run_id"] is None
+    assert client.get("/api/demo/audit").json()["total"] == audit_before
+    assert client.get("/api/demo/model-shadow-summary").json()["total_observations"] == shadow_before
+    scenarios = client.get("/api/demo/scenarios").json()["scenarios"]
+    assert all(item["is_override"] is False for item in scenarios)
 
 
 def test_invalid_location_returns_422(client: TestClient) -> None:

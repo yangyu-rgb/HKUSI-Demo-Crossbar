@@ -14,7 +14,7 @@ from ..clock import as_hong_kong
 from .official_alignment import assess_official_alignment
 
 
-SNAPSHOT_SCHEMA_VERSION = 3
+SNAPSHOT_SCHEMA_VERSION = 4
 MIN_V2_LABELS = 200
 MIN_V2_PORTS = 4
 MIN_V2_DATES = 21
@@ -28,6 +28,9 @@ SNAPSHOT_FIELDS = (
     "port_name",
     "actual_wait_minutes",
     "statistical_wait_minutes",
+    "primary_wait_minutes",
+    "prediction_engine",
+    "scenario_version",
     "shadow_wait_minutes",
     "shadow_status",
     "quality_score",
@@ -76,6 +79,9 @@ def _records_from_rows(rows: list[dict]) -> list[dict]:
                 "port_name": row["port_name"],
                 "actual_wait_minutes": row["observed_wait_minutes"],
                 "statistical_wait_minutes": row["statistical_wait_minutes"],
+                "primary_wait_minutes": row.get("primary_wait_minutes"),
+                "prediction_engine": row.get("prediction_engine"),
+                "scenario_version": row.get("scenario_version"),
                 "shadow_wait_minutes": row["shadow_wait_minutes"],
                 "shadow_status": row["shadow_status"],
                 "quality_score": row["observed_quality_score"],

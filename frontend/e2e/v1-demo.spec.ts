@@ -8,11 +8,20 @@ test.beforeEach(async ({ request }) => {
 });
 
 
-test("V2 场景、双向规划、通知与模型实验室闭环", async ({ page }) => {
+test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "四口岸动态态势" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "未来三小时等待趋势" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "四口岸时段压力矩阵" })).toBeVisible();
+  await expect(page.getByText("当前最优")).toBeVisible();
+  await expect(page.getByText("三小时后最优")).toBeVisible();
+
   await page.goto("/scenarios");
   await expect(page.getByRole("heading", { name: "未来场景实验室" })).toBeVisible();
-  await page.getByLabel("场景天气").selectOption("heavy_rain");
-  await page.getByRole("button", { name: "添加事件" }).click();
+  await page.getByRole("button", { name: "一键课堂演示" }).click();
+  await page.getByRole("button", { name: "对比 AI 方案" }).click();
+  await expect(page.getByText("推荐已切换", { exact: false })).toBeVisible();
+  await expect(page.getByText("深圳湾", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: "保存场景" }).click();
   await expect(page.getByText("已修改", { exact: false }).first()).toBeVisible();
 

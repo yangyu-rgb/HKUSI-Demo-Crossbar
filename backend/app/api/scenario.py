@@ -3,9 +3,21 @@ from datetime import date
 from fastapi import APIRouter, Depends, Query
 
 from ..exceptions import PermissionDeniedError
-from ..schemas.scenario import ScenarioDay, ScenarioListResponse, ScenarioResetResponse, ScenarioWrite
+from ..schemas.scenario import (
+    ScenarioComparisonRequest,
+    ScenarioComparisonResponse,
+    ScenarioDay,
+    ScenarioListResponse,
+    ScenarioResetResponse,
+    ScenarioWrite,
+)
 from ..services.scenario import ScenarioService
-from .dependencies import get_demo_persona, get_scenario_service
+from ..services.prediction import PredictionService
+from .dependencies import (
+    get_demo_persona,
+    get_prediction_service,
+    get_scenario_service,
+)
 
 
 router = APIRouter(prefix="/api/demo/scenarios", tags=["Demo 场景"])
@@ -19,6 +31,15 @@ def require_operator(persona: dict) -> None:
 @router.get("", response_model=ScenarioListResponse, summary="获取未来场景日历")
 def list_scenarios(start: date | None = None, days: int = Query(14, ge=1, le=14), service: ScenarioService = Depends(get_scenario_service)) -> dict:
     return service.list(start, days)
+
+
+@router.post("/compare", response_model=ScenarioComparisonResponse, summary="对比默认与候选场景 AI 方案")
+def compare_scenarios(
+    data: ScenarioComparisonRequest,
+    service: ScenarioService = Depends(get_scenario_service),
+    prediction_service: PredictionService = Depends(get_prediction_service),
+) -> dict:
+    return service.compare(data, prediction_service)
 
 
 @router.post("/reset", response_model=ScenarioResetResponse, summary="恢复未来14天默认场景")

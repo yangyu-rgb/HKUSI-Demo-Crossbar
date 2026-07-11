@@ -843,6 +843,77 @@
         }
       }
     },
+    "/api/demo/scenarios/compare": {
+      "post": {
+        "tags": [
+          "Demo 场景"
+        ],
+        "summary": "对比默认与候选场景 AI 方案",
+        "operationId": "compare_scenarios_api_demo_scenarios_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioComparisonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/demo/scenarios/reset": {
       "post": {
         "tags": [
@@ -3984,15 +4055,36 @@
             "type": "integer",
             "title": "Offset Minutes"
           },
+          "forecast_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Forecast At"
+          },
           "wait": {
             "type": "integer",
             "title": "Wait"
+          },
+          "lower_bound": {
+            "type": "integer",
+            "title": "Lower Bound"
+          },
+          "upper_bound": {
+            "type": "integer",
+            "title": "Upper Bound"
+          },
+          "change_from_now": {
+            "type": "integer",
+            "title": "Change From Now"
           }
         },
         "type": "object",
         "required": [
           "offset_minutes",
-          "wait"
+          "forecast_at",
+          "wait",
+          "lower_bound",
+          "upper_bound",
+          "change_from_now"
         ],
         "title": "ForecastPoint"
       },
@@ -4383,6 +4475,23 @@
           "crowdsource_count": {
             "type": "integer",
             "title": "Crowdsource Count"
+          },
+          "trend": {
+            "type": "string",
+            "title": "Trend"
+          },
+          "change_next_hour": {
+            "type": "integer",
+            "title": "Change Next Hour"
+          },
+          "peak_wait": {
+            "type": "integer",
+            "title": "Peak Wait"
+          },
+          "peak_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Peak At"
           }
         },
         "type": "object",
@@ -4397,7 +4506,11 @@
           "passenger_flow",
           "forecast",
           "anomalies",
-          "crowdsource_count"
+          "crowdsource_count",
+          "trend",
+          "change_next_hour",
+          "peak_wait",
+          "peak_at"
         ],
         "title": "PortStatus"
       },
@@ -4650,6 +4763,69 @@
         ],
         "title": "ReadinessHealthResponse"
       },
+      "RealtimeOverview": {
+        "properties": {
+          "smoothest_port_id": {
+            "type": "string",
+            "title": "Smoothest Port Id"
+          },
+          "smoothest_port_name": {
+            "type": "string",
+            "title": "Smoothest Port Name"
+          },
+          "smoothest_wait": {
+            "type": "integer",
+            "title": "Smoothest Wait"
+          },
+          "highest_pressure_port_id": {
+            "type": "string",
+            "title": "Highest Pressure Port Id"
+          },
+          "highest_pressure_port_name": {
+            "type": "string",
+            "title": "Highest Pressure Port Name"
+          },
+          "highest_pressure_wait": {
+            "type": "integer",
+            "title": "Highest Pressure Wait"
+          },
+          "fastest_rising_port_id": {
+            "type": "string",
+            "title": "Fastest Rising Port Id"
+          },
+          "fastest_rising_port_name": {
+            "type": "string",
+            "title": "Fastest Rising Port Name"
+          },
+          "fastest_rising_change": {
+            "type": "integer",
+            "title": "Fastest Rising Change"
+          },
+          "active_anomaly_count": {
+            "type": "integer",
+            "title": "Active Anomaly Count"
+          },
+          "crowdsource_report_count": {
+            "type": "integer",
+            "title": "Crowdsource Report Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "smoothest_port_id",
+          "smoothest_port_name",
+          "smoothest_wait",
+          "highest_pressure_port_id",
+          "highest_pressure_port_name",
+          "highest_pressure_wait",
+          "fastest_rising_port_id",
+          "fastest_rising_port_name",
+          "fastest_rising_change",
+          "active_anomaly_count",
+          "crowdsource_report_count"
+        ],
+        "title": "RealtimeOverview"
+      },
       "RealtimeResponse": {
         "properties": {
           "timestamp": {
@@ -4681,6 +4857,9 @@
             },
             "type": "array",
             "title": "Alerts"
+          },
+          "overview": {
+            "$ref": "#/components/schemas/RealtimeOverview"
           }
         },
         "type": "object",
@@ -4689,7 +4868,8 @@
           "source",
           "data_sources",
           "ports",
-          "alerts"
+          "alerts",
+          "overview"
         ],
         "title": "RealtimeResponse"
       },
@@ -4777,6 +4957,131 @@
           "arrival_deadline"
         ],
         "title": "Routine"
+      },
+      "ScenarioComparisonPort": {
+        "properties": {
+          "port_id": {
+            "type": "string",
+            "title": "Port Id"
+          },
+          "port_name": {
+            "type": "string",
+            "title": "Port Name"
+          },
+          "baseline_wait_minutes": {
+            "type": "integer",
+            "title": "Baseline Wait Minutes"
+          },
+          "candidate_wait_minutes": {
+            "type": "integer",
+            "title": "Candidate Wait Minutes"
+          },
+          "wait_delta_minutes": {
+            "type": "integer",
+            "title": "Wait Delta Minutes"
+          },
+          "baseline_late_risk_percent": {
+            "type": "integer",
+            "title": "Baseline Late Risk Percent"
+          },
+          "candidate_late_risk_percent": {
+            "type": "integer",
+            "title": "Candidate Late Risk Percent"
+          },
+          "late_risk_delta_percent": {
+            "type": "integer",
+            "title": "Late Risk Delta Percent"
+          },
+          "total_time_delta_minutes": {
+            "type": "integer",
+            "title": "Total Time Delta Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "port_id",
+          "port_name",
+          "baseline_wait_minutes",
+          "candidate_wait_minutes",
+          "wait_delta_minutes",
+          "baseline_late_risk_percent",
+          "candidate_late_risk_percent",
+          "late_risk_delta_percent",
+          "total_time_delta_minutes"
+        ],
+        "title": "ScenarioComparisonPort"
+      },
+      "ScenarioComparisonRequest": {
+        "properties": {
+          "origin_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Origin Id"
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Destination Id"
+          },
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PredictionPreferences"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/ScenarioWrite"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origin_id",
+          "destination_id",
+          "target_time",
+          "scenario"
+        ],
+        "title": "ScenarioComparisonRequest"
+      },
+      "ScenarioComparisonResponse": {
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/PredictionResponse"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/PredictionResponse"
+          },
+          "recommended_changed": {
+            "type": "boolean",
+            "title": "Recommended Changed"
+          },
+          "baseline_recommended_port_id": {
+            "type": "string",
+            "title": "Baseline Recommended Port Id"
+          },
+          "candidate_recommended_port_id": {
+            "type": "string",
+            "title": "Candidate Recommended Port Id"
+          },
+          "ports": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioComparisonPort"
+            },
+            "type": "array",
+            "title": "Ports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "baseline",
+          "candidate",
+          "recommended_changed",
+          "baseline_recommended_port_id",
+          "candidate_recommended_port_id",
+          "ports"
+        ],
+        "title": "ScenarioComparisonResponse"
       },
       "ScenarioDay": {
         "properties": {
