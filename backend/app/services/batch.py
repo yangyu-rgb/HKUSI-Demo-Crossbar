@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from ..clock import Clock
 from ..repositories import DemoRepository
 from ..ml.shadow import ShadowWaitModel
+from ..ml.scenario_model import ScenarioWaitModel
 from ..schemas.batch import BatchEmployee, BatchRequest
 from ..schemas.common import Priority
 from ..schemas.prediction import PredictionPreferences, PredictionRequest
@@ -19,12 +20,14 @@ class BatchService:
         repository: DemoRepository,
         clock: Clock,
         shadow_model: ShadowWaitModel | None = None,
+        scenario_model: ScenarioWaitModel | None = None,
     ):
         self._repository = repository
         self._prediction_service = PredictionService(
             repository,
             clock,
             shadow_model=shadow_model,
+            scenario_model=scenario_model,
         )
 
     def create_plan(

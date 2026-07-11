@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "model_version": "synthetic-scenario-hgb-v2",
+  "generated_at": "2026-07-11T16:24:08+08:00",
+  "evaluation_scope": "synthetic_scenario_classroom_demo",
+  "synthetic_only": true,
+  "dataset": {
+    "path": "data/history/scenario_wait_history_v2.csv",
+    "sha256": "c84ca85565bd2bec0c1a80e41679834c15ea4b820fa7ad9ed5fad2757b4f9dca",
+    "sample_count": 43008,
+    "start": "2025-01-01",
+    "end": "2025-08-12"
+  },
+  "split": {
+    "train_end": "2025-06-05",
+    "validation_end": "2025-07-09",
+    "test_end": "2025-08-12"
+  },
+  "features": [
+    "port_luohu",
+    "port_futian",
+    "port_huanggang",
+    "port_shenzhen_bay",
+    "direction_hk_to_sz",
+    "direction_sz_to_hk",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos",
+    "is_weekend",
+    "is_holiday",
+    "weather_clear",
+    "weather_rain",
+    "weather_heavy_rain",
+    "weather_thunderstorm",
+    "event_impact"
+  ],
+  "metrics": {
+    "validation": {
+      "sample_count": 6528,
+      "mae": 1.4938,
+      "rmse": 1.7826
+    },
+    "test": {
+      "sample_count": 6528,
+      "mae": 1.5001,
+      "rmse": 1.7814
+    },
+    "calendar_baseline_test": {
+      "sample_count": 6528,
+      "mae": 4.3511,
+      "rmse": 5.6178
+    },
+    "test_slices": {
+      "weather:clear": {
+        "sample_count": 1632,
+        "mae": 1.2862
+      },
+      "weather:rain": {
+        "sample_count": 1536,
+        "mae": 1.3931
+      },
+      "weather:heavy_rain": {
+        "sample_count": 1632,
+        "mae": 1.6378
+      },
+      "weather:thunderstorm": {
+        "sample_count": 1728,
+        "mae": 1.667
+      },
+      "event_impact:none": {
+        "sample_count": 1632,
+        "mae": 1.2956
+      },
+      "event_impact:low": {
+        "sample_count": 1632,
+        "mae": 1.4057
+      },
+      "event_impact:medium": {
+        "sample_count": 1632,
+        "mae": 1.5612
+      },
+      "event_impact:high": {
+        "sample_count": 1632,
+        "mae": 1.7378
+      }
+    }
+  },
+  "residual_q90_by_port": {
+    "罗湖": 2.7968,
+    "福田": 2.7175,
+    "皇岗": 2.8512,
+    "深圳湾": 2.7848
+  },
+  "limitations": [
+    "仅使用可解释合成场景标签。",
+    "指标用于课堂演示，不代表真实口岸准确率。"
+  ]
+}

@@ -111,7 +111,7 @@ def test_forecast_uses_calendar_history_and_uncertainty(
 
 def test_target_window_is_enforced(prediction_service: PredictionService) -> None:
     with pytest.raises(DomainValidationError, match="目标时间超出"):
-        prediction_service.predict(request(target_time="2026-07-11T12:00:00"))
+        prediction_service.predict(request(target_time="2026-07-25T12:00:00"))
 
 
 def test_calendar_model_changes_with_hour_and_day_type(repository, clock) -> None:

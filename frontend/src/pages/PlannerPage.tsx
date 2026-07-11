@@ -58,6 +58,9 @@ export function PlannerPage() {
               <h2>{prediction.recommended}口岸</h2>
               <p>{prediction.reason}</p>
               <small>{prediction.model_version} · {Math.round(prediction.confidence_level * 100)}%置信水平 · {prediction.demo_notice}</small>
+              {prediction.scenario && (
+                <small>{prediction.prediction_engine === "v2" ? "AI V2 主预测" : "统计模型自动降级"} · 场景 {String(prediction.scenario.weather)} · 版本 {String(prediction.scenario.version)}</small>
+              )}
               {prediction.forecast_run_id && recommendedRoute && (
                 <Link
                   className={styles.feedbackLink}

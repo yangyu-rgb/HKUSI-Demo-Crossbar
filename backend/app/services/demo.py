@@ -9,6 +9,7 @@ from ..config import (
 from ..repositories import DemoRepository
 from ..ml.snapshot import assess_v2_readiness
 from ..ml.shadow import ShadowWaitModel
+from ..ml.scenario_model import ScenarioWaitModel
 
 
 class DemoService:
@@ -17,10 +18,12 @@ class DemoService:
         repository: DemoRepository,
         clock: Clock,
         shadow_model: ShadowWaitModel | None = None,
+        scenario_model: ScenarioWaitModel | None = None,
     ):
         self._repository = repository
         self._clock = clock
         self._shadow_model = shadow_model
+        self._scenario_model = scenario_model
 
     def get_context(self) -> dict:
         current_time = as_hong_kong(self._clock.now()).replace(microsecond=0)
@@ -67,6 +70,7 @@ class DemoService:
         providers_ready = all(item["status"] == "available" for item in provider_statuses)
         personas = self._repository.get_personas()["personas"]
         status = self._shadow_model.status if self._shadow_model else None
+        v2_status = self._scenario_model.status if self._scenario_model else None
         checks = [
             {
                 "name": "双向地点与交通矩阵",
@@ -98,6 +102,11 @@ class DemoService:
                 ),
             },
             {
+                "name": "AI v2 场景产物",
+                "passed": bool(v2_status and v2_status.available),
+                "detail": v2_status.model_version if v2_status and v2_status.available else (v2_status.reason if v2_status else "未初始化"),
+            },
+            {
                 "name": "本地通知适配器",
                 "passed": True,
                 "detail": "SQLite inbox",
@@ -113,6 +122,22 @@ class DemoService:
                 "cache": "process-local",
                 "identity": "demo-persona",
             },
+        }
+
+    def get_v2_model(self) -> dict:
+        metadata = self._repository.get_v2_model_metadata()
+        status = self._scenario_model.status if self._scenario_model else None
+        return {
+            "artifact_available": bool(status and status.available),
+            "unavailable_reason": status.reason if status else "model_not_initialized",
+            "model_version": metadata["model_version"],
+            "synthetic_only": metadata["synthetic_only"],
+            "evaluation_scope": metadata["evaluation_scope"],
+            "dataset": metadata["dataset"],
+            "split": metadata["split"],
+            "metrics": metadata["metrics"],
+            "features": metadata["features"],
+            "limitations": metadata["limitations"],
         }
 
     def get_audit_events(self, limit: int) -> dict:

@@ -19,6 +19,7 @@ from ..config import (
 from ..exceptions import DomainValidationError, ErrorCode
 from ..repositories import DemoRepository
 from ..ml.shadow import ShadowWaitModel
+from ..ml.scenario_model import ScenarioWaitModel
 from ..schemas.common import Priority
 from ..schemas.prediction import PredictionPreferences, PredictionRequest
 from .wait_forecast import WaitForecastService
@@ -36,12 +37,34 @@ class PredictionService:
         clock: Clock,
         safety_buffer_minutes: int = DEFAULT_SAFETY_BUFFER_MINUTES,
         shadow_model: ShadowWaitModel | None = None,
+        scenario_model: ScenarioWaitModel | None = None,
     ):
         self._repository = repository
         self._clock = clock
         self._forecast = WaitForecastService(repository, clock)
         self._safety_buffer_minutes = safety_buffer_minutes
         self._shadow_model = shadow_model
+        self._scenario_model = scenario_model
+
+    @staticmethod
+    def _active_event_impact(scenario: dict, port_name: str, direction: str, target_time: datetime) -> tuple[str, list[str]]:
+        levels = {"low": 1, "medium": 2, "high": 3}
+        active = []
+        target_minutes = target_time.hour * 60 + target_time.minute
+        for event in scenario.get("events", []):
+            if port_name not in event["affected_ports"] or event.get("direction") not in {None, direction}:
+                continue
+            start_hour, start_minute = map(int, event["start_time"].split(":"))
+            end_hour, end_minute = map(int, event["end_time"].split(":"))
+            start = start_hour * 60 + start_minute
+            end = end_hour * 60 + end_minute
+            in_window = start <= target_minutes < end if start <= end else target_minutes >= start or target_minutes < end
+            if in_window:
+                active.append(event)
+        if not active:
+            return "none", []
+        strongest = max(active, key=lambda item: levels[item["impact"]])["impact"]
+        return strongest, [item["name"] for item in active]
 
     def get_locations(self) -> dict:
         return self._repository.get_locations()
@@ -87,17 +110,44 @@ class PredictionService:
             current_time,
             reports,
         )
-        predicted_value = estimate["value"]
+        statistical_value = estimate["value"]
+        predicted_value = statistical_value
+        sigma = estimate["standard_deviation"]
+        prediction_engine = "statistical_fallback"
+        scenario_delta = 0
+        scenario = prediction_inputs["scenario"]
+        event_impact, active_event_names = self._active_event_impact(scenario, port["name"], direction, target_time)
+        if self._scenario_model is not None:
+            v2_result = self._scenario_model.predict(
+                port=port["name"], direction=direction, timestamp=target_time,
+                weather=scenario["weather"], is_holiday=scenario["is_holiday"], event_impact=event_impact,
+            )
+            default_result = self._scenario_model.predict(
+                port=port["name"], direction=direction, timestamp=target_time,
+                weather="clear", is_holiday=False, event_impact="none",
+            )
+            if v2_result is not None:
+                predicted_value, residual_q90 = v2_result
+                sigma = max(1.0, residual_q90 / 1.645)
+                prediction_engine = "v2"
+                if default_result is not None:
+                    scenario_delta = round(predicted_value - default_result[0])
+                estimate["factors"] = [
+                    {"code": "ai_v2", "label": "AI V2 场景预测", "detail": f"{scenario['weather']} · {'节假日' if scenario['is_holiday'] else '普通日期'} · 事件强度 {event_impact}"},
+                    {"code": "scenario_delta", "label": "相对默认场景变化", "value_minutes": scenario_delta, "detail": "与同一口岸、方向和时间的晴天无事件场景比较"},
+                    {"code": "uncertainty", "label": "V2 验证残差区间", "standard_deviation_minutes": round(sigma, 2)},
+                ] + [factor for factor in estimate["factors"] if factor["code"] not in {"uncertainty"}]
+                if active_event_names:
+                    estimate["factors"].append({"code": "scenario_event", "label": "自定义未来事件", "detail": "、".join(active_event_names)})
         if record_shadow:
             self._append_shadow_observation(
                 shadow_observations=shadow_observations,
                 port=port,
                 target_time=target_time,
                 current_time=current_time,
-                statistical_wait=predicted_value,
+                statistical_wait=statistical_value,
                 prediction_inputs=prediction_inputs,
             )
-        sigma = estimate["standard_deviation"]
         z_score = NormalDist().inv_cdf(0.5 + CONFIDENCE_LEVEL / 2)
         lower = max(1, round(predicted_value - z_score * sigma))
         upper = round(predicted_value + z_score * sigma)
@@ -152,6 +202,8 @@ class PredictionService:
             "factors": estimate["factors"],
             "historical_sample_count": estimate["sample_count"],
             "uncertainty_minutes": round(sigma, 2),
+            "prediction_engine": prediction_engine,
+            "scenario_delta_minutes": scenario_delta,
         }
 
     def _append_shadow_observation(
@@ -169,7 +221,7 @@ class PredictionService:
         shadow_wait = self._shadow_model.predict(
             port=port["name"],
             timestamp=target_time,
-            weather=prediction_inputs["weather"],
+            weather="clear" if prediction_inputs["weather"] == "clear" else "rain",
             is_holiday=prediction_inputs["is_holiday"],
         )
         status = self._shadow_model.status
@@ -242,6 +294,7 @@ class PredictionService:
         generated_at: datetime,
         target_time: datetime,
         prediction_inputs: dict,
+        model_version: str,
     ) -> str | None:
         official_by_port = {
             prediction["port_id"]: self._official_features_for_run(
@@ -256,7 +309,7 @@ class PredictionService:
                 "query": query,
                 "generated_at": generated_at.isoformat(),
                 "target_time": target_time.isoformat(),
-                "model_version": MODEL_VERSION,
+                "model_version": model_version,
                 "data_version": prediction_inputs["data_version"],
                 "official_feature_versions": {
                     port_id: features["feature_version"]
@@ -334,7 +387,7 @@ class PredictionService:
                     "generated_at": generated_at.isoformat(),
                     "target_time": target_time.isoformat(),
                     "query": query,
-                    "model_version": MODEL_VERSION,
+                    "model_version": model_version,
                     "data_version": prediction_inputs["data_version"],
                     "data_sources": prediction_inputs["data_sources"],
                     "direction": query["direction"],
@@ -502,6 +555,11 @@ class PredictionService:
             "max_budget": request.preferences.max_budget,
             "direction": direction,
         }
+        prediction_engine = "v2" if all(item["prediction_engine"] == "v2" for item in predictions) else "statistical_fallback"
+        scenario_status = self._scenario_model.status if self._scenario_model else None
+        effective_model_version = scenario_status.model_version if prediction_engine == "v2" and scenario_status else MODEL_VERSION
+        if prediction_engine != "v2":
+            warnings.append("AI V2 场景模型不可用，已自动使用可解释统计模型。")
         self._save_shadow_observations(shadow_observations)
         forecast_run_id = (
             self._save_forecast_run(
@@ -512,6 +570,7 @@ class PredictionService:
                 generated_at=current_time,
                 target_time=target_time,
                 prediction_inputs=prediction_inputs,
+                model_version=effective_model_version,
             )
             if record_shadow
             else None
@@ -524,11 +583,13 @@ class PredictionService:
             "reason": reason,
             "warnings": warnings,
             "generated_at": current_time,
-            "model_version": MODEL_VERSION,
+            "model_version": effective_model_version,
             "confidence_level": CONFIDENCE_LEVEL,
             "demo_notice": "结果由香港实时时钟、本地模拟历史、交通矩阵与众包样本计算，不代表真实口岸状态。",
             "data_sources": prediction_inputs["data_sources"],
             "data_version": prediction_inputs["data_version"],
             "direction": direction,
             "forecast_run_id": forecast_run_id,
+            "prediction_engine": prediction_engine,
+            "scenario": prediction_inputs["scenario"],
         }

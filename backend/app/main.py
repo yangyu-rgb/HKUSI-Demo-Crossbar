@@ -15,9 +15,11 @@ from .api import (
     prediction_router,
     realtime_router,
     subscription_router,
+    scenario_router,
 )
 from .clock import Clock, HongKongClock
 from .ml.shadow import ShadowWaitModel
+from .ml.scenario_model import ScenarioWaitModel
 from .config import DATABASE_PATH, DATA_DIR
 from .exceptions import AppError, ErrorCode
 from .repositories import DemoRepository
@@ -31,7 +33,7 @@ def create_app(
 ) -> FastAPI:
     app = FastAPI(
         title="CrossBorder AI Demo API",
-        version="1.2.0",
+        version="1.3.0",
         responses={
             404: {"model": ErrorResponse, "description": "请求的资源不存在"},
             409: {"model": ErrorResponse, "description": "请求与当前状态冲突"},
@@ -46,6 +48,7 @@ def create_app(
         metadata_path=data_dir / "models" / "wait_model_v1.metadata.json",
         dataset_path=data_dir / "history" / "port_wait_history.csv",
     )
+    app.state.scenario_model = ScenarioWaitModel.load_optional()
 
     app.add_middleware(
         CORSMiddleware,
@@ -75,7 +78,7 @@ def create_app(
             "explicit": persona_header is not None,
         }
         response = await call_next(request)
-        if request.method in {"POST", "PATCH", "DELETE"}:
+        if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
             app.state.repository.record_audit_event(
                 {
                     "request_id": request_id,
@@ -167,6 +170,7 @@ def create_app(
 
     app.include_router(health_router)
     app.include_router(demo_router)
+    app.include_router(scenario_router)
     app.include_router(realtime_router)
     app.include_router(prediction_router)
     app.include_router(crowdsource_router)

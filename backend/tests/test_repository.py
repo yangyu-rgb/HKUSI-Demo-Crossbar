@@ -199,5 +199,5 @@ def test_existing_database_adds_provenance_columns_conservatively(
     assert legacy["source_type"] == "demo_seed"
     with sqlite3.connect(database) as connection:
         assert connection.execute(
-            "SELECT COUNT(*) FROM schema_version WHERE version = 12"
+            "SELECT COUNT(*) FROM schema_version WHERE version = 13"
         ).fetchone()[0] == 1

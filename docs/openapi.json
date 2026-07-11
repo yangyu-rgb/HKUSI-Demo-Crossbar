@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "CrossBorder AI Demo API",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "paths": {
     "/api/health": {
@@ -372,6 +372,67 @@
         }
       }
     },
+    "/api/demo/v2-model": {
+      "get": {
+        "tags": [
+          "Demo 控制"
+        ],
+        "summary": "获取 AI v2 合成场景模型状态",
+        "operationId": "get_v2_model_api_demo_v2_model_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2ModelResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/demo/v1-readiness": {
       "get": {
         "tags": [
@@ -690,6 +751,313 @@
         }
       }
     },
+    "/api/demo/scenarios": {
+      "get": {
+        "tags": [
+          "Demo 场景"
+        ],
+        "summary": "获取未来场景日历",
+        "operationId": "list_scenarios_api_demo_scenarios_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 14,
+              "minimum": 1,
+              "default": 14,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioListResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/scenarios/reset": {
+      "post": {
+        "tags": [
+          "Demo 场景"
+        ],
+        "summary": "恢复未来14天默认场景",
+        "operationId": "reset_scenarios_api_demo_scenarios_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioResetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/scenarios/{scenario_date}": {
+      "put": {
+        "tags": [
+          "Demo 场景"
+        ],
+        "summary": "保存未来场景",
+        "operationId": "save_scenario_api_demo_scenarios__scenario_date__put",
+        "parameters": [
+          {
+            "name": "scenario_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Scenario Date"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioDay"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Demo 场景"
+        ],
+        "summary": "恢复单日默认场景",
+        "operationId": "delete_scenario_api_demo_scenarios__scenario_date__delete",
+        "parameters": [
+          {
+            "name": "scenario_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Scenario Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioDay"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/realtime": {
       "get": {
         "tags": [
@@ -819,7 +1187,7 @@
           "路线预测"
         ],
         "summary": "比较四个口岸的路线方案",
-        "description": "使用时间加权统计 Demo 模型和确定性交通矩阵。",
+        "description": "使用 AI V2 场景模型和确定性交通矩阵；模型不可用时自动降级。",
         "operationId": "predict_api_predict_post",
         "requestBody": {
           "content": {
@@ -3924,6 +4292,14 @@
           "uncertainty_minutes": {
             "type": "number",
             "title": "Uncertainty Minutes"
+          },
+          "prediction_engine": {
+            "type": "string",
+            "title": "Prediction Engine"
+          },
+          "scenario_delta_minutes": {
+            "type": "integer",
+            "title": "Scenario Delta Minutes"
           }
         },
         "type": "object",
@@ -3948,7 +4324,9 @@
           "anomalies",
           "factors",
           "historical_sample_count",
-          "uncertainty_minutes"
+          "uncertainty_minutes",
+          "prediction_engine",
+          "scenario_delta_minutes"
         ],
         "title": "PortPrediction"
       },
@@ -4200,6 +4578,15 @@
               }
             ],
             "title": "Forecast Run Id"
+          },
+          "prediction_engine": {
+            "type": "string",
+            "title": "Prediction Engine"
+          },
+          "scenario": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scenario"
           }
         },
         "type": "object",
@@ -4216,7 +4603,9 @@
           "demo_notice",
           "data_sources",
           "data_version",
-          "direction"
+          "direction",
+          "prediction_engine",
+          "scenario"
         ],
         "title": "PredictionResponse"
       },
@@ -4388,6 +4777,213 @@
           "arrival_deadline"
         ],
         "title": "Routine"
+      },
+      "ScenarioDay": {
+        "properties": {
+          "weather": {
+            "$ref": "#/components/schemas/ScenarioWeather"
+          },
+          "is_holiday": {
+            "type": "boolean",
+            "title": "Is Holiday",
+            "default": false
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioEvent"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Events"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "is_override": {
+            "type": "boolean",
+            "title": "Is Override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "weather",
+          "date",
+          "version",
+          "is_override"
+        ],
+        "title": "ScenarioDay"
+      },
+      "ScenarioEvent": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "preset": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Preset",
+            "default": "custom"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "affected_ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Affected Ports"
+          },
+          "start_time": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "title": "End Time"
+          },
+          "impact": {
+            "$ref": "#/components/schemas/ScenarioImpact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "affected_ports",
+          "start_time",
+          "end_time",
+          "impact"
+        ],
+        "title": "ScenarioEvent"
+      },
+      "ScenarioImpact": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "ScenarioImpact"
+      },
+      "ScenarioListResponse": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioDay"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "weather_options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Weather Options"
+          },
+          "event_presets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Event Presets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "days",
+          "scenarios",
+          "weather_options",
+          "event_presets"
+        ],
+        "title": "ScenarioListResponse"
+      },
+      "ScenarioResetResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioDay"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "scenarios"
+        ],
+        "title": "ScenarioResetResponse"
+      },
+      "ScenarioWeather": {
+        "type": "string",
+        "enum": [
+          "clear",
+          "rain",
+          "heavy_rain",
+          "thunderstorm"
+        ],
+        "title": "ScenarioWeather"
+      },
+      "ScenarioWrite": {
+        "properties": {
+          "weather": {
+            "$ref": "#/components/schemas/ScenarioWeather"
+          },
+          "is_holiday": {
+            "type": "boolean",
+            "title": "Is Holiday",
+            "default": false
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioEvent"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "weather"
+        ],
+        "title": "ScenarioWrite"
       },
       "ServiceAlert": {
         "properties": {
@@ -4986,6 +5582,79 @@
           "adapter_modes"
         ],
         "title": "V1ReadinessResponse"
+      },
+      "V2ModelResponse": {
+        "properties": {
+          "artifact_available": {
+            "type": "boolean",
+            "title": "Artifact Available"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "synthetic_only": {
+            "type": "boolean",
+            "title": "Synthetic Only"
+          },
+          "evaluation_scope": {
+            "type": "string",
+            "title": "Evaluation Scope"
+          },
+          "dataset": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Dataset"
+          },
+          "split": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Split"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_available",
+          "model_version",
+          "synthetic_only",
+          "evaluation_scope",
+          "dataset",
+          "split",
+          "metrics",
+          "features",
+          "limitations"
+        ],
+        "title": "V2ModelResponse"
       },
       "V2ReadinessCheck": {
         "properties": {

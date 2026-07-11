@@ -21,7 +21,7 @@ app/
 
 AI v1 使用合成历史数据训练梯度提升等待时间回归模型，并按时间划分训练、验证和测试集。FastAPI 启动时会可选加载该模型，但仅作影子计算：用户看到的等待时间、路线推荐和 API 契约仍由统计模型决定。
 
-根目录 `start.sh` 会先运行 `scripts/ensure_v1_model.py`。只有运行时二进制缺失或无法通过已跟踪元数据、特征与数据哈希校验时才重建被忽略的产物，不会改写已跟踪评估报告。
+根目录 `start.sh` 会先运行 `scripts/ensure_v1_model.py` 和 `scripts/ensure_v2_model.py`。只有运行时二进制缺失或无法通过已跟踪元数据、特征与数据哈希校验时才重建被忽略的产物；AI v2 使用已跟踪的可解释合成场景数据，所有指标只用于课堂 Demo。
 
 ```bash
 pip install -r requirements-dev.txt

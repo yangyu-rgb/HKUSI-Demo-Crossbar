@@ -8,6 +8,7 @@ export type ShadowObservationSummary = components["schemas"]["ShadowObservationS
 export type V2Readiness = components["schemas"]["V2ReadinessResponse"];
 export type V1Model = components["schemas"]["V1ModelResponse"];
 export type V1Readiness = components["schemas"]["V1ReadinessResponse"];
+export type V2Model = components["schemas"]["V2ModelResponse"];
 export type DemoPersonas = components["schemas"]["DemoPersonasResponse"];
 
 
@@ -33,6 +34,11 @@ export function fetchV1Model(): Promise<V1Model> {
 
 export function fetchV1Readiness(): Promise<V1Readiness> {
   return request("/api/demo/v1-readiness");
+}
+
+
+export function fetchV2Model(): Promise<V2Model> {
+  return request("/api/demo/v2-model");
 }
 
 

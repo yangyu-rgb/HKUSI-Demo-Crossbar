@@ -66,6 +66,8 @@ class PortPrediction(BaseModel):
     factors: list[dict]
     historical_sample_count: int
     uncertainty_minutes: float
+    prediction_engine: str
+    scenario_delta_minutes: int
 
 
 class PredictionQuery(BaseModel):
@@ -94,3 +96,5 @@ class PredictionResponse(BaseModel):
     data_version: str
     direction: TravelDirection
     forecast_run_id: str | None = None
+    prediction_engine: str
+    scenario: dict

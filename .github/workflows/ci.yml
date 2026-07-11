@@ -21,6 +21,7 @@ jobs:
       - run: python -m venv backend/.venv
       - run: backend/.venv/bin/pip install -r backend/requirements-dev.txt
       - run: backend/.venv/bin/python backend/scripts/ensure_v1_model.py
+      - run: backend/.venv/bin/python backend/scripts/ensure_v2_model.py
       - run: .venv/bin/pytest -q
         working-directory: backend
       - run: npm ci

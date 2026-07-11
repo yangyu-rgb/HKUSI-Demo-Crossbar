@@ -40,6 +40,19 @@ class V1ModelResponse(BaseModel):
     limitations: list[str]
 
 
+class V2ModelResponse(BaseModel):
+    artifact_available: bool
+    unavailable_reason: str | None = None
+    model_version: str
+    synthetic_only: bool
+    evaluation_scope: str
+    dataset: dict
+    split: dict
+    metrics: dict
+    features: list[str]
+    limitations: list[str]
+
+
 class V1ReadinessCheck(BaseModel):
     name: str
     passed: bool

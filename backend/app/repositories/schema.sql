@@ -108,6 +108,12 @@ CREATE TABLE IF NOT EXISTS audit_events (
 CREATE INDEX IF NOT EXISTS idx_audit_events_created
 ON audit_events(created_at DESC, id DESC);
 
+CREATE TABLE IF NOT EXISTS scenario_overrides (
+    scenario_date TEXT PRIMARY KEY,
+    payload_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS external_collection_runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     source_id TEXT NOT NULL,

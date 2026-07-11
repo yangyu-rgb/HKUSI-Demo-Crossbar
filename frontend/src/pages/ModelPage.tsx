@@ -1,4 +1,4 @@
-import { useModelShadowSummary, useV1Model, useV1Readiness, useV2Readiness } from "../features/demo/useDemo";
+import { useModelShadowSummary, useV1Model, useV1Readiness, useV2Model, useV2Readiness } from "../features/demo/useDemo";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
 import styles from "./ModelPage.module.css";
 
@@ -14,10 +14,11 @@ export function ModelPage() {
   const readiness = useV1Readiness();
   const shadow = useModelShadowSummary();
   const v2 = useV2Readiness();
-  if (model.isPending || readiness.isPending || shadow.isPending || v2.isPending) {
+  const v2Model = useV2Model();
+  if (model.isPending || readiness.isPending || shadow.isPending || v2.isPending || v2Model.isPending) {
     return <PageSkeleton cards={3} />;
   }
-  if (!model.data || !readiness.data || !shadow.data || !v2.data) {
+  if (!model.data || !readiness.data || !shadow.data || !v2.data || !v2Model.data) {
     return <main className="page"><p className="formError">模型状态暂时不可用。</p></main>;
   }
   const metrics = model.data.metrics as unknown as Record<string, { test: MetricSummary }>;
@@ -27,11 +28,21 @@ export function ModelPage() {
   return (
     <main className="page">
       <div className="pageIntro">
-        <span className="sectionKicker">AI v1 shadow lab</span>
-        <h1>V1 模型实验室</h1>
-        <p>完整展示合成数据评估、运行时产物、影子差异和 V1/V2 两套独立门槛。</p>
+        <span className="sectionKicker">AI model lab</span>
+        <h1>AI 模型实验室</h1>
+        <p>展示直接驱动路线的 V2 场景模型、V1 影子对照，以及独立的研究数据门槛。</p>
       </div>
       <section className={styles.grid}>
+        <article className={styles.panel}>
+          <h2>AI V2 场景模型</h2>
+          <strong className={v2Model.data.artifact_available ? styles.ready : styles.blocked}>{v2Model.data.artifact_available ? "主预测已启用" : "已自动降级"}</strong>
+          <div className={styles.stats}>
+            <div><strong>{Number(v2Model.data.dataset.sample_count)}</strong><span>合成场景样本</span></div>
+            <div><strong>{String((v2Model.data.metrics as Record<string, { mae: number }>).test.mae)}</strong><span>时间切分测试 MAE</span></div>
+            <div><strong>{v2Model.data.features.length}</strong><span>场景特征</span></div>
+          </div>
+          <small>天气、事件、方向和时间共同进入模型；仅用于课堂场景演示。</small>
+        </article>
         <article className={styles.panel}>
           <h2>V1 Demo readiness</h2>
           <strong className={readiness.data.demo_ready ? styles.ready : styles.blocked}>
@@ -67,9 +78,9 @@ export function ModelPage() {
           ))}
         </article>
         <article className={styles.panel}>
-          <h2>V2 数据门槛</h2>
-          <p>{v2.data.label_count}/200 条真实授权标签；当前{v2.data.experiment_ready ? "可实验" : "不可训练 V2"}。</p>
-          <p>V1 就绪不会绕过真实数据、时间切分或生产晋级限制。</p>
+          <h2>研究/生产数据门槛</h2>
+          <p>{v2.data.label_count}/200 条真实授权标签；当前{v2.data.experiment_ready ? "可开展真实数据实验" : "仅限课堂场景模型"}。</p>
+          <p>该门槛不阻止合成场景 V2 演示，但继续阻止真实效果或生产准确率声明。</p>
         </article>
         <article className={`${styles.panel} ${styles.wide}`}>
           <h2>官方特征来源</h2>

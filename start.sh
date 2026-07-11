@@ -64,6 +64,9 @@ fi
 log "Checking the AI v1 shadow artifact..."
 "${BACKEND_PYTHON}" "${BACKEND_DIR}/scripts/ensure_v1_model.py"
 
+log "Checking the AI v2 scenario artifact..."
+"${BACKEND_PYTHON}" "${BACKEND_DIR}/scripts/ensure_v2_model.py"
+
 if [[ ! -d "${FRONTEND_DIR}/node_modules" ]] || ! (
   cd "${FRONTEND_DIR}"
   npm ls --depth=0 >/dev/null 2>&1

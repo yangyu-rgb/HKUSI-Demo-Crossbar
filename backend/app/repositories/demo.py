@@ -25,7 +25,7 @@ from ..providers import (
 )
 
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 
 def load_json(path: Path) -> dict | list:
@@ -507,27 +507,83 @@ class DemoRepository:
         ]
 
     def get_prediction_input_context(self, target_time: datetime) -> dict:
-        weather_condition = self._weather["condition"]
+        scenario = self.get_scenario(target_time.date().isoformat())
         return {
-            "weather": (
-                "rain"
-                if "rain" in weather_condition or "thunder" in weather_condition
-                else "clear"
-            ),
-            "is_holiday": target_time.date().isoformat()
-            in set(self._holidays["dates"]),
+            "weather": scenario["weather"],
+            "is_holiday": scenario["is_holiday"],
+            "scenario": scenario,
             "data_sources": self.get_provider_statuses(),
-            "data_version": "-".join(
+            "data_version": scenario["version"] + "-" + "-".join(
                 item["data_version"]
                 for item in self.get_provider_statuses()
             ),
         }
+
+    def _default_scenario(self, scenario_date: str) -> dict:
+        payload = {
+            "date": scenario_date,
+            "weather": "clear",
+            "is_holiday": scenario_date in set(self._holidays["dates"]),
+            "events": [],
+            "is_override": False,
+        }
+        return self._version_scenario(payload)
+
+    @staticmethod
+    def _version_scenario(payload: dict) -> dict:
+        from hashlib import sha256
+        canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return {**payload, "version": sha256(canonical.encode("utf-8")).hexdigest()[:16]}
+
+    def get_scenario(self, scenario_date: str) -> dict:
+        try:
+            with self._connect() as connection:
+                row = connection.execute(
+                    "SELECT payload_json FROM scenario_overrides WHERE scenario_date = ?",
+                    (scenario_date,),
+                ).fetchone()
+            if row is None:
+                return self._default_scenario(scenario_date)
+            payload = json.loads(row["payload_json"])
+            return self._version_scenario({**payload, "date": scenario_date, "is_override": True})
+        except (sqlite3.Error, json.JSONDecodeError) as error:
+            raise PersistenceError() from error
+
+    def list_scenarios(self, start_date: str, days: int) -> list[dict]:
+        start = datetime.fromisoformat(start_date).date()
+        return [self.get_scenario((start + timedelta(days=offset)).isoformat()) for offset in range(days)]
+
+    def save_scenario(self, scenario_date: str, payload: dict) -> dict:
+        stored = {**payload, "date": scenario_date}
+        stored.pop("version", None)
+        stored.pop("is_override", None)
+        try:
+            with self._connect() as connection:
+                connection.execute(
+                    "INSERT INTO scenario_overrides(scenario_date, payload_json, updated_at) VALUES (?, ?, ?) "
+                    "ON CONFLICT(scenario_date) DO UPDATE SET payload_json = excluded.payload_json, updated_at = excluded.updated_at",
+                    (scenario_date, json.dumps(stored, ensure_ascii=False), self._utc_now()),
+                )
+            return self.get_scenario(scenario_date)
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+    def delete_scenario(self, scenario_date: str) -> dict:
+        try:
+            with self._connect() as connection:
+                connection.execute("DELETE FROM scenario_overrides WHERE scenario_date = ?", (scenario_date,))
+            return self.get_scenario(scenario_date)
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
 
     def get_history_path(self) -> Path:
         return self._history_path
 
     def get_v1_model_metadata(self) -> dict:
         return load_json(self._data_dir / "models" / "wait_model_v1.metadata.json")
+
+    def get_v2_model_metadata(self) -> dict:
+        return load_json(self._data_dir / "models" / "wait_model_v2.metadata.json")
 
     def database_ready(self) -> bool:
         try:
@@ -1452,6 +1508,7 @@ class DemoRepository:
                 connection.execute("DELETE FROM subscriptions")
                 connection.execute("DELETE FROM batch_plans")
                 connection.execute("DELETE FROM shadow_model_observations")
+                connection.execute("DELETE FROM scenario_overrides")
                 self._seed_reports(connection)
                 self._seed_subscriptions(connection)
             return {

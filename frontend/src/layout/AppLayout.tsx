@@ -9,10 +9,11 @@ import styles from "./AppLayout.module.css";
 const navigation = [
   { to: "/", label: "口岸态势", end: true },
   { to: "/planner", label: "路线预测" },
+  { to: "/scenarios", label: "场景实验室" },
   { to: "/crowdsource", label: "众包反馈" },
   { to: "/alerts", label: "智能提醒" },
   { to: "/business", label: "企业方案" },
-  { to: "/model", label: "V1 模型" },
+  { to: "/model", label: "AI 模型" },
 ];
 
 

@@ -5,6 +5,7 @@ export const queryKeys = {
   v1Model: ["v1-model"] as const,
   v1Readiness: ["v1-readiness"] as const,
   demoPersonas: ["demo-personas"] as const,
+  scenarios: ["scenarios"] as const,
   realtime: ["realtime"] as const,
   crowdsource: ["crowdsource"] as const,
   locations: ["locations"] as const,

@@ -28,7 +28,7 @@ def locations(
     "/predict",
     response_model=PredictionResponse,
     summary="比较四个口岸的路线方案",
-    description="使用时间加权统计 Demo 模型和确定性交通矩阵。",
+    description="使用 AI V2 场景模型和确定性交通矩阵；模型不可用时自动降级。",
     response_description="预测成功",
 )
 def predict(

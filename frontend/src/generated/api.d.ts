@@ -109,6 +109,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/demo/v2-model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取 AI v2 合成场景模型状态 */
+        get: operations["get_v2_model_api_demo_v2_model_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/demo/v1-readiness": {
         parameters: {
             query?: never;
@@ -197,6 +214,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/demo/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取未来场景日历 */
+        get: operations["list_scenarios_api_demo_scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/demo/scenarios/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 恢复未来14天默认场景 */
+        post: operations["reset_scenarios_api_demo_scenarios_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/demo/scenarios/{scenario_date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 保存未来场景 */
+        put: operations["save_scenario_api_demo_scenarios__scenario_date__put"];
+        post?: never;
+        /** 恢复单日默认场景 */
+        delete: operations["delete_scenario_api_demo_scenarios__scenario_date__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/realtime": {
         parameters: {
             query?: never;
@@ -245,7 +314,7 @@ export interface paths {
         put?: never;
         /**
          * 比较四个口岸的路线方案
-         * @description 使用时间加权统计 Demo 模型和确定性交通矩阵。
+         * @description 使用 AI V2 场景模型和确定性交通矩阵；模型不可用时自动降级。
          */
         post: operations["predict_api_predict_post"];
         delete?: never;
@@ -1188,6 +1257,10 @@ export interface components {
             historical_sample_count: number;
             /** Uncertainty Minutes */
             uncertainty_minutes: number;
+            /** Prediction Engine */
+            prediction_engine: string;
+            /** Scenario Delta Minutes */
+            scenario_delta_minutes: number;
         };
         /** PortStatus */
         PortStatus: {
@@ -1284,6 +1357,12 @@ export interface components {
             direction: components["schemas"]["TravelDirection"];
             /** Forecast Run Id */
             forecast_run_id?: string | null;
+            /** Prediction Engine */
+            prediction_engine: string;
+            /** Scenario */
+            scenario: {
+                [key: string]: unknown;
+            };
         };
         /**
          * Priority
@@ -1352,6 +1431,90 @@ export interface components {
             arrival_deadline: string;
             /** @default balanced */
             priority: components["schemas"]["Priority"];
+        };
+        /** ScenarioDay */
+        ScenarioDay: {
+            weather: components["schemas"]["ScenarioWeather"];
+            /**
+             * Is Holiday
+             * @default false
+             */
+            is_holiday: boolean;
+            /** Events */
+            events?: components["schemas"]["ScenarioEvent"][];
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Version */
+            version: string;
+            /** Is Override */
+            is_override: boolean;
+        };
+        /** ScenarioEvent */
+        ScenarioEvent: {
+            /** Name */
+            name: string;
+            /**
+             * Preset
+             * @default custom
+             */
+            preset: string;
+            direction?: components["schemas"]["TravelDirection"] | null;
+            /** Affected Ports */
+            affected_ports: string[];
+            /** Start Time */
+            start_time: string;
+            /** End Time */
+            end_time: string;
+            impact: components["schemas"]["ScenarioImpact"];
+        };
+        /**
+         * ScenarioImpact
+         * @enum {string}
+         */
+        ScenarioImpact: "low" | "medium" | "high";
+        /** ScenarioListResponse */
+        ScenarioListResponse: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** Days */
+            days: number;
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioDay"][];
+            /** Weather Options */
+            weather_options: string[];
+            /** Event Presets */
+            event_presets: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ScenarioResetResponse */
+        ScenarioResetResponse: {
+            /** Success */
+            success: boolean;
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioDay"][];
+        };
+        /**
+         * ScenarioWeather
+         * @enum {string}
+         */
+        ScenarioWeather: "clear" | "rain" | "heavy_rain" | "thunderstorm";
+        /** ScenarioWrite */
+        ScenarioWrite: {
+            weather: components["schemas"]["ScenarioWeather"];
+            /**
+             * Is Holiday
+             * @default false
+             */
+            is_holiday: boolean;
+            /** Events */
+            events?: components["schemas"]["ScenarioEvent"][];
         };
         /** ServiceAlert */
         ServiceAlert: {
@@ -1585,6 +1748,35 @@ export interface components {
             adapter_modes: {
                 [key: string]: string;
             };
+        };
+        /** V2ModelResponse */
+        V2ModelResponse: {
+            /** Artifact Available */
+            artifact_available: boolean;
+            /** Unavailable Reason */
+            unavailable_reason?: string | null;
+            /** Model Version */
+            model_version: string;
+            /** Synthetic Only */
+            synthetic_only: boolean;
+            /** Evaluation Scope */
+            evaluation_scope: string;
+            /** Dataset */
+            dataset: {
+                [key: string]: unknown;
+            };
+            /** Split */
+            split: {
+                [key: string]: unknown;
+            };
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Features */
+            features: string[];
+            /** Limitations */
+            limitations: string[];
         };
         /** V2ReadinessCheck */
         V2ReadinessCheck: {
@@ -2003,6 +2195,62 @@ export interface operations {
             };
         };
     };
+    get_v2_model_api_demo_v2_model_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V2ModelResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_v1_readiness_api_demo_v1_readiness_get: {
         parameters: {
             query?: never;
@@ -2245,6 +2493,241 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemoResetResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_scenarios_api_demo_scenarios_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioListResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reset_scenarios_api_demo_scenarios_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioResetResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_scenario_api_demo_scenarios__scenario_date__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_date: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDay"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_scenario_api_demo_scenarios__scenario_date__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioDay"];
                 };
             };
             /** @description 请求的资源不存在 */

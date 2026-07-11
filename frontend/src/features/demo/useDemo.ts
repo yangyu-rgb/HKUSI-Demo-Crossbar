@@ -6,6 +6,7 @@ import {
   fetchV2Readiness,
   fetchV1Model,
   fetchV1Readiness,
+  fetchV2Model,
   fetchDemoPersonas,
   resetDemo,
 } from "./api";
@@ -49,6 +50,11 @@ export function useV1Model() {
 
 export function useV1Readiness() {
   return useQuery({ queryKey: queryKeys.v1Readiness, queryFn: fetchV1Readiness });
+}
+
+
+export function useV2Model() {
+  return useQuery({ queryKey: ["v2-model"], queryFn: fetchV2Model });
 }
 
 

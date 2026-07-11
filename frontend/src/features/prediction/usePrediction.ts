@@ -31,9 +31,10 @@ export function usePrediction() {
     if (!context.data || initialized.current) {
       return;
     }
+    const requestedTarget = new URLSearchParams(window.location.search).get("target_time");
     const initialQuery = {
       ...DEFAULT_QUERY,
-      target_time: context.data.suggested_target_time.slice(0, 16),
+      target_time: requestedTarget ?? context.data.suggested_target_time.slice(0, 16),
     };
     initialized.current = true;
     setQuery(initialQuery);

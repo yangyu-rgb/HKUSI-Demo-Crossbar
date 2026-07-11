@@ -56,4 +56,4 @@ npm run generate:api
 npm run test:e2e
 ```
 
-`npm run check:api` 会重新生成 OpenAPI 文件；如果已提交的契约文件不是最新版本，命令会失败。Playwright 会分别启动并等待后端存活探针与前端页面，再用 Chromium 覆盖桌面与移动端双向规划、通知、模型门槛，并对六个路由执行 axe WCAG A/AA 检查。CI 使用单 worker，避免并行重置共享 Demo SQLite 状态。
+`npm run check:api` 会重新生成 OpenAPI 文件；如果已提交的契约文件不是最新版本，命令会失败。Playwright 会分别启动并等待后端存活探针与前端页面，再用 Chromium 覆盖桌面与移动端双向规划、场景实验室、通知和模型门槛，并对七个路由执行 axe WCAG A/AA 检查。CI 使用单 worker，避免并行重置共享 Demo SQLite 状态。

@@ -5,6 +5,7 @@ from .health import router as health_router
 from .prediction import router as prediction_router
 from .realtime import router as realtime_router
 from .subscription import router as subscription_router
+from .scenario import router as scenario_router
 
 __all__ = [
     "batch_router",
@@ -14,4 +15,5 @@ __all__ = [
     "prediction_router",
     "realtime_router",
     "subscription_router",
+    "scenario_router",
 ]

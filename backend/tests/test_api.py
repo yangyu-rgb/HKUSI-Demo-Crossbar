@@ -227,6 +227,8 @@ def test_prediction_contract(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["recommended_port_id"] == "shenzhen-bay"
+    assert payload["prediction_engine"] == "v2"
+    assert payload["scenario"]["weather"] == "clear"
     assert len(payload["ports"]) == 4
     assert {"latest_departure", "estimated_arrival", "buffer_minutes", "on_time"} <= set(
         payload["ports"][0]
@@ -237,6 +239,55 @@ def test_prediction_contract(client: TestClient) -> None:
         if factor["code"] == "crowdsource"
     )
     assert crowd_factor["average_quality_score"] >= 50
+
+
+def test_scenario_override_changes_v2_prediction_and_can_reset(client: TestClient) -> None:
+    request_payload = {
+        "origin_id": "hku",
+        "destination_id": "nanshan-tech",
+        "target_time": "2026-07-10T09:30:00",
+        "preferences": {"priority": "balanced", "max_budget": 100},
+    }
+    baseline = client.post("/api/predict", json=request_payload).json()
+    saved = client.put(
+        "/api/demo/scenarios/2026-07-10",
+        json={
+            "weather": "heavy_rain",
+            "is_holiday": True,
+            "events": [{
+                "name": "深圳湾大型活动",
+                "preset": "exhibition",
+                "direction": "hong_kong_to_shenzhen",
+                "affected_ports": ["深圳湾"],
+                "start_time": "08:00",
+                "end_time": "12:00",
+                "impact": "high",
+            }],
+        },
+    )
+    changed = client.post("/api/predict", json=request_payload).json()
+
+    assert saved.status_code == 200
+    assert changed["scenario"]["is_override"] is True
+    baseline_bay = next(item for item in baseline["ports"] if item["port_id"] == "shenzhen-bay")
+    changed_bay = next(item for item in changed["ports"] if item["port_id"] == "shenzhen-bay")
+    assert changed_bay["predicted_wait_time"] > baseline_bay["predicted_wait_time"]
+    assert changed_bay["scenario_delta_minutes"] > 0
+    assert changed["recommended_port_id"] != "shenzhen-bay"
+
+    restored = client.delete("/api/demo/scenarios/2026-07-10")
+    assert restored.status_code == 200
+    assert restored.json()["is_override"] is False
+
+
+def test_only_operator_can_modify_scenarios(client: TestClient) -> None:
+    response = client.put(
+        "/api/demo/scenarios/2026-07-10",
+        headers={"X-Demo-Persona-ID": "commuter-user"},
+        json={"weather": "rain", "is_holiday": False, "events": []},
+    )
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN"
 
 
 def test_invalid_location_returns_422(client: TestClient) -> None:
