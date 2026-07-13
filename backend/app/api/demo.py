@@ -9,6 +9,7 @@ from ..schemas.demo import (
     AuditEventListResponse,
     DemoResetResponse,
     ShadowObservationSummaryResponse,
+    OperationsSummaryResponse,
 )
 from ..exceptions import PermissionDeniedError
 from ..services import DemoService
@@ -82,6 +83,22 @@ def get_audit_events(
     if persona["role"] != "operator":
         raise PermissionDeniedError("仅运营人员可查看 Demo 审计记录")
     return service.get_audit_events(min(max(limit, 1), 200))
+
+
+@router.get(
+    "/operations-summary",
+    response_model=OperationsSummaryResponse,
+    summary="获取本地 Demo 运营分析汇总",
+)
+def get_operations_summary(
+    window_hours: int = 24,
+    service: DemoService = Depends(get_demo_service),
+    persona: dict = Depends(get_demo_persona),
+) -> dict:
+    if persona["role"] != "operator":
+        raise PermissionDeniedError("仅运营人员可查看 Demo 运营分析")
+    safe_window = window_hours if window_hours in {24, 168} else 24
+    return service.get_operations_summary(safe_window)
 
 
 @router.get(

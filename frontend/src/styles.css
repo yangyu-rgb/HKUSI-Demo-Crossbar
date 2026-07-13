@@ -14,6 +14,13 @@
   --orange: #f08a5d;
   --paper: #ffffff;
   --shadow: 0 20px 60px rgba(20, 66, 58, 0.08);
+  --shadow-soft: 0 10px 35px rgba(20, 66, 58, 0.06);
+  --surface-subtle: #f5f8f6;
+  --danger: #a23f36;
+  --warning: #b56d22;
+  --success: #238267;
+  --radius-card: 16px;
+  --radius-panel: 22px;
 }
 
 * {

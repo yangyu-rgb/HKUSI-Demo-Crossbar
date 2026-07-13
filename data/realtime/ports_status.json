@@ -5,6 +5,7 @@
       "id": "luohu",
       "name": "罗湖",
       "name_en": "Lo Wu",
+      "map_position": {"x": 69, "y": 31},
       "status": "open",
       "special_channels": ["团队通道开放"]
     },
@@ -12,6 +13,7 @@
       "id": "futian",
       "name": "福田",
       "name_en": "Futian",
+      "map_position": {"x": 53, "y": 38},
       "status": "open",
       "special_channels": ["学生及团队通道开放"]
     },
@@ -19,6 +21,7 @@
       "id": "huanggang",
       "name": "皇岗",
       "name_en": "Huanggang",
+      "map_position": {"x": 46, "y": 48},
       "status": "open",
       "special_channels": ["24小时开放"]
     },
@@ -26,6 +29,7 @@
       "id": "shenzhen-bay",
       "name": "深圳湾",
       "name_en": "Shenzhen Bay",
+      "map_position": {"x": 23, "y": 57},
       "status": "open",
       "special_channels": ["跨境巴士通道开放"]
     }

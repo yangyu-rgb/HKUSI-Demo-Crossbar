@@ -86,11 +86,13 @@ def valid_port_state(value: JsonValue) -> bool:
     ports = value.get("ports")
     if not isinstance(ports, list) or not ports:
         return False
-    required = {"id", "name", "name_en", "status", "special_channels"}
+    required = {"id", "name", "name_en", "status", "special_channels", "map_position"}
     return all(
         isinstance(port, dict)
         and required <= set(port)
         and isinstance(port["special_channels"], list)
+        and isinstance(port["map_position"], dict)
+        and all(isinstance(port["map_position"].get(axis), (int, float)) for axis in ("x", "y"))
         for port in ports
     ) and isinstance(value.get("alerts"), list)
 
@@ -136,6 +138,7 @@ PORT_STATE_FALLBACK = {
             "id": "luohu",
             "name": "罗湖",
             "name_en": "Lo Wu",
+            "map_position": {"x": 69, "y": 31},
             "status": "open",
             "special_channels": [],
         },
@@ -143,6 +146,7 @@ PORT_STATE_FALLBACK = {
             "id": "futian",
             "name": "福田",
             "name_en": "Futian",
+            "map_position": {"x": 53, "y": 38},
             "status": "open",
             "special_channels": [],
         },
@@ -150,6 +154,7 @@ PORT_STATE_FALLBACK = {
             "id": "huanggang",
             "name": "皇岗",
             "name_en": "Huanggang",
+            "map_position": {"x": 46, "y": 48},
             "status": "open",
             "special_channels": [],
         },
@@ -157,6 +162,7 @@ PORT_STATE_FALLBACK = {
             "id": "shenzhen-bay",
             "name": "深圳湾",
             "name_en": "Shenzhen Bay",
+            "map_position": {"x": 23, "y": 57},
             "status": "open",
             "special_channels": [],
         },

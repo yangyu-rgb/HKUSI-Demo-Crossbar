@@ -567,6 +567,79 @@
         }
       }
     },
+    "/api/demo/operations-summary": {
+      "get": {
+        "tags": [
+          "Demo 控制"
+        ],
+        "summary": "获取本地 Demo 运营分析汇总",
+        "operationId": "get_operations_summary_api_demo_operations_summary_get",
+        "parameters": [
+          {
+            "name": "window_hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 24,
+              "title": "Window Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/demo/model-shadow-summary": {
       "get": {
         "tags": [
@@ -3337,6 +3410,11 @@
                 "type": "null"
               }
             ]
+          },
+          "calibration_preview": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Calibration Preview"
           }
         },
         "type": "object",
@@ -3345,7 +3423,8 @@
           "points_earned",
           "model_updated",
           "report",
-          "message"
+          "message",
+          "calibration_preview"
         ],
         "title": "CrowdsourceSubmitResponse"
       },
@@ -3570,6 +3649,25 @@
           "request_id": {
             "type": "string",
             "title": "Request Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          },
+          "user_action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Action"
           }
         },
         "type": "object",
@@ -3577,7 +3675,9 @@
           "code",
           "message",
           "details",
-          "request_id"
+          "request_id",
+          "category",
+          "retryable"
         ],
         "title": "ErrorBody"
       },
@@ -3923,6 +4023,55 @@
         ],
         "title": "OfficialCalibration"
       },
+      "OperationsSummaryResponse": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "window_hours": {
+            "type": "integer",
+            "title": "Window Hours"
+          },
+          "forecast": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Forecast"
+          },
+          "crowdsource": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Crowdsource"
+          },
+          "errors": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Errors"
+          },
+          "audit": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Audit"
+          },
+          "adapters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Adapters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "window_hours",
+          "forecast",
+          "crowdsource",
+          "errors",
+          "audit",
+          "adapters"
+        ],
+        "title": "OperationsSummaryResponse"
+      },
       "PortPrediction": {
         "properties": {
           "port_id": {
@@ -4088,6 +4237,13 @@
             "type": "string",
             "title": "Name En"
           },
+          "map_position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Map Position"
+          },
           "current_wait": {
             "type": "integer",
             "title": "Current Wait"
@@ -4151,6 +4307,7 @@
           "id",
           "name",
           "name_en",
+          "map_position",
           "current_wait",
           "status",
           "crowd_level",

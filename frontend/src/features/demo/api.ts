@@ -9,6 +9,7 @@ export type V1Model = components["schemas"]["V1ModelResponse"];
 export type V1Readiness = components["schemas"]["V1ReadinessResponse"];
 export type V2Model = components["schemas"]["V2ModelResponse"];
 export type DemoPersonas = components["schemas"]["DemoPersonasResponse"];
+export type OperationsSummary = components["schemas"]["OperationsSummaryResponse"];
 
 
 export function fetchDemoContext(): Promise<DemoContext> {
@@ -38,6 +39,11 @@ export function fetchV2Model(): Promise<V2Model> {
 
 export function fetchDemoPersonas(): Promise<DemoPersonas> {
   return request("/api/demo/personas");
+}
+
+
+export function fetchOperationsSummary(windowHours = 24): Promise<OperationsSummary> {
+  return request(`/api/demo/operations-summary?window_hours=${windowHours}`);
 }
 
 

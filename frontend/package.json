@@ -9,6 +9,7 @@
     "generate:api": "../backend/.venv/bin/python ../backend/scripts/export_openapi.py && openapi-typescript ../docs/openapi.json -o src/generated/api.d.ts",
     "check:api": "npm run generate:api && git diff --exit-code -- ../docs/openapi.json src/generated/api.d.ts",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "preview": "vite preview"
   },
@@ -30,6 +31,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "jsdom": "^29.1.1",
     "openapi-typescript": "^7.13.0",
     "vitest": "^4.1.9"

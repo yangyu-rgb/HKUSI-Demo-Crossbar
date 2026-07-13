@@ -133,6 +133,8 @@
   gap: 15px;
 }
 
+.selectedCard { border-radius: 18px; outline: 3px solid rgba(8, 127, 112, .28); outline-offset: 3px; }
+
 .refresh {
   display: flex;
   align-items: center;

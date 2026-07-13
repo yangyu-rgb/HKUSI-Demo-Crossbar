@@ -235,7 +235,7 @@ def test_prediction_contract(client: TestClient) -> None:
     assert payload["prediction_engine"] == "v2_2_transparent_hybrid"
     assert payload["ports"][0]["official_calibration"]["traffic"]["available"] is False
     calibration = payload["ports"][0]["official_calibration"]
-    assert calibration["calibration_version"] == "transparent-scenario-official-shenzhen-crowd-v2"
+    assert calibration["calibration_version"] == "transparent-calibration-v2.3"
     assert calibration["traffic"]["distribution"]["status"] == "in_distribution"
     assert calibration["queue_adjusted_wait_minutes"] > 0
     assert calibration["uncertainty_minutes"] > 0
@@ -385,6 +385,49 @@ def test_invalid_location_returns_422(client: TestClient) -> None:
     error = response.json()["error"]
     assert error["code"] == "LOCATION_NOT_FOUND"
     assert error["request_id"] == response.headers["X-Request-ID"]
+    assert error["category"] == "validation"
+    assert error["retryable"] is False
+    assert error["user_action"] == "请检查输入后重试"
+
+
+def test_operator_operations_summary_and_role_boundary(client: TestClient) -> None:
+    client.post(
+        "/api/predict",
+        json={
+            "origin_id": "hku", "destination_id": "nanshan-tech",
+            "target_time": "2026-07-10T09:30:00+08:00",
+            "preferences": {"priority": "balanced"},
+        },
+    )
+    client.post("/api/predict", json={"origin_id": "invalid"})
+    response = client.get("/api/demo/operations-summary?window_hours=24")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["forecast"]["total_runs"] == 1
+    assert payload["errors"]["total"] >= 1
+    assert payload["crowdsource"]["active_reports"] >= 4
+    assert payload["adapters"]["database_ready"] is True
+
+    forbidden = client.get(
+        "/api/demo/operations-summary",
+        headers={"X-Demo-Persona-ID": "commuter-user"},
+    )
+    assert forbidden.status_code == 403
+    assert forbidden.json()["error"]["category"] == "permission"
+
+
+def test_untrusted_text_is_literal_and_sql_is_parameterized(client: TestClient) -> None:
+    marker = "<script>alert('demo')</script>'); DROP TABLE crowdsource_reports;--"
+    response = client.post(
+        "/api/crowdsource/report",
+        json={
+            "user_id": "security-user", "port": "福田",
+            "actual_wait_time": 14, "crowd_level": "low", "comment": marker,
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["report"]["comment"] == marker
+    assert client.get("/api/crowdsource/feed").status_code == 200
 
 
 def test_crowdsource_subscription_and_batch(client: TestClient) -> None:
@@ -761,8 +804,12 @@ def test_latest_classroom_feedback_has_visible_prediction_effect(
 
     after = client.post("/api/predict", json=query).json()
     changed = next(item for item in after["ports"] if item["port_id"] == route["port_id"])
-    assert changed["predicted_wait_time"] >= route["predicted_wait_time"] + 5
-    assert changed["official_calibration"]["crowdsource_adjustment_minutes"] >= 4.5
+    crowd_factor = next(
+        factor for factor in changed["factors"] if factor["code"] == "crowdsource"
+    )
+    assert crowd_factor["distinct_reporters"] >= 2
+    assert crowd_factor["consensus_level"] == "low"
+    assert changed["predicted_wait_time"] <= route["predicted_wait_time"] + 4
 
 
 def test_retired_training_fields_are_not_exposed(client: TestClient) -> None:

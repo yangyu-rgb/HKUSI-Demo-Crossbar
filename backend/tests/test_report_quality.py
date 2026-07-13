@@ -6,7 +6,7 @@ from app.repositories import DemoRepository
 from app.schemas.prediction import PredictionRequest
 from app.clock import HONG_KONG_TZ
 from app.services import CrowdsourceService, PredictionService, RealtimeService
-from app.services.report_quality import evaluate_report, quality_weighted_wait
+from app.services.report_quality import crowdsource_consensus, evaluate_report, quality_weighted_wait
 
 
 FUTIAN = {
@@ -68,6 +68,40 @@ def test_quality_weighting_reduces_low_quality_influence() -> None:
 
     assert high_quality["quality_score"] > low_quality["quality_score"]
     assert weighted < simple_average
+
+
+def test_consensus_uses_dynamic_caps_and_suppresses_disagreement() -> None:
+    base = {
+        "timestamp": SCENARIO_TIME.isoformat(), "port": "福田",
+        "crowd_level": "medium", "used_for_prediction": True,
+        "_age_minutes": 2.0,
+    }
+    coherent = [
+        {**base, "id": f"r-{index}", "user_id": f"u-{index}", "actual_wait_time": wait, "quality_score": 90}
+        for index, wait in enumerate((20, 22, 24), start=1)
+    ]
+    high = crowdsource_consensus(coherent)
+    assert high["distinct_reporters"] == 3
+    assert high["consensus_level"] == "high"
+    assert high["weight_cap"] == 0.45
+    assert high["value_minutes"] == 22
+
+    divided = crowdsource_consensus([coherent[0], {**coherent[1], "actual_wait_time": 70}])
+    assert divided["consensus_level"] == "low"
+    assert divided["weight_cap"] == 0.30
+
+
+def test_consensus_keeps_only_latest_report_per_user() -> None:
+    old = {
+        "id": "old", "user_id": "same", "port": "福田",
+        "actual_wait_time": 10, "quality_score": 90,
+        "timestamp": "2026-07-10T07:30:00+08:00", "_age_minutes": 15,
+    }
+    latest = {**old, "id": "latest", "actual_wait_time": 18, "timestamp": "2026-07-10T07:40:00+08:00", "_age_minutes": 5}
+    result = crowdsource_consensus([old, latest])
+    assert result["distinct_reporters"] == 1
+    assert result["value_minutes"] == 18
+    assert result["weight_cap"] == 0.15
 
 
 def test_duplicate_report_returns_conflict(client: TestClient) -> None:

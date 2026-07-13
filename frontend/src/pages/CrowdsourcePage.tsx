@@ -164,7 +164,7 @@ export function CrowdsourcePage() {
           </label>
           <div className={styles.dataGovernance}>
             <strong>课堂 Demo 数据</strong>
-            <small>反馈最多以30%权重影响当前预测，随新鲜度和预测距离衰减；项目不收集现场真实训练标签。</small>
+            <small>单人、双人和多人高共识分别使用15%、30%和45%上限，并继续按质量、新鲜度和预测距离衰减；项目不收集现场真实训练标签。</small>
           </div>
           <label>
             <span>补充说明</span>
@@ -179,6 +179,12 @@ export function CrowdsourcePage() {
             {crowdsource.submitting ? "正在提交…" : "提交反馈"}
           </button>
           {crowdsource.message && <p className="formSuccess">{crowdsource.message}</p>}
+          {crowdsource.calibrationPreview && (
+            <div className={styles.calibrationPreview}>
+              <strong>{Number(crowdsource.calibrationPreview.distinct_reporters)} 名独立反馈者 · 有效权重 {Math.round(Number(crowdsource.calibrationPreview.effective_weight) * 100)}%</strong>
+              <small>{String(crowdsource.calibrationPreview.reason)} · 当前上限 {Math.round(Number(crowdsource.calibrationPreview.weight_cap) * 100)}%</small>
+            </div>
+          )}
           {crowdsource.error && <p className="formError">{crowdsource.error}</p>}
         </form>
 

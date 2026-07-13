@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from ..clock import Clock, HONG_KONG_TIMEZONE, as_hong_kong, ceil_minutes
+from ..calibration import CALIBRATION_POLICY
 from ..config import (
     MAX_TARGET_HORIZON_HOURS,
     MIN_TARGET_LEAD_MINUTES,
@@ -9,6 +10,7 @@ from ..config import (
 from ..repositories import DemoRepository
 from ..ml.shadow import ShadowWaitModel
 from ..ml.scenario_model import ScenarioWaitModel
+from .wait_forecast import WaitForecastService
 
 
 class DemoService:
@@ -139,7 +141,7 @@ class DemoService:
             "limitations": metadata["limitations"],
             "target_scope": metadata.get("target_scope", "synthetic_target"),
             "real_feature_sources": metadata.get("real_feature_sources", []),
-            "calibration_version": metadata["calibration_version"],
+            "calibration_version": CALIBRATION_POLICY.version,
             "source_snapshot": metadata["source_snapshot"],
             "data_audit": metadata["data_audit"],
             "formula": metadata["formula"],
@@ -154,6 +156,39 @@ class DemoService:
     def get_audit_events(self, limit: int) -> dict:
         events = self._repository.list_audit_events(limit)
         return {"events": events, "total": len(events)}
+
+    def get_operations_summary(self, window_hours: int) -> dict:
+        now = as_hong_kong(self._clock.now()).replace(microsecond=0)
+        stored = self._repository.get_operations_summary(window_hours, now)
+        _snapshot, reports = WaitForecastService(self._repository, self._clock).build_snapshot(now)
+        active = [report for report in reports if report["_active"]]
+        usable = [report for report in active if report["used_for_prediction"]]
+        quality_counts = {"high": 0, "medium": 0, "low": 0}
+        for report in active:
+            quality_counts[report["quality_level"]] += 1
+        stored.update({
+            "generated_at": now,
+            "window_hours": window_hours,
+            "crowdsource": {
+                "active_reports": len(active),
+                "used_for_prediction": len(usable),
+                "distinct_reporters": len({report["user_id"] for report in usable}),
+                "average_quality_score": (
+                    round(sum(report["quality_score"] for report in active) / len(active), 1)
+                    if active else None
+                ),
+                "quality_counts": quality_counts,
+                "linked_feedback_count": stored.pop("linked_feedback_count"),
+            },
+            "adapters": {
+                "database": "sqlite-local",
+                "database_ready": self._repository.database_ready(),
+                "providers": self._repository.get_provider_statuses(),
+                "identity": "demo-persona",
+                "notifications": "sqlite-inbox",
+            },
+        })
+        return stored
 
     def reset(self) -> dict:
         return {

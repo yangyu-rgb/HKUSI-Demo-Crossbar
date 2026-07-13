@@ -160,6 +160,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/demo/operations-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取本地 Demo 运营分析汇总 */
+        get: operations["get_operations_summary_api_demo_operations_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/demo/model-shadow-summary": {
         parameters: {
             query?: never;
@@ -879,6 +896,10 @@ export interface components {
             /** Message */
             message: string;
             forecast_feedback?: components["schemas"]["ForecastFeedbackLink"] | null;
+            /** Calibration Preview */
+            calibration_preview: {
+                [key: string]: unknown;
+            };
         };
         /** DataSourceStatus */
         DataSourceStatus: {
@@ -978,6 +999,12 @@ export interface components {
             details: unknown;
             /** Request Id */
             request_id: string;
+            /** Category */
+            category: string;
+            /** Retryable */
+            retryable: boolean;
+            /** User Action */
+            user_action?: string | null;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -1110,6 +1137,36 @@ export interface components {
             /** Uncertainty Minutes */
             uncertainty_minutes: number;
         };
+        /** OperationsSummaryResponse */
+        OperationsSummaryResponse: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Window Hours */
+            window_hours: number;
+            /** Forecast */
+            forecast: {
+                [key: string]: unknown;
+            };
+            /** Crowdsource */
+            crowdsource: {
+                [key: string]: unknown;
+            };
+            /** Errors */
+            errors: {
+                [key: string]: unknown;
+            };
+            /** Audit */
+            audit: {
+                [key: string]: unknown;
+            };
+            /** Adapters */
+            adapters: {
+                [key: string]: unknown;
+            };
+        };
         /** PortPrediction */
         PortPrediction: {
             /** Port Id */
@@ -1180,6 +1237,10 @@ export interface components {
             name: string;
             /** Name En */
             name_en: string;
+            /** Map Position */
+            map_position: {
+                [key: string]: number;
+            };
             /** Current Wait */
             current_wait: number;
             /** Status */
@@ -2382,6 +2443,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuditEventListResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_operations_summary_api_demo_operations_summary_get: {
+        parameters: {
+            query?: {
+                window_hours?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationsSummaryResponse"];
                 };
             };
             /** @description 请求的资源不存在 */

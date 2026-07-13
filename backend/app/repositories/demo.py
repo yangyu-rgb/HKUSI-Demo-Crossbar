@@ -1081,6 +1081,110 @@ class DemoRepository:
         except sqlite3.Error as error:
             raise PersistenceError() from error
 
+    def record_error_event(self, event: dict) -> None:
+        """Best-effort operational record; never masks the original error."""
+        try:
+            with self._connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO error_events(
+                        request_id, method, path, status_code, error_code,
+                        category, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        event["request_id"],
+                        event["method"],
+                        event["path"],
+                        event["status_code"],
+                        event["error_code"],
+                        event["category"],
+                        self._utc_now(),
+                    ),
+                )
+        except (OSError, sqlite3.Error):
+            return
+
+    def get_operations_summary(self, window_hours: int, current_time: datetime) -> dict:
+        threshold = current_time - timedelta(hours=window_hours)
+
+        def in_window(value: str) -> bool:
+            parsed = datetime.fromisoformat(value)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed >= threshold.astimezone(parsed.tzinfo)
+
+        try:
+            with self._connect() as connection:
+                forecast_rows = connection.execute(
+                    """
+                    SELECT runs.id, runs.generated_at, ports.port_id,
+                           ports.prediction_engine
+                    FROM forecast_runs AS runs
+                    JOIN forecast_run_ports AS ports
+                      ON ports.forecast_run_id = runs.id
+                    ORDER BY runs.generated_at ASC, ports.port_id ASC
+                    """
+                ).fetchall()
+                error_rows = connection.execute(
+                    "SELECT * FROM error_events ORDER BY created_at DESC, id DESC"
+                ).fetchall()
+                audit_rows = connection.execute(
+                    "SELECT * FROM audit_events ORDER BY created_at DESC, id DESC"
+                ).fetchall()
+                linked_rows = connection.execute(
+                    "SELECT linked_at FROM forecast_feedback_links"
+                ).fetchall()
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+        forecasts = [dict(row) for row in forecast_rows if in_window(row["generated_at"])]
+        errors = [dict(row) for row in error_rows if in_window(row["created_at"])]
+        audits = [dict(row) for row in audit_rows if in_window(row["created_at"])]
+        linked_count = sum(in_window(row["linked_at"]) for row in linked_rows)
+        run_engines: dict[str, str] = {}
+        port_counts: dict[str, int] = {}
+        hourly: dict[str, set[str]] = {}
+        for row in forecasts:
+            run_engines[row["id"]] = row["prediction_engine"]
+            port_counts[row["port_id"]] = port_counts.get(row["port_id"], 0) + 1
+            bucket = datetime.fromisoformat(row["generated_at"]).replace(minute=0, second=0, microsecond=0).isoformat()
+            hourly.setdefault(bucket, set()).add(row["id"])
+        engine_counts: dict[str, int] = {}
+        for engine in run_engines.values():
+            engine_counts[engine] = engine_counts.get(engine, 0) + 1
+        error_codes: dict[str, int] = {}
+        error_paths: dict[str, int] = {}
+        for row in errors:
+            error_codes[row["error_code"]] = error_codes.get(row["error_code"], 0) + 1
+            error_paths[row["path"]] = error_paths.get(row["path"], 0) + 1
+        audit_paths: dict[str, int] = {}
+        for row in audits:
+            audit_paths[row["path"]] = audit_paths.get(row["path"], 0) + 1
+        return {
+            "forecast": {
+                "total_runs": len(run_engines),
+                "engine_counts": engine_counts,
+                "port_evaluations": port_counts,
+                "hourly_runs": [
+                    {"hour": hour, "count": len(ids)}
+                    for hour, ids in sorted(hourly.items())
+                ],
+            },
+            "errors": {
+                "total": len(errors),
+                "by_code": error_codes,
+                "by_path": error_paths,
+                "recent": errors[:10],
+            },
+            "audit": {
+                "total": len(audits),
+                "by_path": audit_paths,
+                "recent": audits[:10],
+            },
+            "linked_feedback_count": linked_count,
+        }
+
     def save_batch_plan(
         self,
         company: str,
@@ -1550,6 +1654,7 @@ class DemoRepository:
                 connection.execute("DELETE FROM subscription_evaluations")
                 connection.execute("DELETE FROM notifications")
                 connection.execute("DELETE FROM audit_events")
+                connection.execute("DELETE FROM error_events")
                 connection.execute("DELETE FROM crowdsource_reports")
                 connection.execute("DELETE FROM subscriptions")
                 connection.execute("DELETE FROM batch_plans")

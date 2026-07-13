@@ -154,6 +154,11 @@ class CrowdsourceService:
             message = "感谢反馈！你的数据已加入本次演示的预测校准。"
         else:
             message = "反馈已保存，但质量分较低，本次不会用于预测校准。"
+        _latest_snapshot, latest_reports = self._forecast.build_snapshot(now)
+        latest_estimate = self._forecast.estimate(
+            port["name"], now, now, latest_reports
+        )
+        consensus = latest_estimate["crowdsource_consensus"]
         return {
             "success": True,
             "points_earned": points,
@@ -161,4 +166,14 @@ class CrowdsourceService:
             "report": record,
             "message": message,
             "forecast_feedback": forecast_feedback,
+            "calibration_preview": {
+                "eligible": record["used_for_prediction"],
+                "distinct_reporters": consensus["distinct_reporters"],
+                "average_quality_score": round(consensus["average_quality_score"], 1),
+                "consensus_level": consensus["consensus_level"],
+                "weight_cap": consensus["weight_cap"],
+                "effective_weight": round(latest_estimate["crowdsource_weight"], 3),
+                "value_minutes": consensus["value_minutes"],
+                "reason": consensus["reason"],
+            },
         }

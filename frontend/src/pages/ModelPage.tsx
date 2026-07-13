@@ -126,7 +126,7 @@ export function ModelPage() {
           <p><code>B = HGB(口岸、方向、时间、星期、香港客流压力)</code></p>
           <p><code>S = B × min(2.10, 天气系数 × 节假日系数 × 事件系数)</code></p>
           <p><code>Q = S × [1 + 官方权重 × (拥堵等级系数 − 1)]</code></p>
-          <p><code>P = Q × (1 − W) + 最新有效众包值 × W</code>，其中 <code>W ≤ 30%</code>。</p>
+          <p><code>P = Q × (1 − W) + 稳健众包值 × W</code>；单人、双人与多人高共识上限分别为 <code>15% / 30% / 45%</code>。</p>
           <small>深圳公开快照不与香港客流相加；两侧不一致时只扩大预测区间并显示警告。</small>
         </article>
         <article className={`${styles.panel} ${styles.wide}`}>

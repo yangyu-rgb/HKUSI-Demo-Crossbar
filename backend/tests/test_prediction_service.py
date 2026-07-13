@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -158,7 +159,26 @@ def test_crowdsource_weight_decays_for_longer_horizons(repository, clock) -> Non
 
     assert current_crowd["effective_weight"] > future_crowd["effective_weight"]
     assert current_crowd["effective_weight"] <= 0.30
-    assert future_crowd["effective_weight"] >= 0.19
+    assert current_crowd["weight_cap"] == 0.15
+    assert future_crowd["effective_weight"] > 0
+
+
+def test_concurrent_demo_predictions_remain_consistent(prediction_service, clock) -> None:
+    prediction_request = PredictionRequest(
+        origin_id="hku",
+        destination_id="nanshan-tech",
+        target_time=clock.now() + timedelta(hours=2),
+        preferences={"priority": "balanced"},
+    )
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(
+            pool.map(lambda _index: prediction_service.predict(prediction_request), range(8))
+        )
+    assert len(results) == 8
+    assert {item["recommended_port_id"] for item in results} == {
+        results[0]["recommended_port_id"]
+    }
+    assert all(item["ports"] for item in results)
 
 
 def test_holiday_calendar_is_used_and_explained(repository, clock) -> None:

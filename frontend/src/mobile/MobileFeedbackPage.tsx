@@ -53,7 +53,7 @@ export function MobileFeedbackPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.intro}><span>Human in the loop</span><h1>提交现场反馈</h1><p>反馈最多以 30% 权重校准当前预测，不会作为真实训练标签。</p></div>
+      <div className={styles.intro}><span>Human in the loop</span><h1>提交现场反馈</h1><p>众包按独立反馈者与共识使用 15%/30%/45% 动态上限，不会作为真实训练标签。</p></div>
       <section className={styles.card}>
         {forecastRunId && <p className={styles.message}>已关联最近一次移动路线预测。</p>}
         <form className={styles.form} onSubmit={submit}>
@@ -69,6 +69,7 @@ export function MobileFeedbackPage() {
           <label>补充说明<textarea aria-label="移动反馈说明" maxLength={160} value={comment} placeholder="选填：描述现场情况" onChange={(event) => setComment(event.target.value)} /></label>
           <button className={styles.button} disabled={crowdsource.submitting}>{crowdsource.submitting ? "正在提交…" : "提交反馈"}</button>
           {crowdsource.message && <p className={styles.message}>{crowdsource.message}</p>}
+          {crowdsource.calibrationPreview && <p className={styles.message}>{Number(crowdsource.calibrationPreview.distinct_reporters)} 名独立反馈者 · 当前有效权重 {Math.round(Number(crowdsource.calibrationPreview.effective_weight) * 100)}% · {String(crowdsource.calibrationPreview.reason)}</p>}
           {crowdsource.error && <p className={styles.error}>{crowdsource.error}</p>}
           {submitted && session.prediction && <Link className={styles.linkButton} to="/mobile/planner">返回规划并查看最新校准</Link>}
         </form>

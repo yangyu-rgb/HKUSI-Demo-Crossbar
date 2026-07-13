@@ -81,6 +81,10 @@
   border-radius: 10px;
 }
 
+.calibrationPreview { display: grid; gap: 5px; padding: 11px; color: var(--teal-dark); background: var(--mint); border-radius: 10px; }
+.calibrationPreview strong { font-size: 11px; }
+.calibrationPreview small { color: var(--muted); font-size: 9px; line-height: 1.5; }
+
 .dataGovernance label {
   display: flex;
   align-items: flex-start;

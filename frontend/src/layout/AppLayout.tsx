@@ -14,6 +14,7 @@ const navigation = [
   { to: "/alerts", label: "智能提醒" },
   { to: "/business", label: "企业方案" },
   { to: "/model", label: "AI 模型" },
+  { to: "/operations", label: "运营分析", operatorOnly: true },
   { to: "/mobile", label: "手机版" },
 ];
 
@@ -23,6 +24,7 @@ export function AppLayout() {
   const reset = useDemoReset();
   const personas = useDemoPersonas();
   const hongKongTime = useHongKongClock(context.data?.current_time);
+  const currentPersona = personas.data?.personas.find((persona) => persona.id === getDemoPersonaId());
 
   function handleReset() {
     if (window.confirm("确定恢复Demo初始数据？所有新增反馈、订阅和企业方案都会删除。")) {
@@ -41,7 +43,7 @@ export function AppLayout() {
           </span>
         </NavLink>
         <nav className={styles.navigation} aria-label="主要导航">
-          {navigation.map((item) => (
+          {navigation.filter((item) => !item.operatorOnly || currentPersona?.role === "operator").map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

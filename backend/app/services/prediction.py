@@ -5,6 +5,7 @@ import logging
 from statistics import NormalDist
 
 from ..clock import Clock, as_hong_kong, ceil_minutes
+from ..calibration import CALIBRATION_POLICY
 from ..config import (
     BALANCED_COST_WEIGHT,
     BALANCED_RISK_WEIGHT,
@@ -256,7 +257,7 @@ class PredictionService:
         official_calibration = {
             "status": official["status"],
             "feature_version": official["feature_version"],
-            "calibration_version": self._scenario_model.calibration_version if self._scenario_model and self._scenario_model.calibration_version else "official-traffic-queue-crowd-v1",
+            "calibration_version": CALIBRATION_POLICY.version,
             "traffic": traffic,
             "queue": queue,
             "shenzhen_validation": shenzhen_validation,

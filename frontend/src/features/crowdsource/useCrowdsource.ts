@@ -56,6 +56,7 @@ export function useCrowdsource() {
         ? userFacingError(mutation.error)
         : "",
     message,
+    calibrationPreview: mutation.data?.calibration_preview ?? null,
     submit,
   };
 }

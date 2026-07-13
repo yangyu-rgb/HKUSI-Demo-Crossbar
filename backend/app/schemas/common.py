@@ -62,6 +62,9 @@ class ErrorBody(BaseModel):
     message: str
     details: Any
     request_id: str
+    category: str
+    retryable: bool
+    user_action: str | None = None
 
 
 class ErrorResponse(BaseModel):

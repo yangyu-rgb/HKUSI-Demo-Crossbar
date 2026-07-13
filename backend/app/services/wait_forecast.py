@@ -5,18 +5,17 @@ from statistics import NormalDist
 from ..clock import Clock, as_hong_kong
 from ..config import (
     CROWDSOURCE_HORIZON_DECAY_MINUTES,
-    CROWDSOURCE_MAX_WEIGHT,
     EVENT_IMPACT_MULTIPLIERS,
     HISTORY_ADJACENT_HOUR_WEIGHT,
     HISTORY_RECENCY_HALF_LIFE_DAYS,
     MIN_STANDARD_DEVIATION_MINUTES,
     MAX_COMBINED_EVENT_MULTIPLIER,
-    REPORT_EXPIRY_MINUTES,
     TREND_UNCERTAINTY_FACTOR,
     CONFIDENCE_LEVEL,
 )
-from ..repositories import DemoRepository
-from .report_quality import evaluate_reports, quality_weighted_wait
+from ..contracts import PredictionRepository
+from ..calibration import CALIBRATION_POLICY
+from .report_quality import crowdsource_consensus, evaluate_reports
 
 
 def _circular_hour_distance(left: int, right: int) -> int:
@@ -46,7 +45,7 @@ def _time_is_in_event_window(
 class WaitForecastService:
     """Generate simulated waits from calendar-matched historical samples."""
 
-    def __init__(self, repository: DemoRepository, clock: Clock):
+    def __init__(self, repository: PredictionRepository, clock: Clock):
         self._repository = repository
         self._clock = clock
         self._latest_history = max(
@@ -156,21 +155,21 @@ class WaitForecastService:
         event_adjusted_next = next_hour["value"] * next_event_context["multiplier"]
         slope = abs(event_adjusted_next - event_adjusted_baseline)
 
-        active_reports = [
+        eligible_reports = [
             report
             for report in reports
             if report["port"] == port_name and report["used_for_prediction"]
-        ][-1:]
-        crowd_mean = quality_weighted_wait(active_reports) if active_reports else None
+        ]
+        consensus = crowdsource_consensus(eligible_reports)
+        active_reports = consensus["reports"]
+        crowd_mean = consensus["value_minutes"]
         horizon_minutes = max(0.0, (target - current).total_seconds() / 60)
         if active_reports:
-            average_freshness = sum(
-                max(0.0, 1 - report["_age_minutes"] / REPORT_EXPIRY_MINUTES)
-                for report in active_reports
-            ) / len(active_reports)
             crowd_weight = (
-                CROWDSOURCE_MAX_WEIGHT
-                * average_freshness
+                consensus["weight_cap"]
+                * (consensus["average_quality_score"] / 100)
+                * consensus["average_freshness"]
+                * consensus["consensus_factor"]
                 * exp(-horizon_minutes / CROWDSOURCE_HORIZON_DECAY_MINUTES)
             )
         else:
@@ -194,6 +193,7 @@ class WaitForecastService:
                 "sample_count": baseline["sample_count"],
             }
         ]
+        factors[0]["calibration_policy_version"] = CALIBRATION_POLICY.version
         if baseline["is_holiday"]:
             factors.append(
                 {
@@ -219,11 +219,12 @@ class WaitForecastService:
                     "label": "近期现场反馈",
                     "value_minutes": round(crowd_mean, 1),
                     "effective_weight": round(crowd_weight, 3),
-                    "average_quality_score": round(
-                        sum(report["quality_score"] for report in active_reports)
-                        / len(active_reports)
-                    ),
-                    "detail": f"{len(active_reports)}条有效反馈，影响随时间衰减",
+                    "average_quality_score": round(consensus["average_quality_score"]),
+                    "distinct_reporters": consensus["distinct_reporters"],
+                    "consensus_level": consensus["consensus_level"],
+                    "dispersion_minutes": round(consensus["dispersion_minutes"], 1),
+                    "weight_cap": consensus["weight_cap"],
+                    "detail": f"{consensus['distinct_reporters']}名独立反馈者；{consensus['reason']}，影响随时间衰减",
                 }
             )
         factors.append(
@@ -244,6 +245,11 @@ class WaitForecastService:
             "crowdsource_count": len(active_reports),
             "crowdsource_mean": crowd_mean,
             "crowdsource_weight": crowd_weight,
+            "crowdsource_consensus": {
+                key: value
+                for key, value in consensus.items()
+                if key != "reports"
+            },
             "event_names": [event["name"] for event in event_context["events"]],
         }
 

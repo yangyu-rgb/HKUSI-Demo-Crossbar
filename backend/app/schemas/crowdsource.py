@@ -54,3 +54,4 @@ class CrowdsourceSubmitResponse(BaseModel):
     report: CrowdsourceRecord
     message: str
     forecast_feedback: ForecastFeedbackLink | None = None
+    calibration_preview: dict

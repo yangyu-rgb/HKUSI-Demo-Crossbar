@@ -11,6 +11,8 @@ test.beforeEach(async ({ request }) => {
 test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "四口岸动态态势" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "深港口岸态势地图" })).toBeVisible();
+  await page.getByRole("button", { name: /福田口岸，当前等待/ }).press("Enter");
   await expect(page.getByRole("heading", { name: "未来三小时等待趋势" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "四口岸时段压力矩阵" })).toBeVisible();
   await expect(page.getByText("当前最优")).toBeVisible();
@@ -45,6 +47,11 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
   await expect(page.getByText("全部晋级门槛通过")).toBeVisible();
   await expect(page.getByText("90.44%", { exact: true })).toBeVisible();
   await expect(page.getByText("仅用于课堂 Demo，不收集现场真实训练数据")).toBeVisible();
+
+  await page.goto("/operations");
+  await expect(page.getByRole("heading", { name: "Demo 运营分析中心" })).toBeVisible();
+  await expect(page.getByText("预测运行", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "众包质量结构" })).toBeVisible();
 
   if (testInfo.project.name === "mobile-chromium") {
     await page.evaluate(() => window.localStorage.setItem("crossborder-demo-persona", "commuter-user"));
@@ -84,7 +91,7 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
 
 
 test("主要页面没有严重可访问性问题", async ({ page }) => {
-  for (const route of ["/", "/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/mobile", "/mobile/planner", "/mobile/scenarios", "/mobile/feedback", "/mobile/me"]) {
+  for (const route of ["/", "/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/operations", "/mobile", "/mobile/planner", "/mobile/scenarios", "/mobile/feedback", "/mobile/me"]) {
     await page.goto(route);
     await page.locator("main").waitFor();
     const result = await new AxeBuilder({ page })

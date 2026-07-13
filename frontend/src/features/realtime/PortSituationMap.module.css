@@ -1,0 +1,30 @@
+.panel { margin: 0 0 22px; padding: 24px; color: white; background: linear-gradient(145deg, #0c3733, #14534a); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-panel); box-shadow: var(--shadow); overflow: hidden; }
+.heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.heading h2 { margin: 0; font-size: 22px; }
+.heading p { margin: 0; color: #b8d0ca; font-size: 10px; }
+.map { width: 100%; min-height: 330px; margin-top: 8px; }
+.shenzhen { fill: #1d665b; }
+.hongKong { fill: #164a54; }
+.border { fill: none; stroke: rgba(201,243,107,.65); stroke-width: 3; stroke-dasharray: 9 8; }
+.region { fill: rgba(255,255,255,.34); font-size: 16px; font-weight: 800; letter-spacing: .12em; }
+.port { cursor: pointer; outline: none; }
+.port:focus-visible .pulse { stroke: white; stroke-width: 4; }
+.node { stroke: white; stroke-width: 3; transition: transform .18s ease; transform-box: fill-box; transform-origin: center; }
+.pulse { fill: none; stroke-width: 7; opacity: .2; transition: r .18s ease; }
+.low .node, .low .pulse { fill: #44bd8a; stroke: #80e0b6; }
+.medium .node, .medium .pulse { fill: #e4a844; stroke: #f7d48c; }
+.high .node, .high .pulse { fill: #df665c; stroke: #f3a7a0; }
+.selected .node { transform: scale(1.12); stroke: var(--lime); }
+.selected .pulse { opacity: .48; }
+.portName, .wait, .trend { fill: white; font-family: inherit; pointer-events: none; }
+.portName { font-size: 14px; font-weight: 800; }
+.wait { font-size: 12px; font-weight: 900; }
+.trend { fill: #c8dad6; font-size: 10px; }
+.legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 22px; color: #c8dad6; font-size: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; }
+.legendLow { background: #44bd8a; }
+.legendMedium { background: #e4a844; }
+.legendHigh { background: #df665c; }
+@media (max-width: 760px) { .panel { padding: 18px 10px; } .heading { padding: 0 8px; align-items: flex-start; flex-direction: column; } .map { min-width: 650px; } .panel { overflow-x: auto; } .legend { min-width: 650px; } }
+@media (prefers-reduced-motion: reduce) { .node, .pulse { transition: none; } }

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { ForecastChart } from "../features/realtime/ForecastChart";
 import { ForecastHeatmap } from "../features/realtime/ForecastHeatmap";
 import { PortCard } from "../features/realtime/PortCard";
+import { PortSituationMap } from "../features/realtime/PortSituationMap";
 import { useRealtime } from "../features/realtime/useRealtime";
 import { ErrorState } from "../shared/components/PageState";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
@@ -10,6 +12,7 @@ import styles from "./HomePage.module.css";
 
 
 export function HomePage() {
+  const [selectedPortId, setSelectedPortId] = useState<string | null>(null);
   const { data, loading, refreshing, error, refresh, dataUpdatedAt } = useRealtime();
 
   if (loading) {
@@ -58,8 +61,13 @@ export function HomePage() {
             </button>
           </div>
         </div>
+        <PortSituationMap ports={data.ports} selectedPortId={selectedPortId} onSelect={setSelectedPortId} />
         <div className={styles.portGrid}>
-          {data.ports.map((port) => <PortCard port={port} rank={rankByPort.get(port.id) ?? 4} key={port.id} />)}
+          {data.ports.map((port) => (
+            <div id={`port-card-${port.id}`} className={selectedPortId === port.id ? styles.selectedCard : undefined} key={port.id}>
+              <PortCard port={port} rank={rankByPort.get(port.id) ?? 4} />
+            </div>
+          ))}
         </div>
         <ForecastChart data={data} />
         <ForecastHeatmap data={data} />

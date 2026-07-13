@@ -1,5 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
+import logging
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
@@ -24,6 +25,9 @@ from .config import DATABASE_PATH, DATA_DIR
 from .exceptions import AppError, ErrorCode
 from .repositories import DemoRepository
 from .schemas.common import ErrorResponse
+
+
+logger = logging.getLogger("crossborder.error")
 
 
 def create_app(
@@ -108,8 +112,35 @@ def create_app(
         code: str,
         message: str,
         details,
+        category: str | None = None,
+        retryable: bool | None = None,
+        user_action: str | None = None,
     ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", uuid4().hex)
+        resolved_category = category or (
+            "validation" if status_code == 422
+            else "permission" if status_code == 403
+            else "not_found" if status_code == 404
+            else "conflict" if status_code == 409
+            else "dependency" if code == ErrorCode.DATABASE_ERROR.value
+            else "internal"
+        )
+        resolved_retryable = retryable if retryable is not None else status_code >= 500
+        if user_action is None:
+            user_action = (
+                "请检查输入后重试" if status_code == 422
+                else "请切换到有权限的 Demo 身份" if status_code == 403
+                else "请稍后重试" if resolved_retryable
+                else None
+            )
+        app.state.repository.record_error_event({
+            "request_id": request_id,
+            "method": request.method,
+            "path": request.url.path,
+            "status_code": status_code,
+            "error_code": code,
+            "category": resolved_category,
+        })
         return JSONResponse(
             status_code=status_code,
             content=jsonable_encoder(
@@ -119,6 +150,9 @@ def create_app(
                         "message": message,
                         "details": details,
                         "request_id": request_id,
+                        "category": resolved_category,
+                        "retryable": resolved_retryable,
+                        "user_action": user_action,
                     }
                 }
             ),
@@ -162,8 +196,15 @@ def create_app(
     @app.exception_handler(Exception)
     async def unexpected_error_handler(
         request: Request,
-        _error: Exception,
+        error: Exception,
     ) -> JSONResponse:
+        logger.exception(
+            "Unhandled request error request_id=%s method=%s path=%s",
+            getattr(request.state, "request_id", "unknown"),
+            request.method,
+            request.url.path,
+            exc_info=error,
+        )
         return error_response(
             request,
             status_code=500,

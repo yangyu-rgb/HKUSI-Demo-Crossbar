@@ -16,6 +16,7 @@ const MobileScenarioPage = lazy(() => import("./mobile/MobileScenarioPage").then
 const MobileFeedbackPage = lazy(() => import("./mobile/MobileFeedbackPage").then((module) => ({ default: module.MobileFeedbackPage })));
 const MobileMePage = lazy(() => import("./mobile/MobileMePage").then((module) => ({ default: module.MobileMePage })));
 const ScenarioPage = lazy(() => import("./pages/ScenarioPage").then((module) => ({ default: module.ScenarioPage })));
+const OperationsPage = lazy(() => import("./pages/OperationsPage").then((module) => ({ default: module.OperationsPage })));
 const MobileLayout = lazy(() => import("./mobile/MobileLayout").then((module) => ({ default: module.MobileLayout })));
 
 
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="business" element={<Suspense fallback={<PageSkeleton cards={3} />}><BusinessPage /></Suspense>} />
         <Route path="model" element={<Suspense fallback={<PageSkeleton cards={3} />}><ModelPage /></Suspense>} />
         <Route path="scenarios" element={<Suspense fallback={<PageSkeleton cards={3} />}><ScenarioPage /></Suspense>} />
+        <Route path="operations" element={<Suspense fallback={<PageSkeleton cards={4} />}><OperationsPage /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
       <Route path="mobile" element={<Suspense fallback={<PageSkeleton cards={3} />}><MobileLayout /></Suspense>}>

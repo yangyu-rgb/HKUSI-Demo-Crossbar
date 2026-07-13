@@ -303,7 +303,7 @@ describe("application routes", () => {
     expect(screen.getByText("有效至 09:10")).toBeInTheDocument();
 
     expect(screen.getByText("课堂 Demo 数据")).toBeInTheDocument();
-    expect(screen.getByText(/最多以30%权重影响当前预测/)).toBeInTheDocument();
+    expect(screen.getByText(/15%、30%和45%上限/)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/实际等待/), { target: { value: "14" } });
     fireEvent.click(screen.getByRole("button", { name: "提交反馈" }));

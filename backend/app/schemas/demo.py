@@ -93,6 +93,16 @@ class AuditEventListResponse(BaseModel):
     total: int
 
 
+class OperationsSummaryResponse(BaseModel):
+    generated_at: datetime
+    window_hours: int
+    forecast: dict
+    crowdsource: dict
+    errors: dict
+    audit: dict
+    adapters: dict
+
+
 class DemoResetResponse(BaseModel):
     success: bool
     seeded: dict[str, int]

@@ -28,6 +28,7 @@ class PortStatus(BaseModel):
     id: str
     name: str
     name_en: str
+    map_position: dict[str, float]
     current_wait: int
     status: str
     crowd_level: CrowdLevel

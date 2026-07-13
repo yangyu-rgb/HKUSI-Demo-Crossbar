@@ -32,7 +32,7 @@ describe("API client", () => {
     expect(userFacingError(new ApiError("offline", 0, "NETWORK_ERROR")))
       .toBe("无法连接服务器，请检查后端是否已启动。");
     expect(userFacingError(new ApiError("boom", 503, "INTERNAL_ERROR", {}, "req-9")))
-      .toBe("服务暂时不可用（请求 req-9）");
+      .toBe("服务暂时不可用，请联系演示操作员（请求 req-9）");
   });
 
   it("handles successful empty responses", async () => {

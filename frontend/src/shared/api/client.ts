@@ -17,6 +17,9 @@ type ErrorEnvelope = {
     message?: string;
     details?: unknown;
     request_id?: string;
+    category?: string;
+    retryable?: boolean;
+    user_action?: string | null;
   };
 };
 
@@ -28,6 +31,9 @@ export class ApiError extends Error {
     readonly code: string,
     readonly details: unknown = {},
     readonly requestId: string | null = null,
+    readonly category: string = "unknown",
+    readonly retryable: boolean = false,
+    readonly userAction: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -69,6 +75,9 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
       payload.error?.code ?? "HTTP_ERROR",
       payload.error?.details ?? {},
       requestId,
+      payload.error?.category ?? "unknown",
+      payload.error?.retryable ?? response.status >= 500,
+      payload.error?.user_action ?? null,
     );
   }
   if (response.status === 204) {
@@ -86,7 +95,8 @@ export function userFacingError(error: unknown): string {
     return "无法连接服务器，请检查后端是否已启动。";
   }
   if (error.status >= 500) {
-    return `服务暂时不可用${error.requestId ? `（请求 ${error.requestId}）` : ""}`;
+    const guidance = error.userAction ?? (error.retryable ? "请稍后重试" : "请联系演示操作员");
+    return `服务暂时不可用，${guidance}${error.requestId ? `（请求 ${error.requestId}）` : ""}`;
   }
   return error.message;
 }

@@ -44,7 +44,7 @@ python scripts/train_wait_model.py
 
 `GET /api/subscriptions/{subscription_id}/preview` 会选取下一次有效通勤日期，并以到达前三小时内的预测窗口生成推荐口岸、最晚出发时间和三类提醒预览。它是纯计算，不发送通知，也不写入提醒历史或影子模型观测。需要保留审阅记录时，调用 `POST /api/subscriptions/{subscription_id}/evaluations`；历史与已读状态分别由 `GET /api/subscriptions/{subscription_id}/evaluations` 和 `PATCH /api/subscription-evaluations/{evaluation_id}/read` 提供。
 
-口岸状态、天气、日历、重复事件和众包种子统一经本地 JSON Provider 读取。每个实时或预测响应都携带来源、读取时间、状态、版本和是否使用内嵌降级数据。当前没有任何外部 Provider；该边界只为未来经过审核的数据接入保留，不能视为真实数据服务。
+口岸状态、天气、日历、重复事件和众包种子统一经本地 JSON Provider 读取，并实现最小 Provider/Repository 协议。每个实时或预测响应都携带来源、读取时间、状态、版本和是否使用内嵌降级数据。当前没有任何外部 Provider；该边界只为未来经过审核的数据接入保留，不能视为真实数据服务。
 
 `GET /api/demo/model-shadow-summary` 提供按口岸汇总的影子可用性和模型差异，仅用于本地 Demo 审阅。
 
@@ -52,7 +52,9 @@ python scripts/train_wait_model.py
 
 `GET /api/demo/v1-readiness` 汇总双向路线矩阵、本地 Provider、SQLite、Demo 身份、AI v1 产物和通知适配器状态；`GET /api/health/live` 与 `GET /api/health/ready` 可供本地运行探测。所有写请求记录请求 ID、身份、组织、路径和状态码，并返回基础安全响应头。
 
-每个正式预测仍生成稳定的 `forecast_run_id`，众包可关联该运行以演示反馈前后的变化。公开 API 不再接收真实现场、建模同意或训练标签字段；反馈只参与当前课堂校准，最多30%，随新鲜度和预测距离衰减。旧数据库字段仅作本地兼容，不进入公开响应或训练流程。
+每个正式预测仍生成稳定的 `forecast_run_id`，众包可关联该运行以演示反馈前后的变化。公开 API 不再接收真实现场、建模同意或训练标签字段；反馈按用户去重并以质量、新鲜度、共识和预测距离衰减，单人、双人和多人高共识上限分别为15%、30%和45%。旧数据库字段仅作本地兼容，不进入公开响应或训练流程。
+
+`GET /api/demo/operations-summary` 仅供 Demo 操作员查看本地预测、众包、错误、审计和适配器状态。统一错误信封除错误码、消息、详情和请求 ID 外，还提供类别、是否可重试及用户行动建议；未知异常只向用户返回脱敏提示，完整异常写入本地服务日志。
 
 ## 官方特征采集
 
