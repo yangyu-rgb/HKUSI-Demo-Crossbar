@@ -43,10 +43,3 @@
 .ports article div strong { font-size: 14px; }
 .ports article small { color: #788c86; font-size: 9px; }
 .ports article > span { font-size: 21px; font-weight: 800; }
-
-.bottomNav { position: fixed; z-index: 20; left: 50%; bottom: 10px; width: min(calc(100% - 28px), 452px); padding: 10px 8px; display: grid; grid-template-columns: repeat(4, 1fr); transform: translateX(-50%); background: rgba(16,63,57,.96); border-radius: 17px; box-shadow: 0 10px 30px rgba(16,63,57,.28); }
-.bottomNav a { padding: 8px 2px; color: #dceae6; text-align: center; text-decoration: none; font-size: 10px; font-weight: 700; }
-
-@media (min-width: 761px) {
-  .mobileShell { margin-top: 24px; border: 1px solid #dfe8e2; border-radius: 28px; }
-}

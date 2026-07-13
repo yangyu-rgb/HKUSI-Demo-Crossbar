@@ -123,11 +123,39 @@ function renderRoute(path: string) {
 
 afterEach(() => {
   cleanup();
+  window.sessionStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
 describe("application routes", () => {
+  it("keeps mobile planning inside the independent mobile application", async () => {
+    const mobilePrediction = {
+      ...prediction,
+      direction: "hong_kong_to_shenzhen",
+      forecast_run_id: "mobile-run-1",
+      prediction_engine: "v2",
+      scenario: {},
+    };
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/api/locations")) return json(locations);
+      if (url.endsWith("/api/demo/context")) return json(context);
+      if (url.endsWith("/api/predict") && init?.method === "POST") return json(mobilePrediction);
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderRoute("/mobile/planner");
+    expect(await screen.findByRole("heading", { name: "规划跨境行程" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "主要导航" })).not.toBeInTheDocument();
+    const mobileNavigation = screen.getByRole("navigation", { name: "移动快捷导航" });
+    expect(mobileNavigation.querySelector('a[href="/planner"]')).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "生成 AI 建议" }));
+    expect(await screen.findByText("本次推荐 · 香港大学 → 深圳南山科技园")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "通关后反馈实际等待" })).toHaveAttribute("href", expect.stringContaining("/mobile/feedback"));
+  });
+
   it("loads the editable business page directly", async () => {
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);

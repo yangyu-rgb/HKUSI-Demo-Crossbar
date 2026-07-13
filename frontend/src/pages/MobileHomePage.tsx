@@ -30,10 +30,10 @@ export function MobileHomePage() {
       </section>
 
       <section className={styles.quickGrid}>
-        <Link to="/planner"><strong>立即规划</strong><span>比较四个口岸</span></Link>
-        <Link to="/scenarios"><strong>课堂场景</strong><span>暴雨与突发事件</span></Link>
-        <Link to="/crowdsource"><strong>输入众包</strong><span>查看30%透明校准</span></Link>
-        <Link to="/model"><strong>模型原理</strong><span>技术公式 + 大白话</span></Link>
+        <Link to="/mobile/planner"><strong>立即规划</strong><span>比较四个口岸</span></Link>
+        <Link to="/mobile/scenarios"><strong>场景推演</strong><span>暴雨与突发事件</span></Link>
+        <Link to="/mobile/feedback"><strong>现场反馈</strong><span>参与透明校准</span></Link>
+        <Link to="/mobile/me"><strong>我的通勤</strong><span>提醒、通知与模型</span></Link>
       </section>
 
       <section className={styles.ports}>
@@ -47,12 +47,6 @@ export function MobileHomePage() {
         ))}
       </section>
 
-      <nav className={styles.bottomNav} aria-label="移动快捷导航">
-        <Link to="/mobile">首页</Link>
-        <Link to="/planner">规划</Link>
-        <Link to="/scenarios">场景</Link>
-        <Link to="/crowdsource">众包</Link>
-      </nav>
     </main>
   );
 }
