@@ -1,6 +1,7 @@
-from fastapi import Depends, Request
+from fastapi import Depends, Header, Request
 
 from ..clock import Clock
+from ..exceptions import AuthenticationRequiredError, PermissionDeniedError
 from ..ml.shadow import ShadowWaitModel
 from ..ml.scenario_model import ScenarioWaitModel
 from ..repositories import DemoRepository
@@ -24,8 +25,34 @@ def get_clock(request: Request) -> Clock:
     return request.app.state.clock
 
 
-def get_demo_persona(request: Request) -> dict:
+def get_demo_persona(
+    request: Request,
+    _persona_header: str | None = Header(
+        default=None,
+        alias="X-Demo-Persona-ID",
+        description="本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+    ),
+) -> dict:
     return request.state.demo_persona
+
+
+def require_authenticated_persona(
+    persona: dict = Depends(get_demo_persona),
+) -> dict:
+    if not persona["explicit"]:
+        raise AuthenticationRequiredError()
+    return persona
+
+
+def require_roles(*allowed_roles: str):
+    def dependency(
+        persona: dict = Depends(require_authenticated_persona),
+    ) -> dict:
+        if persona["role"] not in allowed_roles:
+            raise PermissionDeniedError("当前 Demo 身份无权访问此功能")
+        return persona
+
+    return dependency
 
 
 def get_shadow_model(request: Request) -> ShadowWaitModel:

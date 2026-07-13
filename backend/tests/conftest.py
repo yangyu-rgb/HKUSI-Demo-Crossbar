@@ -43,4 +43,5 @@ def prediction_service(
 @pytest.fixture
 def client(tmp_path: Path, clock: FrozenClock) -> TestClient:
     with TestClient(create_app(DATA_DIR, tmp_path / "api.db", clock)) as test_client:
+        test_client.headers.update({"X-Demo-Persona-ID": "demo-user"})
         yield test_client

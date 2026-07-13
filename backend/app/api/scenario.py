@@ -17,10 +17,15 @@ from .dependencies import (
     get_demo_persona,
     get_prediction_service,
     get_scenario_service,
+    require_roles,
 )
 
 
-router = APIRouter(prefix="/api/demo/scenarios", tags=["Demo 场景"])
+router = APIRouter(
+    prefix="/api/demo/scenarios",
+    tags=["Demo 场景"],
+    dependencies=[Depends(require_roles("operator", "commuter"))],
+)
 
 
 def require_operator(persona: dict) -> None:

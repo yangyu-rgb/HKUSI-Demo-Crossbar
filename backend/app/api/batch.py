@@ -9,7 +9,7 @@ from ..schemas.batch import (
 )
 from ..exceptions import ErrorCode, PermissionDeniedError, ResourceNotFoundError
 from ..services import BatchService
-from .dependencies import get_batch_service, get_demo_persona
+from .dependencies import get_batch_service, get_demo_persona, require_roles
 
 
 def require_business_persona(persona: dict) -> None:
@@ -17,7 +17,11 @@ def require_business_persona(persona: dict) -> None:
         raise PermissionDeniedError()
 
 
-router = APIRouter(prefix="/api", tags=["企业方案"])
+router = APIRouter(
+    prefix="/api",
+    tags=["企业方案"],
+    dependencies=[Depends(require_roles("operator", "business_admin"))],
+)
 
 
 @router.post(

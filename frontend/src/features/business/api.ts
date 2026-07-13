@@ -1,4 +1,4 @@
-import { getDemoPersonaId, request } from "../../shared/api/client";
+import { getDemoSession, request } from "../../shared/api/client";
 import type {
   BatchHistoryResponse,
   BatchPlanResponse,
@@ -29,9 +29,10 @@ export function validateBatchCsv(csvText: string): Promise<BatchCsvValidateRespo
 
 
 export async function downloadBatchPlan(planId: string): Promise<void> {
+  const session = getDemoSession();
   const response = await fetch(
     `${import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000"}/api/batch/plans/${encodeURIComponent(planId)}/export.csv`,
-    { headers: { "X-Demo-Persona-ID": getDemoPersonaId() } },
+    { headers: session ? { "X-Demo-Persona-ID": session.personaId } : {} },
   );
   if (!response.ok) throw new Error("方案导出失败");
   const blob = await response.blob();

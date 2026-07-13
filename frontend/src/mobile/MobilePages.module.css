@@ -3,6 +3,7 @@
 .intro span { color: #176558; font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .intro h1 { margin: 5px 0 4px; font-size: 26px; letter-spacing: -.035em; }
 .intro p { margin: 0; color: #68807a; font-size: 11px; line-height: 1.55; }
+.logout { margin-top:10px;padding:7px 9px;color:#9b4d2f;background:#fff0e8;border:1px solid #efd0c0;border-radius:8px;font-size:9px;font-weight:800;cursor:pointer; }
 .card { margin-bottom: 12px; padding: 16px; background: white; border: 1px solid #dfe8e2; border-radius: 18px; }
 .card h2 { margin: 0 0 12px; font-size: 17px; }
 .form { display: grid; gap: 12px; }

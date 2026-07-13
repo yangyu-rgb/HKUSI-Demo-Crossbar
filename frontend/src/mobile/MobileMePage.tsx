@@ -6,7 +6,7 @@ import type { Priority } from "../features/prediction/types";
 import { fetchNotifications, fetchSubscriptionPreview, markNotificationRead, runAlertCycle } from "../features/subscription/api";
 import type { SubscriptionRecord, Weekday } from "../features/subscription/types";
 import { useSubscriptions } from "../features/subscription/useSubscriptions";
-import { getDemoPersonaId, userFacingError } from "../shared/api/client";
+import { clearDemoSession, getDemoPersonaId, userFacingError } from "../shared/api/client";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
 import { formatClock, formatHongKongDateTime } from "../shared/formatters";
 import { queryKeys } from "../shared/queryKeys";
@@ -59,10 +59,15 @@ export function MobileMePage() {
   if (locations.isPending || subscriptions.loading || notifications.isPending || model.isPending) return <PageSkeleton cards={2} />;
   const metrics = model.data?.metrics as Record<string, { mae?: number; improvement_percent?: number }> | undefined;
   const interval = model.data?.interval_calibration as { test_coverage_percent?: number } | undefined;
+  function logout() {
+    clearDemoSession();
+    client.clear();
+    window.location.assign("/mobile/login");
+  }
 
   return (
     <main className={styles.page}>
-      <div className={styles.intro}><span>Personal commute</span><h1>我的跨境通勤</h1><p>在手机端管理提醒、查看本地通知，并了解当前 AI 模型。</p></div>
+      <div className={styles.intro}><span>Personal commute</span><h1>我的跨境通勤</h1><p>在手机端管理提醒、查看本地通知，并了解当前 AI 模型。</p><button className={styles.logout} onClick={logout}>退出登录</button></div>
       <div className={styles.tabs} role="tablist" aria-label="我的通勤栏目">
         {([['alerts','提醒'],['notifications',`通知 ${notifications.data?.unread_total || ''}`],['model','模型']] as Array<[Tab,string]>).map(([id,label]) => <button role="tab" aria-selected={tab === id} key={id} onClick={() => setTab(id)}>{label}</button>)}
       </div>

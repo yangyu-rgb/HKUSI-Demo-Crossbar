@@ -3,6 +3,7 @@ from typing import Any
 
 
 class ErrorCode(str, Enum):
+    AUTH_REQUIRED = "AUTH_REQUIRED"
     VALIDATION_ERROR = "VALIDATION_ERROR"
     LOCATION_NOT_FOUND = "LOCATION_NOT_FOUND"
     PORT_NOT_FOUND = "PORT_NOT_FOUND"
@@ -67,3 +68,8 @@ class PersistenceError(AppError):
 class PermissionDeniedError(AppError):
     def __init__(self, message: str = "当前 Demo 身份无权执行此操作"):
         super().__init__(ErrorCode.FORBIDDEN, message, status_code=403)
+
+
+class AuthenticationRequiredError(AppError):
+    def __init__(self, message: str = "请先登录本地 Demo 身份"):
+        super().__init__(ErrorCode.AUTH_REQUIRED, message, status_code=401)

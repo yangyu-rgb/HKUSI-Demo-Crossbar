@@ -6,10 +6,14 @@ from ..schemas.crowdsource import (
     CrowdsourceSubmitResponse,
 )
 from ..services import CrowdsourceService
-from .dependencies import get_crowdsource_service, get_demo_persona
+from .dependencies import get_crowdsource_service, get_demo_persona, require_roles
 
 
-router = APIRouter(prefix="/api/crowdsource", tags=["众包反馈"])
+router = APIRouter(
+    prefix="/api/crowdsource",
+    tags=["众包反馈"],
+    dependencies=[Depends(require_roles("operator", "commuter"))],
+)
 
 
 @router.get(
@@ -36,6 +40,6 @@ def submit_crowdsource_report(
     service: CrowdsourceService = Depends(get_crowdsource_service),
     persona: dict = Depends(get_demo_persona),
 ) -> dict:
-    if persona["explicit"]:
+    if persona["role"] == "commuter":
         report = report.model_copy(update={"user_id": persona["id"]})
     return service.submit(report)

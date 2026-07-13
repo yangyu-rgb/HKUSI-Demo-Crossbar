@@ -22,9 +22,9 @@
 }
 ```
 
-主要错误代码包括 `VALIDATION_ERROR`、`FORBIDDEN`、`LOCATION_NOT_FOUND`、`TARGET_TIME_OUT_OF_RANGE`、`SUBSCRIPTION_NOT_FOUND`、`NOTIFICATION_NOT_FOUND`、`PLAN_NOT_FOUND`、`DATABASE_ERROR` 和 `INTERNAL_ERROR`。
+主要错误代码包括 `AUTH_REQUIRED`、`VALIDATION_ERROR`、`FORBIDDEN`、`LOCATION_NOT_FOUND`、`TARGET_TIME_OUT_OF_RANGE`、`SUBSCRIPTION_NOT_FOUND`、`NOTIFICATION_NOT_FOUND`、`PLAN_NOT_FOUND`、`DATABASE_ERROR` 和 `INTERNAL_ERROR`。
 
-前端每次请求会附带 `X-Demo-Persona-ID`。可选值来自 `GET /api/demo/personas`；未提供时使用本地默认运营身份。该机制仅用于 Demo 角色与组织隔离，不是生产认证。
+前端仅在完成本地登录后附带 `X-Demo-Persona-ID`，可选值来自 `GET /api/demo/personas`。健康检查、Demo 时间与身份列表、实时口岸态势和商业套餐允许匿名读取；其余接口未提供身份头时返回 `401 AUTH_REQUIRED`。个人、企业与运营接口继续执行角色检查，越权返回 `403 FORBIDDEN`。该身份头可被客户端伪造，只用于课堂 Demo 流程与组织隔离，不是生产认证。
 
 ## Demo 控制
 
@@ -39,6 +39,8 @@
 - `GET /api/demo/audit?limit=50`：仅运营身份可读取本地写操作审计。
 - `GET /api/demo/model-shadow-summary`：返回 AI v1 影子观测总量、可用/降级次数与各口岸的平均差异，仅用于本地审阅。
 - `POST /api/demo/reset`：清空 SQLite 动态数据，并按当前香港时间重新生成反馈和订阅种子。
+
+除 `/context` 与 `/personas` 外，以上 Demo 控制和模型状态接口需要登录；重置、审计和运营汇总仅允许运营身份。个人与运营可读取移动场景并执行无副作用对比，只有运营可以保存或重置场景。
 
 ## 实时状态与地点
 
@@ -165,6 +167,7 @@ Demo 模型为每个目标时间筛选相同工作日、周末或节假日，目
 - SQLite 仅提供本地 Demo 持久化，不代表生产环境并发能力或部署可靠性。
 - 运营分析只反映当前本地 SQLite 中的课堂操作，不代表生产监控、真实用户行为或商业指标。
 - 登录页只选择本地 Demo persona；商业结账只生成本地收据。二者都不是生产认证或真实支付。
+- 付费套餐当前不参与接口 entitlement 判断；本轮只按登录与业务角色隔离功能。
 - Demo 身份头、本地通知和本地审计只用于闭合演示逻辑，不替代认证、外部投递或生产审计设施。
 - AI v2.2 使用香港真实公开客流特征与生成基础等待标签驱动课堂 Demo；深圳公开快照用于交叉核验，AI v1 仅作影子比较。
 - 项目不收集现场真实训练数据，也不提供生产 readiness。

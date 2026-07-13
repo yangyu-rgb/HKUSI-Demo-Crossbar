@@ -1,23 +1,12 @@
+import { clearDemoSession, getDemoSession, setDemoSession } from "../../features/auth/session";
+
+export { clearDemoSession, getDemoSession, setDemoSession };
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
 
 
 export function getDemoPersonaId(): string {
-  return window.localStorage.getItem("crossborder-demo-persona") ?? "demo-user";
-}
-
-
-export function setDemoPersonaId(personaId: string): void {
-  window.localStorage.setItem("crossborder-demo-persona", personaId);
-}
-
-
-export function setDemoSession(session: { personaId: string; signedInAt: string }): void {
-  window.localStorage.setItem("crossborder-demo-session", JSON.stringify(session));
-}
-
-
-export function clearDemoSession(): void {
-  window.localStorage.removeItem("crossborder-demo-session");
+  return getDemoSession()?.personaId ?? "commuter-user";
 }
 
 
@@ -53,12 +42,13 @@ export class ApiError extends Error {
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const session = getDemoSession();
   try {
     response = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
-        "X-Demo-Persona-ID": getDemoPersonaId(),
+        ...(session ? { "X-Demo-Persona-ID": session.personaId } : {}),
         ...init?.headers,
       },
     });

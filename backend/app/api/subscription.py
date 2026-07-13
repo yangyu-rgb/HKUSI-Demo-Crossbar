@@ -13,10 +13,14 @@ from ..schemas.subscription import (
     SubscriptionUpdate,
 )
 from ..services import SubscriptionService
-from .dependencies import get_demo_persona, get_subscription_service
+from .dependencies import get_demo_persona, get_subscription_service, require_roles
 
 
-router = APIRouter(prefix="/api", tags=["提醒订阅"])
+router = APIRouter(
+    prefix="/api",
+    tags=["提醒订阅"],
+    dependencies=[Depends(require_roles("operator", "commuter"))],
+)
 
 
 @router.get(

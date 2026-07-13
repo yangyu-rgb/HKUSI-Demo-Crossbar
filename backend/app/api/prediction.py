@@ -6,10 +6,14 @@ from ..schemas.prediction import (
     PredictionResponse,
 )
 from ..services import PredictionService
-from .dependencies import get_prediction_service
+from .dependencies import get_prediction_service, require_roles
 
 
-router = APIRouter(prefix="/api", tags=["路线预测"])
+router = APIRouter(
+    prefix="/api",
+    tags=["路线预测"],
+    dependencies=[Depends(require_roles("operator", "commuter", "business_admin"))],
+)
 
 
 @router.get(

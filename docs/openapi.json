@@ -318,6 +318,26 @@
         ],
         "summary": "获取 AI v1 合成数据评估与产物状态",
         "operationId": "get_v1_model_api_demo_v1_model_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -379,6 +399,26 @@
         ],
         "summary": "获取 AI v2.2 透明校准课堂模型状态",
         "operationId": "get_v2_model_api_demo_v2_model_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -440,6 +480,26 @@
         ],
         "summary": "获取 V1 完整 Demo 就绪度",
         "operationId": "get_v1_readiness_api_demo_v1_readiness_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -511,6 +571,24 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -584,6 +662,24 @@
               "default": 24,
               "title": "Window Hours"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -647,6 +743,26 @@
         ],
         "summary": "获取 AI v1 影子观测汇总",
         "operationId": "get_model_shadow_summary_api_demo_model_shadow_summary_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "请求成功",
@@ -709,6 +825,26 @@
         "summary": "重置 Demo 动态数据",
         "description": "删除已保存的反馈、订阅和企业方案，然后重新加载 JSON 种子。",
         "operationId": "reset_demo_api_demo_reset_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "重置成功",
@@ -799,6 +935,24 @@
               "default": 14,
               "title": "Days"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -862,15 +1016,35 @@
         ],
         "summary": "对比默认与候选场景 AI 方案",
         "operationId": "compare_scenarios_api_demo_scenarios_compare_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ScenarioComparisonRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -933,6 +1107,26 @@
         ],
         "summary": "恢复未来14天默认场景",
         "operationId": "reset_scenarios_api_demo_scenarios_reset_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1004,6 +1198,24 @@
               "format": "date",
               "title": "Scenario Date"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "requestBody": {
@@ -1085,6 +1297,24 @@
               "format": "date",
               "title": "Scenario Date"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -1210,6 +1440,26 @@
         ],
         "summary": "获取支持的出发地和目的地",
         "operationId": "locations_api_locations_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "请求成功",
@@ -1272,15 +1522,35 @@
         "summary": "比较四个口岸的路线方案",
         "description": "使用官方客流驱动的 AI V2.1、15分钟拥堵等级校准和确定性交通矩阵；模型或网络不可用时自动降级。",
         "operationId": "predict_api_predict_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PredictionRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -1355,6 +1625,24 @@
               "default": 8,
               "title": "Limit"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -1418,15 +1706,35 @@
         ],
         "summary": "提交并持久化众包反馈",
         "operationId": "submit_crowdsource_report_api_crowdsource_report_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CrowdsourceReport"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -1550,6 +1858,26 @@
         ],
         "summary": "获取当前 Demo 账户商业订阅",
         "operationId": "get_subscription_api_commercial_subscription_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1611,15 +1939,35 @@
         ],
         "summary": "执行无真实扣款的模拟结账",
         "operationId": "checkout_api_commercial_checkout_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CommercialCheckoutRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -1682,6 +2030,26 @@
         ],
         "summary": "取消本地商业订阅",
         "operationId": "cancel_subscription_api_commercial_subscription_cancel_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1753,6 +2121,24 @@
               "minLength": 1,
               "title": "User Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -1814,6 +2200,26 @@
         ],
         "summary": "创建智能提醒订阅",
         "operationId": "create_subscription_api_subscriptions_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1885,15 +2291,36 @@
         ],
         "summary": "通过已弃用的单数路径创建订阅",
         "operationId": "create_subscription_legacy_api_subscription_post",
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SubscriptionRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -1946,8 +2373,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/subscriptions/{subscription_id}": {
@@ -1966,6 +2392,24 @@
               "type": "string",
               "title": "Subscription Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "requestBody": {
@@ -2046,6 +2490,24 @@
               "type": "string",
               "title": "Subscription Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2111,6 +2573,24 @@
               "type": "string",
               "title": "Subscription Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2183,6 +2663,24 @@
               "type": "string",
               "title": "Subscription Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2265,6 +2763,24 @@
               "default": 10,
               "title": "Limit"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2337,6 +2853,24 @@
               "type": "string",
               "title": "Evaluation Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2411,6 +2945,24 @@
               "default": "demo-user",
               "title": "User Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2507,6 +3059,24 @@
               "default": false,
               "title": "Unread Only"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2579,6 +3149,24 @@
               "type": "string",
               "title": "Notification Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2642,15 +3230,35 @@
         ],
         "summary": "生成并保存企业批量方案",
         "operationId": "create_batch_plan_api_batch_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BatchRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -2735,6 +3343,24 @@
               "default": 10,
               "title": "Limit"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {
@@ -2798,15 +3424,35 @@
         ],
         "summary": "校验企业员工 CSV",
         "operationId": "validate_batch_csv_api_batch_csv_validate_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BatchCsvValidateRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -2878,6 +3524,24 @@
               "type": "string",
               "title": "Plan Id"
             }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
           }
         ],
         "responses": {

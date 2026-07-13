@@ -61,6 +61,8 @@
   color: var(--teal);
 }
 
+.lock { color: #9b6b34; font-size: 8px; white-space: nowrap; }
+
 .active {
   position: relative;
 }
@@ -119,15 +121,6 @@
   cursor: pointer;
   font-size: 10px;
   text-decoration: none;
-}
-
-.demoControls select {
-  max-width: 120px;
-  padding: 7px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
-  font-size: 10px;
 }
 
 .resetError {

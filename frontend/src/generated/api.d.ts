@@ -2428,7 +2428,10 @@ export interface operations {
     get_v1_model_api_demo_v1_model_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2484,7 +2487,10 @@ export interface operations {
     get_v2_model_api_demo_v2_model_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2540,7 +2546,10 @@ export interface operations {
     get_v1_readiness_api_demo_v1_readiness_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2598,7 +2607,10 @@ export interface operations {
             query?: {
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2656,7 +2668,10 @@ export interface operations {
             query?: {
                 window_hours?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2712,7 +2727,10 @@ export interface operations {
     get_model_shadow_summary_api_demo_model_shadow_summary_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2768,7 +2786,10 @@ export interface operations {
     reset_demo_api_demo_reset_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2827,7 +2848,10 @@ export interface operations {
                 start?: string | null;
                 days?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2883,7 +2907,10 @@ export interface operations {
     compare_scenarios_api_demo_scenarios_compare_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2943,7 +2970,10 @@ export interface operations {
     reset_scenarios_api_demo_scenarios_reset_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2999,7 +3029,10 @@ export interface operations {
     save_scenario_api_demo_scenarios__scenario_date__put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 scenario_date: string;
             };
@@ -3061,7 +3094,10 @@ export interface operations {
     delete_scenario_api_demo_scenarios__scenario_date__delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 scenario_date: string;
             };
@@ -3175,7 +3211,10 @@ export interface operations {
     locations_api_locations_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3231,7 +3270,10 @@ export interface operations {
     predict_api_predict_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3293,7 +3335,10 @@ export interface operations {
             query?: {
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3349,7 +3394,10 @@ export interface operations {
     submit_crowdsource_report_api_crowdsource_report_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3465,7 +3513,10 @@ export interface operations {
     get_subscription_api_commercial_subscription_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3521,7 +3572,10 @@ export interface operations {
     checkout_api_commercial_checkout_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3581,7 +3635,10 @@ export interface operations {
     cancel_subscription_api_commercial_subscription_cancel_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3639,7 +3696,10 @@ export interface operations {
             query: {
                 user_id: string;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3695,7 +3755,10 @@ export interface operations {
     create_subscription_api_subscriptions_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3755,7 +3818,10 @@ export interface operations {
     create_subscription_legacy_api_subscription_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3815,7 +3881,10 @@ export interface operations {
     delete_subscription_api_subscriptions__subscription_id__delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -3871,7 +3940,10 @@ export interface operations {
     update_subscription_api_subscriptions__subscription_id__patch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -3933,7 +4005,10 @@ export interface operations {
     preview_subscription_api_subscriptions__subscription_id__preview_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -3993,7 +4068,10 @@ export interface operations {
             query?: {
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -4051,7 +4129,10 @@ export interface operations {
     record_subscription_evaluation_api_subscriptions__subscription_id__evaluations_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -4109,7 +4190,10 @@ export interface operations {
     mark_subscription_evaluation_read_api_subscription_evaluations__evaluation_id__read_patch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 evaluation_id: string;
             };
@@ -4169,7 +4253,10 @@ export interface operations {
             query?: {
                 user_id?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4229,7 +4316,10 @@ export interface operations {
                 limit?: number;
                 unread_only?: boolean;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4285,7 +4375,10 @@ export interface operations {
     mark_notification_read_api_notifications__notification_id__read_patch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 notification_id: string;
             };
@@ -4343,7 +4436,10 @@ export interface operations {
     create_batch_plan_api_batch_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4406,7 +4502,10 @@ export interface operations {
                 company: string;
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4462,7 +4561,10 @@ export interface operations {
     validate_batch_csv_api_batch_csv_validate_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4522,7 +4624,10 @@ export interface operations {
     export_batch_plan_api_batch_plans__plan_id__export_csv_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
             path: {
                 plan_id: string;
             };

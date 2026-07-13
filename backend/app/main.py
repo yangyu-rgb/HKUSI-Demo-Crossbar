@@ -119,7 +119,8 @@ def create_app(
     ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", uuid4().hex)
         resolved_category = category or (
-            "validation" if status_code == 422
+            "authentication" if status_code == 401
+            else "validation" if status_code == 422
             else "permission" if status_code == 403
             else "not_found" if status_code == 404
             else "conflict" if status_code == 409
@@ -129,7 +130,8 @@ def create_app(
         resolved_retryable = retryable if retryable is not None else status_code >= 500
         if user_action is None:
             user_action = (
-                "请检查输入后重试" if status_code == 422
+                "请先登录本地 Demo 身份" if status_code == 401
+                else "请检查输入后重试" if status_code == 422
                 else "请切换到有权限的 Demo 身份" if status_code == 403
                 else "请稍后重试" if resolved_retryable
                 else None

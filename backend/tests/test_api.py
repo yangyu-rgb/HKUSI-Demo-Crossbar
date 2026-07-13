@@ -549,6 +549,7 @@ def test_demo_context_and_reset(client: TestClient) -> None:
 
 
 def test_subscription_crud(client: TestClient) -> None:
+    client.headers.update({"X-Demo-Persona-ID": "commuter-user"})
     created = client.post(
         "/api/subscriptions",
         json={
@@ -971,3 +972,53 @@ def test_demo_end_to_end_flow_and_reset(client: TestClient) -> None:
     assert reports_after_reset.json()["total"] == 4
     assert plans_after_reset.json()["total"] == 0
     assert shadow_after_reset.json()["total_observations"] == 0
+
+
+def test_public_routes_work_without_a_demo_session_and_business_routes_require_login(
+    client: TestClient,
+) -> None:
+    del client.headers["X-Demo-Persona-ID"]
+
+    for path in [
+        "/api/health",
+        "/api/realtime",
+        "/api/demo/context",
+        "/api/demo/personas",
+        "/api/commercial/plans",
+    ]:
+        assert client.get(path).status_code == 200
+
+    for path in [
+        "/api/locations",
+        "/api/demo/v2-model",
+        "/api/commercial/subscription",
+    ]:
+        response = client.get(path)
+        assert response.status_code == 401
+        assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+        assert response.json()["error"]["category"] == "authentication"
+
+    reset = client.post("/api/demo/reset")
+    assert reset.status_code == 401
+    assert reset.json()["error"]["user_action"] == "请先登录本地 Demo 身份"
+
+
+def test_role_matrix_separates_personal_business_and_operator_features(
+    client: TestClient,
+) -> None:
+    commuter = {"X-Demo-Persona-ID": "commuter-user"}
+    business = {"X-Demo-Persona-ID": "enterprise-admin"}
+
+    assert client.get("/api/locations", headers=commuter).status_code == 200
+    assert client.get("/api/crowdsource/feed", headers=commuter).status_code == 200
+    assert client.get("/api/demo/scenarios?days=1", headers=commuter).status_code == 200
+    assert client.get("/api/demo/v2-model", headers=commuter).status_code == 200
+    assert client.get("/api/batch/plans?company=Demo", headers=commuter).status_code == 403
+    assert client.get("/api/demo/operations-summary", headers=commuter).status_code == 403
+
+    assert client.get("/api/locations", headers=business).status_code == 200
+    assert client.get("/api/demo/v2-model", headers=business).status_code == 200
+    assert client.get("/api/batch/plans?company=Demo", headers=business).status_code == 200
+    assert client.get("/api/crowdsource/feed", headers=business).status_code == 403
+    assert client.get("/api/subscriptions?user_id=enterprise-admin", headers=business).status_code == 403
+    assert client.get("/api/demo/scenarios?days=1", headers=business).status_code == 403

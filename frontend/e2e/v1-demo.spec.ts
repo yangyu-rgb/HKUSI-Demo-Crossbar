@@ -3,12 +3,14 @@ import { expect, test } from "@playwright/test";
 
 
 test.beforeEach(async ({ request }) => {
-  const response = await request.post("http://127.0.0.1:8000/api/demo/reset");
+  const response = await request.post("http://127.0.0.1:8000/api/demo/reset", {
+    headers: { "X-Demo-Persona-ID": "demo-user" },
+  });
   expect(response.ok()).toBe(true);
 });
 
 
-test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环", async ({ page }, testInfo) => {
+test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "选择你的工作空间" })).toBeVisible();
   await page.getByRole("button", { name: /Demo 操作员/ }).click();
@@ -69,10 +71,9 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
   await expect(page.getByRole("heading", { name: "众包质量结构" })).toBeVisible();
   await expect(page.getByText("商业订阅", { exact: true })).toBeVisible();
 
-  if (testInfo.project.name === "mobile-chromium") {
-    await page.evaluate(() => window.localStorage.setItem("crossborder-demo-persona", "commuter-user"));
-  }
-  await page.goto("/mobile");
+  await page.goto("/mobile/login?next=%2Fmobile");
+  await expect(page.getByRole("heading", { name: "个人通勤空间" })).toBeVisible();
+  await page.getByRole("button", { name: /进入移动端系统/ }).click();
   await expect(page.getByRole("heading", { name: "现在走哪个口岸？" })).toBeVisible();
   await expect(page.getByText("深圳官方快照 · 交叉核验")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "移动快捷导航" })).toBeVisible();
@@ -108,12 +109,31 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
 
 
 test("主要页面没有严重可访问性问题", async ({ page }) => {
-  for (const route of ["/login", "/", "/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/operations", "/pricing", "/mobile", "/mobile/planner", "/mobile/scenarios", "/mobile/feedback", "/mobile/me"]) {
+  for (const route of ["/login", "/", "/pricing", "/mobile/login"]) {
     await page.goto(route);
     await page.locator("main").waitFor();
     const result = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa"])
       .analyze();
+    expect(result.violations, `${route}: ${JSON.stringify(result.violations)}`).toEqual([]);
+  }
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: /Demo 操作员/ }).click();
+  await page.getByRole("button", { name: /进入 CrossBorder AI/ }).click();
+  for (const route of ["/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/operations"]) {
+    await page.goto(route);
+    await page.locator("main").waitFor();
+    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(result.violations, `${route}: ${JSON.stringify(result.violations)}`).toEqual([]);
+  }
+
+  await page.goto("/mobile/login");
+  await page.getByRole("button", { name: /进入移动端系统/ }).click();
+  for (const route of ["/mobile", "/mobile/planner", "/mobile/scenarios", "/mobile/feedback", "/mobile/me"]) {
+    await page.goto(route);
+    await page.locator("main").waitFor();
+    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     expect(result.violations, `${route}: ${JSON.stringify(result.violations)}`).toEqual([]);
   }
 });

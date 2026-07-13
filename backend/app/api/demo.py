@@ -11,9 +11,8 @@ from ..schemas.demo import (
     ShadowObservationSummaryResponse,
     OperationsSummaryResponse,
 )
-from ..exceptions import PermissionDeniedError
 from ..services import DemoService
-from .dependencies import get_demo_persona, get_demo_service
+from .dependencies import get_demo_service, require_roles
 
 
 router = APIRouter(prefix="/api/demo", tags=["Demo 控制"])
@@ -50,12 +49,16 @@ def get_demo_personas(
 )
 def get_v1_model(
     service: DemoService = Depends(get_demo_service),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
 ) -> dict:
     return service.get_v1_model()
 
 
 @router.get("/v2-model", response_model=V2ModelResponse, summary="获取 AI v2.2 透明校准课堂模型状态")
-def get_v2_model(service: DemoService = Depends(get_demo_service)) -> dict:
+def get_v2_model(
+    service: DemoService = Depends(get_demo_service),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
+) -> dict:
     return service.get_v2_model()
 
 
@@ -66,6 +69,7 @@ def get_v2_model(service: DemoService = Depends(get_demo_service)) -> dict:
 )
 def get_v1_readiness(
     service: DemoService = Depends(get_demo_service),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
 ) -> dict:
     return service.get_v1_readiness()
 
@@ -78,10 +82,8 @@ def get_v1_readiness(
 def get_audit_events(
     limit: int = 50,
     service: DemoService = Depends(get_demo_service),
-    persona: dict = Depends(get_demo_persona),
+    _persona: dict = Depends(require_roles("operator")),
 ) -> dict:
-    if persona["role"] != "operator":
-        raise PermissionDeniedError("仅运营人员可查看 Demo 审计记录")
     return service.get_audit_events(min(max(limit, 1), 200))
 
 
@@ -93,10 +95,8 @@ def get_audit_events(
 def get_operations_summary(
     window_hours: int = 24,
     service: DemoService = Depends(get_demo_service),
-    persona: dict = Depends(get_demo_persona),
+    _persona: dict = Depends(require_roles("operator")),
 ) -> dict:
-    if persona["role"] != "operator":
-        raise PermissionDeniedError("仅运营人员可查看 Demo 运营分析")
     safe_window = window_hours if window_hours in {24, 168} else 24
     return service.get_operations_summary(safe_window)
 
@@ -109,6 +109,7 @@ def get_operations_summary(
 )
 def get_model_shadow_summary(
     service: DemoService = Depends(get_demo_service),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
 ) -> dict:
     return service.get_model_shadow_summary()
 
@@ -122,5 +123,6 @@ def get_model_shadow_summary(
 )
 def reset_demo(
     service: DemoService = Depends(get_demo_service),
+    _persona: dict = Depends(require_roles("operator")),
 ) -> dict:
     return service.reset()

@@ -105,7 +105,14 @@ function json(payload: unknown, status = 200) {
   }));
 }
 
-function renderRoute(path: string) {
+function renderRoute(path: string, role: "operator" | "commuter" | "business_admin" | null | undefined = undefined) {
+  window.localStorage.clear();
+  const resolvedRole = role === undefined ? (path.startsWith("/mobile") ? "commuter" : "operator") : role;
+  if (resolvedRole) {
+    const personaId = resolvedRole === "operator" ? "demo-user" : resolvedRole === "commuter" ? "commuter-user" : "enterprise-admin";
+    window.localStorage.setItem("crossborder-demo-session", JSON.stringify({ personaId, role: resolvedRole, signedInAt: "2026-07-10T07:45:00+08:00" }));
+    window.localStorage.setItem("crossborder-demo-persona", personaId);
+  }
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -124,11 +131,37 @@ function renderRoute(path: string) {
 afterEach(() => {
   cleanup();
   window.sessionStorage.clear();
+  window.localStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
 describe("application routes", () => {
+  it("redirects a guest from a protected desktop route to login", async () => {
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+      if (String(input).endsWith("/api/demo/personas")) return json({ default_persona_id: "demo-user", personas: [] });
+      throw new Error(`Unexpected request: ${String(input)}`);
+    }));
+    renderRoute("/planner", null);
+    expect(await screen.findByRole("heading", { name: "选择你的工作空间" })).toBeInTheDocument();
+  });
+
+  it("shows a permission explanation instead of leaking an enterprise page", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("not needed")));
+    renderRoute("/business", "commuter");
+    expect(await screen.findByRole("heading", { name: "当前身份无法访问此功能" })).toBeInTheDocument();
+    expect(screen.getByText(/企业管理员/)).toBeInTheDocument();
+  });
+
+  it("redirects a guest to the dedicated mobile login", async () => {
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+      if (String(input).endsWith("/api/demo/personas")) return json({ default_persona_id: "demo-user", personas: [] });
+      throw new Error(`Unexpected request: ${String(input)}`);
+    }));
+    renderRoute("/mobile", null);
+    expect(await screen.findByRole("heading", { name: "个人通勤空间" })).toBeInTheDocument();
+  });
+
   it("keeps mobile planning inside the independent mobile application", async () => {
     const mobilePrediction = {
       ...prediction,

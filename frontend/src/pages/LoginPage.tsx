@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDemoPersonas } from "../features/demo/useDemo";
-import { setDemoPersonaId, setDemoSession } from "../shared/api/client";
+import { safeNextPath } from "../features/auth/session";
+import { setDemoSession } from "../shared/api/client";
 import styles from "./LoginPage.module.css";
 
 const roleCopy: Record<string, { tag: string; detail: string }> = {
@@ -12,12 +14,16 @@ const roleCopy: Record<string, { tag: string; detail: string }> = {
 
 export function LoginPage() {
   const personas = useDemoPersonas();
-  const [selected, setSelected] = useState("demo-user");
+  const [selected, setSelected] = useState("commuter-user");
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const enter = () => {
-    setDemoPersonaId(selected);
-    setDemoSession({ personaId: selected, signedInAt: new Date().toISOString() });
-    navigate("/");
+    const persona = personas.data?.personas.find((item) => item.id === selected);
+    if (!persona || !["operator", "commuter", "business_admin"].includes(persona.role)) return;
+    queryClient.clear();
+    setDemoSession({ personaId: selected, role: persona.role as "operator" | "commuter" | "business_admin", signedInAt: new Date().toISOString() });
+    navigate(safeNextPath(location.search, "/"), { replace: true });
   };
   return (
     <main className={styles.screen}>
@@ -28,7 +34,7 @@ export function LoginPage() {
         <small className={styles.boundary}>课堂 Demo · 本地身份 · 不连接真实 OAuth 或生产认证</small>
       </section>
       <section className={styles.loginPanel}>
-        <div><span className="sectionKicker">Demo sign in</span><h2>选择你的工作空间</h2><p>无需密码。选择身份后进入对应的本地演示视图。</p></div>
+        <div><span className="sectionKicker">Demo sign in</span><h2>选择你的工作空间</h2><p>无需密码。登录后只显示当前身份可使用的本地演示功能。</p></div>
         <div className={styles.personas}>
           {personas.data?.personas.map((persona) => {
             const copy = roleCopy[persona.role];
@@ -41,4 +47,3 @@ export function LoginPage() {
     </main>
   );
 }
-
