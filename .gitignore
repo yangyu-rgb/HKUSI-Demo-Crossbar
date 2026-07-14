@@ -10,5 +10,6 @@ data/runtime/
 frontend/test-results/
 frontend/playwright-report/
 frontend/coverage/
+frontend/.cache/
 data/runtime/official-collector.pid
 data/runtime/official-collector.log

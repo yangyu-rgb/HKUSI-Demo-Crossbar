@@ -4,6 +4,8 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ request, page }) => {
   await page.route("**/*.mp4", (route) => route.abort());
+  await page.route("https://fonts.googleapis.com/**", (route) => route.abort());
+  await page.route("https://fonts.gstatic.com/**", (route) => route.abort());
   const response = await request.post("http://127.0.0.1:8000/api/demo/reset", {
     headers: { "X-Demo-Persona-ID": "demo-user" },
   });
@@ -12,6 +14,15 @@ test.beforeEach(async ({ request, page }) => {
 
 
 test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环", async ({ page }) => {
+  test.setTimeout(60_000);
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  page.on("console", (message) => {
+    // The suite deliberately aborts the remote hero MP4, which Chromium reports as ERR_FAILED.
+    if (message.type() === "error" && !message.text().includes("Failed to load resource: net::ERR_FAILED")) {
+      runtimeErrors.push(message.text());
+    }
+  });
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "选择你的工作空间" })).toBeVisible();
   await page.getByRole("button", { name: /Demo 操作员/ }).click();
@@ -24,6 +35,10 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
   await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: /福田口岸/ }).press("Enter");
   await expect(page.getByRole("button", { name: /福田口岸/ })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "返回总览" }).click();
+  await expect(page.getByRole("button", { name: "返回总览" })).toBeDisabled();
+  await page.getByRole("button", { name: "自动巡航 开" }).click();
+  await expect(page.getByRole("button", { name: "自动巡航 关" })).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("heading", { name: "未来三小时等待趋势" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "四口岸时段压力矩阵" })).toBeVisible();
   await expect(page.getByText("当前最优")).toBeVisible();
@@ -105,7 +120,9 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
 
   await page.goto("/mobile/me");
   await expect(page.getByRole("heading", { name: "我的跨境通勤" })).toBeVisible();
-  await page.getByRole("button", { name: "创建提醒" }).click();
+  const createReminder = page.getByRole("button", { name: "创建提醒" });
+  await createReminder.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await createReminder.click();
   await expect(page.getByText("提醒已创建。")).toBeVisible();
   await page.getByRole("tab", { name: /^通知/ }).click();
   await page.getByRole("button", { name: "运行本地告警周期" }).click();
@@ -114,6 +131,7 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
   await expect(page.getByText("主预测已启用")).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
+  expect(runtimeErrors).toEqual([]);
 });
 
 test("桌面电影感外壳在主要断点无横向溢出", async ({ page }) => {

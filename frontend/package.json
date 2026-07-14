@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "generate:geography": "node scripts/generate-hk-shenzhen-geography.mjs",
     "generate:api": "../backend/.venv/bin/python ../backend/scripts/export_openapi.py && openapi-typescript ../docs/openapi.json -o src/generated/api.d.ts",
     "check:api": "npm run generate:api && git diff --exit-code -- ../docs/openapi.json src/generated/api.d.ts",
     "test": "vitest run",
