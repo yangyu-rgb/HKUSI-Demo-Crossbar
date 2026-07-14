@@ -3590,10 +3590,1015 @@
           }
         }
       }
+    },
+    "/api/enterprise-operations/workspace": {
+      "get": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Get Workspace",
+        "operationId": "get_workspace_api_enterprise_operations_workspace_get",
+        "parameters": [
+          {
+            "name": "view_as",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "View As"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseOperationsWorkspaceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise-operations/previews": {
+      "post": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Preview Decision",
+        "operationId": "preview_decision_api_enterprise_operations_previews_post",
+        "parameters": [
+          {
+            "name": "view_as",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "View As"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseOperationsPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionPreviewResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise-operations/plans": {
+      "post": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Adopt Decision",
+        "operationId": "adopt_decision_api_enterprise_operations_plans_post",
+        "parameters": [
+          {
+            "name": "view_as",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "View As"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseOperationsPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdoptedDecisionPlanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "List Plans",
+        "operationId": "list_plans_api_enterprise_operations_plans_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseOperationsPlanListResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise-operations/plans/{plan_id}/outcome": {
+      "patch": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Record Outcome",
+        "operationId": "record_outcome_api_enterprise_operations_plans__plan_id__outcome_patch",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseOperationsOutcomeWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdoptedDecisionPlanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise-operations/plans/{plan_id}/export.csv": {
+      "get": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Export Plan",
+        "operationId": "export_plan_api_enterprise_operations_plans__plan_id__export_csv_get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          },
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise-operations/coordination-notices": {
+      "get": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "List Notices",
+        "operationId": "list_notices_api_enterprise_operations_coordination_notices_get",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoordinationNoticeListResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "企业运营控制塔"
+        ],
+        "summary": "Create Notice",
+        "operationId": "create_notice_api_enterprise_operations_coordination_notices_post",
+        "parameters": [
+          {
+            "name": "X-Demo-Persona-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。",
+              "title": "X-Demo-Persona-Id"
+            },
+            "description": "本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoordinationNoticeWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoordinationNoticeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "请求与当前状态冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "领域规则或请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "内部服务或持久化错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AIDecisionTrace": {
+        "properties": {
+          "model_available": {
+            "type": "boolean",
+            "title": "Model Available"
+          },
+          "coverage_status": {
+            "type": "string",
+            "title": "Coverage Status"
+          },
+          "model_supported_port_count": {
+            "type": "integer",
+            "title": "Model Supported Port Count"
+          },
+          "total_port_count": {
+            "type": "integer",
+            "title": "Total Port Count"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "prediction_engine": {
+            "type": "string",
+            "title": "Prediction Engine"
+          },
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "forecast_horizon_hours": {
+            "type": "integer",
+            "title": "Forecast Horizon Hours"
+          },
+          "confidence_level": {
+            "type": "number",
+            "title": "Confidence Level"
+          },
+          "inputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "optimization_objectives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Optimization Objectives"
+          },
+          "ports": {
+            "items": {
+              "$ref": "#/components/schemas/AIPortForecast"
+            },
+            "type": "array",
+            "title": "Ports"
+          },
+          "disclosure": {
+            "type": "string",
+            "title": "Disclosure"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_available",
+          "coverage_status",
+          "model_supported_port_count",
+          "total_port_count",
+          "model_version",
+          "prediction_engine",
+          "target_time",
+          "forecast_horizon_hours",
+          "confidence_level",
+          "inputs",
+          "optimization_objectives",
+          "ports",
+          "disclosure"
+        ],
+        "title": "AIDecisionTrace"
+      },
+      "AIPortForecast": {
+        "properties": {
+          "port_id": {
+            "type": "string",
+            "title": "Port Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "model_base_wait_minutes": {
+            "type": "integer",
+            "title": "Model Base Wait Minutes"
+          },
+          "calibrated_wait_minutes": {
+            "type": "integer",
+            "title": "Calibrated Wait Minutes"
+          },
+          "confidence_interval": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Confidence Interval"
+          },
+          "traffic_pressure": {
+            "type": "number",
+            "title": "Traffic Pressure"
+          },
+          "stress_signal": {
+            "$ref": "#/components/schemas/RiskBand"
+          },
+          "forecast_source": {
+            "type": "string",
+            "title": "Forecast Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "port_id",
+          "name",
+          "model_base_wait_minutes",
+          "calibrated_wait_minutes",
+          "confidence_interval",
+          "traffic_pressure",
+          "stress_signal",
+          "forecast_source"
+        ],
+        "title": "AIPortForecast"
+      },
+      "AdoptedDecisionPlanResponse": {
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "title": "Preview Id"
+          },
+          "workspace_kind": {
+            "$ref": "#/components/schemas/WorkspaceKind"
+          },
+          "scenario": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scenario"
+          },
+          "baseline": {
+            "$ref": "#/components/schemas/OperationalSummary"
+          },
+          "recommended": {
+            "$ref": "#/components/schemas/OperationalSummary"
+          },
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/OperationalJobResult"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendedAction"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "ai_decision_trace": {
+            "$ref": "#/components/schemas/AIDecisionTrace"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Explanation"
+          },
+          "demo_notice": {
+            "type": "string",
+            "title": "Demo Notice"
+          },
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "adopted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Adopted At"
+          },
+          "notifications_created": {
+            "type": "integer",
+            "title": "Notifications Created"
+          },
+          "notification_delivery": {
+            "type": "string",
+            "title": "Notification Delivery"
+          },
+          "selected_action_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Action Ids"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_id",
+          "workspace_kind",
+          "scenario",
+          "baseline",
+          "recommended",
+          "jobs",
+          "actions",
+          "ai_decision_trace",
+          "explanation",
+          "demo_notice",
+          "plan_id",
+          "status",
+          "adopted_at",
+          "notifications_created",
+          "notification_delivery",
+          "selected_action_ids"
+        ],
+        "title": "AdoptedDecisionPlanResponse"
+      },
       "AlertCycleResponse": {
         "properties": {
           "evaluated_subscriptions": {
@@ -4298,6 +5303,126 @@
         ],
         "title": "CommercialSubscriptionResponse"
       },
+      "CoordinationNoticeListResponse": {
+        "properties": {
+          "notices": {
+            "items": {
+              "$ref": "#/components/schemas/CoordinationNoticeResponse"
+            },
+            "type": "array",
+            "title": "Notices"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "notices",
+          "total"
+        ],
+        "title": "CoordinationNoticeListResponse"
+      },
+      "CoordinationNoticeResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "title": "Organization Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "affected_ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Ports"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Valid Until"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/RiskBand"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "demo_only": {
+            "type": "boolean",
+            "title": "Demo Only"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "title",
+          "message",
+          "affected_ports",
+          "valid_until",
+          "severity",
+          "created_at",
+          "demo_only"
+        ],
+        "title": "CoordinationNoticeResponse"
+      },
+      "CoordinationNoticeWrite": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "affected_ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Affected Ports"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Valid Until"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/RiskBand",
+            "default": "medium"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "message",
+          "affected_ports",
+          "valid_until"
+        ],
+        "title": "CoordinationNoticeWrite"
+      },
       "CrossingChannel": {
         "type": "string",
         "enum": [
@@ -4611,6 +5736,70 @@
         ],
         "title": "DataSourceStatus"
       },
+      "DecisionPreviewResponse": {
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "title": "Preview Id"
+          },
+          "workspace_kind": {
+            "$ref": "#/components/schemas/WorkspaceKind"
+          },
+          "scenario": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scenario"
+          },
+          "baseline": {
+            "$ref": "#/components/schemas/OperationalSummary"
+          },
+          "recommended": {
+            "$ref": "#/components/schemas/OperationalSummary"
+          },
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/OperationalJobResult"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendedAction"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "ai_decision_trace": {
+            "$ref": "#/components/schemas/AIDecisionTrace"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Explanation"
+          },
+          "demo_notice": {
+            "type": "string",
+            "title": "Demo Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_id",
+          "workspace_kind",
+          "scenario",
+          "baseline",
+          "recommended",
+          "jobs",
+          "actions",
+          "ai_decision_trace",
+          "explanation",
+          "demo_notice"
+        ],
+        "title": "DecisionPreviewResponse"
+      },
       "DemoContextResponse": {
         "properties": {
           "current_time": {
@@ -4674,6 +5863,10 @@
           "organization_name": {
             "type": "string",
             "title": "Organization Name"
+          },
+          "workspace_kind": {
+            "type": "string",
+            "title": "Workspace Kind"
           }
         },
         "type": "object",
@@ -4682,7 +5875,8 @@
           "name",
           "role",
           "organization_id",
-          "organization_name"
+          "organization_name",
+          "workspace_kind"
         ],
         "title": "DemoPersona"
       },
@@ -4765,6 +5959,203 @@
           "destination_ids"
         ],
         "title": "DirectionOption"
+      },
+      "EnterpriseOperationsOutcomeWrite": {
+        "properties": {
+          "actual_high_risk_count": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Actual High Risk Count"
+          },
+          "actual_average_arrival_delta_minutes": {
+            "type": "integer",
+            "maximum": 240.0,
+            "minimum": -240.0,
+            "title": "Actual Average Arrival Delta Minutes"
+          },
+          "actual_support_contacts": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Actual Support Contacts"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "actual_high_risk_count",
+          "actual_average_arrival_delta_minutes",
+          "actual_support_contacts"
+        ],
+        "title": "EnterpriseOperationsOutcomeWrite"
+      },
+      "EnterpriseOperationsPlanListResponse": {
+        "properties": {
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/AdoptedDecisionPlanResponse"
+            },
+            "type": "array",
+            "title": "Plans"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plans",
+          "total"
+        ],
+        "title": "EnterpriseOperationsPlanListResponse"
+      },
+      "EnterpriseOperationsPlanRequest": {
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Scenario Id"
+          },
+          "preview_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Preview Id"
+          },
+          "selected_action_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Action Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "preview_id"
+        ],
+        "title": "EnterpriseOperationsPlanRequest"
+      },
+      "EnterpriseOperationsPreviewRequest": {
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Scenario Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id"
+        ],
+        "title": "EnterpriseOperationsPreviewRequest"
+      },
+      "EnterpriseOperationsWorkspaceResponse": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "workspace_kind": {
+            "$ref": "#/components/schemas/WorkspaceKind"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "available_views": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceKind"
+            },
+            "type": "array",
+            "title": "Available Views"
+          },
+          "scenarios": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "active_scenario": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Active Scenario"
+          },
+          "ports": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Ports"
+          },
+          "assets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "jobs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "recent_plans": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Recent Plans"
+          },
+          "coordination_notices": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Coordination Notices"
+          },
+          "ai_decision_trace": {
+            "$ref": "#/components/schemas/AIDecisionTrace"
+          },
+          "demo_notice": {
+            "type": "string",
+            "title": "Demo Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "workspace_kind",
+          "organization_name",
+          "available_views",
+          "scenarios",
+          "active_scenario",
+          "ports",
+          "assets",
+          "jobs",
+          "recent_plans",
+          "coordination_notices",
+          "ai_decision_trace",
+          "demo_notice"
+        ],
+        "title": "EnterpriseOperationsWorkspaceResponse"
       },
       "ErrorBody": {
         "properties": {
@@ -5155,6 +6546,161 @@
           "uncertainty_minutes"
         ],
         "title": "OfficialCalibration"
+      },
+      "OperationalJobResult": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "direction": {
+            "type": "string",
+            "title": "Direction"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "passenger_count": {
+            "type": "integer",
+            "title": "Passenger Count"
+          },
+          "load_units": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load Units"
+          },
+          "baseline_port_id": {
+            "type": "string",
+            "title": "Baseline Port Id"
+          },
+          "baseline_port": {
+            "type": "string",
+            "title": "Baseline Port"
+          },
+          "baseline_departure_time": {
+            "type": "string",
+            "title": "Baseline Departure Time"
+          },
+          "baseline_arrival": {
+            "type": "string",
+            "title": "Baseline Arrival"
+          },
+          "baseline_risk": {
+            "$ref": "#/components/schemas/RiskBand"
+          },
+          "recommended_port_id": {
+            "type": "string",
+            "title": "Recommended Port Id"
+          },
+          "recommended_port": {
+            "type": "string",
+            "title": "Recommended Port"
+          },
+          "recommended_departure_time": {
+            "type": "string",
+            "title": "Recommended Departure Time"
+          },
+          "recommended_arrival": {
+            "type": "string",
+            "title": "Recommended Arrival"
+          },
+          "recommended_risk": {
+            "$ref": "#/components/schemas/RiskBand"
+          },
+          "changed": {
+            "type": "boolean",
+            "title": "Changed"
+          },
+          "arrival_delta_minutes": {
+            "type": "integer",
+            "title": "Arrival Delta Minutes"
+          },
+          "exposure_before_hkd": {
+            "type": "integer",
+            "title": "Exposure Before Hkd"
+          },
+          "exposure_after_hkd": {
+            "type": "integer",
+            "title": "Exposure After Hkd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "direction",
+          "asset_id",
+          "passenger_count",
+          "baseline_port_id",
+          "baseline_port",
+          "baseline_departure_time",
+          "baseline_arrival",
+          "baseline_risk",
+          "recommended_port_id",
+          "recommended_port",
+          "recommended_departure_time",
+          "recommended_arrival",
+          "recommended_risk",
+          "changed",
+          "arrival_delta_minutes",
+          "exposure_before_hkd",
+          "exposure_after_hkd"
+        ],
+        "title": "OperationalJobResult"
+      },
+      "OperationalSummary": {
+        "properties": {
+          "total_jobs": {
+            "type": "integer",
+            "title": "Total Jobs"
+          },
+          "high_risk_count": {
+            "type": "integer",
+            "title": "High Risk Count"
+          },
+          "medium_risk_count": {
+            "type": "integer",
+            "title": "Medium Risk Count"
+          },
+          "vehicle_conflicts": {
+            "type": "integer",
+            "title": "Vehicle Conflicts"
+          },
+          "cost_exposure_hkd": {
+            "type": "integer",
+            "title": "Cost Exposure Hkd"
+          },
+          "average_arrival_delta_minutes": {
+            "type": "integer",
+            "title": "Average Arrival Delta Minutes"
+          },
+          "affected_people": {
+            "type": "integer",
+            "title": "Affected People"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_jobs",
+          "high_risk_count",
+          "medium_risk_count",
+          "vehicle_conflicts",
+          "cost_exposure_hkd",
+          "average_arrival_delta_minutes",
+          "affected_people"
+        ],
+        "title": "OperationalSummary"
       },
       "OperationsSummaryResponse": {
         "properties": {
@@ -5926,6 +7472,44 @@
         ],
         "title": "RealtimeResponse"
       },
+      "RecommendedAction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "impact": {
+            "type": "string",
+            "title": "Impact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "action_type",
+          "target_id",
+          "title",
+          "detail",
+          "impact"
+        ],
+        "title": "RecommendedAction"
+      },
       "ReportQualityLevel": {
         "type": "string",
         "enum": [
@@ -5934,6 +7518,15 @@
           "high"
         ],
         "title": "ReportQualityLevel"
+      },
+      "RiskBand": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "RiskBand"
       },
       "RiskLevel": {
         "type": "string",
@@ -7364,6 +8957,16 @@
           "sunday"
         ],
         "title": "Weekday"
+      },
+      "WorkspaceKind": {
+        "type": "string",
+        "enum": [
+          "coach_operator",
+          "freight_operator",
+          "enterprise_client",
+          "port_authority"
+        ],
+        "title": "WorkspaceKind"
       }
     }
   }

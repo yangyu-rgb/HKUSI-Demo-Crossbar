@@ -60,13 +60,13 @@ export function HomePage() {
         />}
         <img className={`${styles.heroPoster} ${!reducedMotion && !videoFailed ? styles.posterBehindVideo : ""}`} src="/hero-city-poster.jpg" alt="" aria-hidden="true" />
         <div className={styles.heroCopy}>
-          <FadeIn delay={500} duration={800}><span className={styles.heroKicker}>预测驱动的跨境决策</span></FadeIn>
-          <AnimatedHeading className={styles.heroHeading} text={"提前看见口岸等待，\n选择更稳的跨境路线。"} />
-          <FadeIn delay={800}><p className={styles.heroDescription}>融合模拟口岸状态、未来三小时预测与现场众包反馈，为深港通勤者提供带置信区间和迟到风险的路线建议。</p></FadeIn>
+          <FadeIn delay={500} duration={800}><span className={styles.heroKicker}>AI predictive operations for cross-border transport</span></FadeIn>
+          <AnimatedHeading className={styles.heroHeading} text={"Predict border uncertainty.\nDispatch with confidence."} />
+          <FadeIn delay={800}><p className={styles.heroDescription}>Turn 1–3 hour border forecasts into trip, fleet and coordination decisions.<br />将口岸不确定性转化为班次、车辆和协同决策。</p></FadeIn>
           <FadeIn delay={1200} className={styles.heroActionReveal}>
             <div className={styles.heroActions}>
-              <Link className={styles.primaryAction} to="/planner">立即规划路线</Link>
-              <a className={`${styles.secondaryAction} liquid-glass`} href="#border-status">查看口岸态势</a>
+              <Link className={styles.primaryAction} to="/login?next=%2Fbusiness">Open Operations Control Tower</Link>
+              <Link className={`${styles.secondaryAction} liquid-glass`} to="/planner">Personal Route Planner</Link>
               <span className={styles.liveStatus}><i />实时计算中 · {formatHongKongDateTime(data.timestamp)}</span>
             </div>
           </FadeIn>

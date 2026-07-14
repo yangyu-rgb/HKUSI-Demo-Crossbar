@@ -3,24 +3,51 @@
   "personas": [
     {
       "id": "demo-user",
-      "name": "Demo 操作员",
+      "name": "Platform Operator / Demo 操作员",
       "role": "operator",
       "organization_id": "demo-org",
-      "organization_name": "大湾区跨境服务有限公司"
+      "organization_name": "CrossBorder AI Demo Centre",
+      "workspace_kind": "coach_operator"
     },
     {
       "id": "commuter-user",
-      "name": "跨境通勤者",
+      "name": "Cross-border Commuter / 跨境通勤者",
       "role": "commuter",
       "organization_id": "personal",
-      "organization_name": "个人空间"
+      "organization_name": "个人空间",
+      "workspace_kind": "personal"
     },
     {
       "id": "enterprise-admin",
-      "name": "企业管理员",
+      "name": "Enterprise Administrator / 企业管理员",
       "role": "business_admin",
       "organization_id": "demo-org",
-      "organization_name": "大湾区跨境服务有限公司"
+      "organization_name": "大湾区跨境企业",
+      "workspace_kind": "enterprise_client"
+    },
+    {
+      "id": "coach-dispatcher",
+      "name": "Coach Dispatcher / 跨境巴士调度主管",
+      "role": "transport_dispatcher",
+      "organization_id": "coach-demo-org",
+      "organization_name": "Greater Bay Coach Operations (Demo)",
+      "workspace_kind": "coach_operator"
+    },
+    {
+      "id": "freight-dispatcher",
+      "name": "Freight Dispatcher / 跨境物流调度经理",
+      "role": "transport_dispatcher",
+      "organization_id": "freight-demo-org",
+      "organization_name": "HK–Shenzhen Supply Chain (Demo)",
+      "workspace_kind": "freight_operator"
+    },
+    {
+      "id": "port-official",
+      "name": "Port Coordinator / 口岸协调人员",
+      "role": "port_official",
+      "organization_id": "port-authority-demo",
+      "organization_name": "Port Operations Coordination Centre (Demo)",
+      "workspace_kind": "port_authority"
     }
   ]
 }

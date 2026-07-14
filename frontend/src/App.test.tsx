@@ -122,11 +122,19 @@ function json(payload: unknown, status = 200) {
   }));
 }
 
-function renderRoute(path: string, role: "operator" | "commuter" | "business_admin" | null | undefined = undefined) {
+function renderRoute(path: string, role: "operator" | "commuter" | "business_admin" | "transport_dispatcher" | "port_official" | null | undefined = undefined) {
   window.localStorage.clear();
   const resolvedRole = role === undefined ? (path.startsWith("/mobile") ? "commuter" : "operator") : role;
   if (resolvedRole) {
-    const personaId = resolvedRole === "operator" ? "demo-user" : resolvedRole === "commuter" ? "commuter-user" : "enterprise-admin";
+    const personaId = resolvedRole === "operator"
+      ? "demo-user"
+      : resolvedRole === "commuter"
+        ? "commuter-user"
+        : resolvedRole === "transport_dispatcher"
+          ? "coach-dispatcher"
+          : resolvedRole === "port_official"
+            ? "port-official"
+            : "enterprise-admin";
     window.localStorage.setItem("crossborder-demo-session", JSON.stringify({ personaId, role: resolvedRole, signedInAt: "2026-07-10T07:45:00+08:00" }));
     window.localStorage.setItem("crossborder-demo-persona", personaId);
   }
@@ -160,7 +168,7 @@ describe("application routes", () => {
       throw new Error(`Unexpected request: ${String(input)}`);
     }));
     renderRoute("/planner", null);
-    expect(await screen.findByRole("heading", { name: "选择你的工作空间" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Choose your workspace / 选择工作空间" })).toBeInTheDocument();
   });
 
   it("shows a permission explanation instead of leaking an enterprise page", async () => {
@@ -206,50 +214,75 @@ describe("application routes", () => {
     expect(screen.getByRole("link", { name: "通关后反馈实际等待" })).toHaveAttribute("href", expect.stringContaining("/mobile/feedback"));
   });
 
-  it("loads the editable business page directly", async () => {
+  it("loads the enterprise operations control tower without changing the page shell", async () => {
+    const scenario = {
+      id: "may-day-coach-surge",
+      name: "May Day 2026 Coach Surge / 五一客流高峰",
+      subtitle: "One-hour early warning for Luohu / 罗湖高峰前一小时预警",
+      scenario_at: "2026-04-30T07:00:00+08:00",
+    };
+    const aiDecisionTrace = {
+      model_available: true,
+      coverage_status: "full",
+      model_supported_port_count: 4,
+      total_port_count: 4,
+      model_version: "public-traffic-transparent-hgb-v2.2",
+      prediction_engine: "HGB base forecast + transparent stress calibration + constraint optimizer",
+      target_time: "2026-04-30T08:00:00+08:00",
+      forecast_horizon_hours: 3,
+      confidence_level: 0.9,
+      inputs: ["port and direction"],
+      optimization_objectives: ["minimize high-risk service tasks"],
+      ports: [],
+      disclosure: "Classroom estimate only.",
+    };
+    const workspace = {
+      generated_at: "2026-04-30T07:00:00+08:00",
+      workspace_kind: "coach_operator",
+      organization_name: "港深跨境客运 Demo",
+      available_views: ["coach_operator", "freight_operator", "enterprise_client", "port_authority"],
+      scenarios: [scenario],
+      active_scenario: scenario,
+      ports: [
+        { id: "luohu", name: "罗湖", wait_minutes: 44, confidence_interval: [41, 47], forecast_source: "checked-in HGB model", risk: "high" },
+        { id: "futian", name: "福田", wait_minutes: 20, confidence_interval: [18, 22], forecast_source: "checked-in HGB model", risk: "low" },
+      ],
+      assets: [],
+      jobs: [],
+      recent_plans: [],
+      coordination_notices: [],
+      ai_decision_trace: aiDecisionTrace,
+      demo_notice: "所有班次、车辆、等待、风险、金额与通知均为课堂重建情景。",
+    };
+    const preview = {
+      preview_id: "preview-test",
+      workspace_kind: "coach_operator",
+      scenario,
+      baseline: { total_jobs: 10, high_risk_count: 3, medium_risk_count: 0, vehicle_conflicts: 1, cost_exposure_hkd: 12000, average_arrival_delta_minutes: 0, affected_people: 147 },
+      recommended: { total_jobs: 10, high_risk_count: 0, medium_risk_count: 3, vehicle_conflicts: 0, cost_exposure_hkd: 2400, average_arrival_delta_minutes: 8, affected_people: 147 },
+      jobs: [],
+      actions: [{ id: "reroute-101", action_type: "reroute", target_id: "101", title: "班次 #101 改走福田", detail: "提前 10 分钟发车", impact: "降低延误风险" }],
+      ai_decision_trace: aiDecisionTrace,
+      explanation: ["提前一小时识别罗湖压力。"],
+      demo_notice: "课堂情景结果，不保证真实零延误。",
+    };
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.includes("/api/locations")) return json(locations);
-      if (url.endsWith("/api/demo/context")) return json(context);
-      if (url.includes("/api/batch/plans")) return json({ plans: [], total: 0 });
-      if (url.endsWith("/api/batch") && init?.method === "POST") {
-        const request = JSON.parse(String(init.body));
-        return json({
-          plan_id: "plan-test",
-          company: request.company,
-          date: request.date,
-          plan: request.employees.map((employee: { id: string }) => ({
-            employee_id: employee.id,
-            recommended_port: "福田",
-            departure_time: "08:00",
-            total_time: 80,
-            late_risk_percent: 10,
-          })),
-          summary: {
-            employee_count: request.employees.length,
-            avg_commute_time: 80,
-            high_risk_count: 0,
-            recommendation: "建议统一经福田出发。",
-          },
-        });
-      }
+      if (url.includes("/api/enterprise-operations/workspace")) return json(workspace);
+      if (url.includes("/api/enterprise-operations/plans?limit=10")) return json({ plans: [], total: 0 });
+      if (url.includes("/api/enterprise-operations/previews") && init?.method === "POST") return json(preview);
       throw new Error(`Unexpected request: ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
 
     renderRoute("/business");
 
-    expect(await screen.findByRole("heading", { name: "企业批量通勤风险管理" })).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "删除" })).toHaveLength(4);
-    fireEvent.click(screen.getByRole("button", { name: "+ 添加员工" }));
-    expect(screen.getByLabelText("员工5姓名")).toHaveValue("员工105");
-    fireEvent.click(screen.getByRole("button", { name: "生成调度方案" }));
-
-    expect(await screen.findByText("建议统一经福田出发。")).toBeInTheDocument();
-    const batchCall = fetchMock.mock.calls.find(
-      ([input, init]) => String(input).endsWith("/api/batch") && init?.method === "POST",
-    );
-    expect(JSON.parse(String(batchCall?.[1]?.body)).employees).toHaveLength(5);
+    expect(await screen.findByRole("heading", { name: "Enterprise Predictive Dispatch / 企业预测与调度" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "May Day 2026 Coach Surge / 五一客流高峰" })).toBeInTheDocument();
+    expect(screen.getByText("罗湖 · HGB 44 min · 90% CI 41–47 · High / 高")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Generate AI Dispatch Plan" }));
+    expect(await screen.findByText("3→0")).toBeInTheDocument();
+    expect(screen.getByText("12,000→2,400")).toBeInTheDocument();
   });
 
   it("applies the demo time window and submits changed prediction input", async () => {

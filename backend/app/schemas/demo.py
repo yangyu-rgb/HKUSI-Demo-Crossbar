@@ -20,6 +20,7 @@ class DemoPersona(BaseModel):
     role: str
     organization_id: str
     organization_name: str
+    workspace_kind: str
 
 
 class DemoPersonasResponse(BaseModel):

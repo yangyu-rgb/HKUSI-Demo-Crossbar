@@ -1,368 +1,149 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useBatchPlans } from "../features/business/useBatchPlans";
-import { downloadBatchPlan, validateBatchCsv } from "../features/business/api";
-import type { BatchEmployee, BatchRequest } from "../features/business/types";
-import {
-  useDemoContext,
-  useModelShadowSummary,
-} from "../features/demo/useDemo";
-import { fetchLocations } from "../features/prediction/api";
-import type { Priority } from "../features/prediction/types";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { downloadEnterprisePlan } from "../features/enterpriseOperations/api";
+import { useEnterpriseOperations } from "../features/enterpriseOperations/useEnterpriseOperations";
+import type { OutcomeWrite, WorkspaceKind } from "../features/enterpriseOperations/types";
+import { getDemoSession } from "../features/auth/session";
 import { PageSkeleton } from "../shared/components/PageSkeleton";
-import { queryKeys } from "../shared/queryKeys";
+import { ErrorState } from "../shared/components/PageState";
 import styles from "./BusinessPage.module.css";
 
-
-const COMPANY = "大湾区跨境服务有限公司";
-const PRIORITY_LABELS: Record<Priority, string> = {
-  balanced: "稳妥均衡",
-  fastest: "时间最快",
-  cheapest: "费用最低",
+const VIEW_LABELS: Record<WorkspaceKind, string> = {
+  coach_operator: "Coach Dispatch / 巴士调度",
+  freight_operator: "Freight Dispatch / 物流调度",
+  enterprise_client: "Enterprise Client / 企业客户",
+  port_authority: "Port Authority / 口岸官方",
 };
-const INITIAL_EMPLOYEES: BatchEmployee[] = [
-  { id: "E-101", name: "员工101", origin_id: "hku", destination_id: "nanshan-tech", arrival_deadline: "09:30" },
-  { id: "E-102", name: "员工102", origin_id: "central", destination_id: "nanshan-tech", arrival_deadline: "09:30" },
-  { id: "E-103", name: "员工103", origin_id: "hku", destination_id: "futian-cbd", arrival_deadline: "10:00" },
-  { id: "E-104", name: "员工104", origin_id: "kowloon-tong", destination_id: "nanshan-tech", arrival_deadline: "09:45" },
-];
+const RISK_LABELS = { low: "Low / 低", medium: "Medium / 中", high: "High / 高" } as const;
 
+function field(value: Record<string, unknown>, key: string): string {
+  return String(value[key] ?? "");
+}
 
 export function BusinessPage() {
-  const locations = useQuery({
-    queryKey: queryKeys.locations,
-    queryFn: fetchLocations,
-    staleTime: Infinity,
+  const session = getDemoSession();
+  const [view, setView] = useState<WorkspaceKind | undefined>(session?.role === "operator" ? "coach_operator" : undefined);
+  const operations = useEnterpriseOperations(view);
+  const workspace = operations.workspace.data;
+  const preview = operations.preview.data;
+  const adopted = operations.adopt.data;
+  const result = adopted ?? preview;
+  const [scenarioId, setScenarioId] = useState("");
+  const [selectedActions, setSelectedActions] = useState<string[]>([]);
+  const [outcome, setOutcome] = useState<OutcomeWrite>({
+    actual_high_risk_count: 0,
+    actual_average_arrival_delta_minutes: 8,
+    actual_support_contacts: 12,
+    note: "课堂演示复盘记录",
   });
-  const context = useDemoContext();
-  const shadowSummary = useModelShadowSummary();
-  const batch = useBatchPlans(COMPANY);
-  const [date, setDate] = useState("");
-  const [employees, setEmployees] = useState<BatchEmployee[]>(INITIAL_EMPLOYEES);
-  const [batchPriority, setBatchPriority] = useState<Priority>("balanced");
-  const [batchBudget, setBatchBudget] = useState("");
-  const [csvMessage, setCsvMessage] = useState("");
-  const [riskFilter, setRiskFilter] = useState("all");
-  const [portFilter, setPortFilter] = useState("all");
-  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!context.data || initialized.current) {
-      return;
-    }
-    const suggested = context.data.suggested_target_time;
-    initialized.current = true;
-    setDate(suggested.slice(0, 10));
-    setEmployees((current) => current.map((employee) => ({
-      ...employee,
-      arrival_deadline: suggested.slice(11, 16),
-    })));
-  }, [context.data]);
+    if (!workspace) return;
+    setScenarioId(field(workspace.active_scenario, "id"));
+    operations.clearDecision();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspace?.active_scenario, workspace?.workspace_kind]);
 
-  function updateEmployee(index: number, patch: Partial<BatchEmployee>) {
-    setEmployees((current) => current.map(
-      (employee, itemIndex) => itemIndex === index ? { ...employee, ...patch } : employee,
-    ));
+  useEffect(() => {
+    if (preview) setSelectedActions(preview.actions.map((item) => item.id));
+  }, [preview]);
+
+  if (operations.workspace.isPending) return <PageSkeleton cards={3} />;
+  if (!workspace || operations.workspace.error) return <ErrorState title="无法载入企业运营方案" detail={operations.error} />;
+
+  async function generate() {
+    operations.adopt.reset();
+    await operations.preview.mutateAsync(scenarioId);
   }
 
-  function addEmployee() {
-    const number = employees.length + 101;
-    setEmployees((current) => [
-      ...current,
-      {
-        id: `E-${number}`,
-        name: `员工${number}`,
-        origin_id: "hku",
-        destination_id: "nanshan-tech",
-        arrival_deadline: "09:30",
-      },
-    ]);
+  async function adopt() {
+    if (!preview) return;
+    await operations.adopt.mutateAsync({ scenario_id: scenarioId, preview_id: preview.preview_id, selected_action_ids: selectedActions });
   }
 
-  async function generatePlan() {
-    try {
-      await batch.generate({
-        company: COMPANY,
-        date,
-        employees,
-        preferences: {
-          priority: batchPriority,
-          max_budget: batchBudget === "" ? null : Number(batchBudget),
-        },
-      });
-    } catch {
-      // The mutation exposes the normalized API error below the editor.
-    }
-  }
-
-  function handleSubmit(event: FormEvent) {
+  function publishNotice(event: FormEvent) {
     event.preventDefault();
-    void generatePlan();
-  }
-
-  async function importCsv(file: File | undefined) {
-    if (!file) return;
-    const result = await validateBatchCsv(await file.text());
-    if (result.valid) {
-      setEmployees(result.employees);
-      setCsvMessage(`已导入 ${result.employees.length} 名员工。`);
-    } else {
-      setCsvMessage(result.errors.map((item) => `第${item.row}行：${item.message}`).join("；"));
-    }
-  }
-
-  function loadHistory(request: Record<string, unknown>) {
-    const saved = request as unknown as BatchRequest;
-    setDate(saved.date);
-    setEmployees(saved.employees);
-    setBatchPriority(saved.preferences?.priority ?? "balanced");
-    setBatchBudget(saved.preferences?.max_budget?.toString() ?? "");
-    batch.clearPlan();
-  }
-
-  if (locations.isPending || context.isPending || batch.loading) {
-    return <PageSkeleton cards={3} />;
+    void operations.notice.mutateAsync({
+      title: "五一早高峰口岸协调建议",
+      message: "建议运营方在07:30–09:30分流罗湖高风险班次，并持续复核车辆周转。",
+      affected_ports: workspace!.ports.slice(0, 3).map((port) => String(port.id)),
+      valid_until: "2026-04-30T10:00:00+08:00",
+      severity: "high",
+    });
   }
 
   return (
     <main className="page">
       <div className="pageIntro">
-        <span className="sectionKicker">B2B operations</span>
-        <h1>企业批量通勤风险管理</h1>
-        <p>编辑员工需求、反复生成调度方案，并从 SQLite 恢复最近的方案输入。</p>
+        <span className="sectionKicker">AI at the core · B2B/B2G operations</span>
+        <h1>Enterprise Predictive Dispatch / 企业预测与调度</h1>
+        <p>Forecast the next three hours of border risk, compare service and fleet actions, then create an auditable local execution record.</p>
       </div>
-      <form className={styles.editor} onSubmit={handleSubmit}>
+
+      <section className={styles.editor}>
         <div className={styles.editorHeading}>
           <div>
-            <h2>{COMPANY}</h2>
-            <p>{employees.length} 名员工</p>
+            <h2>{field(workspace.active_scenario, "name")}</h2>
+            <p>{field(workspace.active_scenario, "subtitle")} · Reconstructed at {new Date(field(workspace.active_scenario, "scenario_at")).toLocaleString("en-HK")}</p>
           </div>
-          <label>
-            <span>服务日期</span>
-            <input
-              required
-              type="date"
-              min={context.data?.current_time.slice(0, 10)}
-              max={context.data?.max_target_time.slice(0, 10)}
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-            />
-          </label>
           <div className={styles.batchPreferences}>
-            <label>
-              <span>默认路线偏好</span>
-              <select value={batchPriority} onChange={(event) => setBatchPriority(event.target.value as Priority)}>
-                <option value="balanced">稳妥均衡</option>
-                <option value="fastest">时间最快</option>
-                <option value="cheapest">费用最低</option>
-              </select>
-            </label>
-            <label>
-              <span>默认预算上限（HK$）</span>
-              <input min="0" type="number" value={batchBudget} placeholder="不限" onChange={(event) => setBatchBudget(event.target.value)} />
-            </label>
+            {session?.role === "operator" && <label><span>Demo view / 演示视角</span><select value={view} onChange={(event) => setView(event.target.value as WorkspaceKind)}>{workspace.available_views.map((item) => <option key={item} value={item}>{VIEW_LABELS[item]}</option>)}</select></label>}
+            <label><span>Operating scenario / 运营情景</span><select value={scenarioId} onChange={(event) => { setScenarioId(event.target.value); operations.clearDecision(); }}>{workspace.scenarios.map((item) => <option key={field(item, "id")} value={field(item, "id")}>{field(item, "name")}</option>)}</select></label>
           </div>
         </div>
-        <div className={styles.employeeTable}>
-          {employees.map((employee, index) => (
-            <div className={styles.employeeRow} key={String(employee.id)}>
-              <input
-                aria-label={`员工${index + 1}姓名`}
-                required
-                value={employee.name}
-                onChange={(event) => updateEmployee(index, { name: event.target.value })}
-              />
-              <select
-                aria-label={`员工${index + 1}出发地`}
-                required
-                value={employee.origin_id}
-                onChange={(event) => {
-                  const originId = event.target.value;
-                  const direction = locations.data?.directions.find(
-                    (item) => item.origin_ids.includes(originId),
-                  );
-                  updateEmployee(index, {
-                    origin_id: originId,
-                    destination_id: direction?.destination_ids[0] ?? employee.destination_id,
-                  });
-                }}
-              >
-                {locations.data?.origins.map((item) => (
-                  <option value={item.id} key={item.id}>{item.name}</option>
-                ))}
-              </select>
-              <select
-                aria-label={`员工${index + 1}目的地`}
-                required
-                value={employee.destination_id}
-                onChange={(event) => updateEmployee(index, { destination_id: event.target.value })}
-              >
-                {locations.data?.destinations.filter((item) => {
-                  const direction = locations.data?.directions.find(
-                    (candidate) => candidate.origin_ids.includes(employee.origin_id),
-                  );
-                  return direction?.destination_ids.includes(item.id);
-                }).map((item) => (
-                  <option value={item.id} key={item.id}>{item.name}</option>
-                ))}
-              </select>
-              <input
-                aria-label={`员工${index + 1}到达时间`}
-                type="time"
-                required
-                value={employee.arrival_deadline}
-                onChange={(event) => updateEmployee(index, { arrival_deadline: event.target.value })}
-              />
-              <select
-                aria-label={`员工${index + 1}路线偏好`}
-                value={employee.preferences?.priority ?? "batch"}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  updateEmployee(index, {
-                    preferences: value === "batch"
-                      ? undefined
-                      : {
-                        priority: value as Priority,
-                        max_budget: employee.preferences?.max_budget ?? null,
-                      },
-                  });
-                }}
-              >
-                <option value="batch">使用批次默认</option>
-                <option value="balanced">个人：稳妥均衡</option>
-                <option value="fastest">个人：时间最快</option>
-                <option value="cheapest">个人：费用最低</option>
-              </select>
-              <input
-                aria-label={`员工${index + 1}预算上限`}
-                min="0"
-                type="number"
-                disabled={!employee.preferences}
-                value={employee.preferences?.max_budget ?? ""}
-                placeholder="批次默认"
-                onChange={(event) => updateEmployee(index, {
-                  preferences: {
-                    priority: employee.preferences?.priority ?? batchPriority,
-                    max_budget: event.target.value === "" ? null : Number(event.target.value),
-                  },
-                })}
-              />
-              <button
-                type="button"
-                className={styles.remove}
-                onClick={() => setEmployees((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-                disabled={employees.length === 1}
-              >
-                删除
-              </button>
-            </div>
-          ))}
+        <div className={styles.readinessChecks}>
+          {workspace.ports.map((port) => <span className={String(port.risk) === "high" ? styles.checkPending : styles.checkPassed} key={String(port.id)}>{String(port.name)} · {String(port.forecast_source) === "checked-in HGB model" ? "HGB" : "Fallback"} {String(port.wait_minutes)} min · 90% CI {Array.isArray(port.confidence_interval) ? port.confidence_interval.join("–") : "—"} · {RISK_LABELS[String(port.risk) as keyof typeof RISK_LABELS]}</span>)}
         </div>
+        <p className={styles.recommendation}><strong>Embedded AI:</strong> {workspace.ai_decision_trace.model_version} · {workspace.ai_decision_trace.coverage_status} model coverage ({workspace.ai_decision_trace.model_supported_port_count}/{workspace.ai_decision_trace.total_port_count} ports) · {workspace.ai_decision_trace.prediction_engine} · {Math.round(workspace.ai_decision_trace.confidence_level * 100)}% prediction interval.</p>
+        <p className={styles.recommendation}><strong>Verified problem evidence:</strong> {field(workspace.active_scenario, "problem_evidence")} <a href={field(workspace.active_scenario, "problem_source_url")} target="_blank" rel="noreferrer">Official source ↗</a></p>
+        <p className={styles.recommendation}>{workspace.demo_notice}</p>
         <div className={styles.editorActions}>
-          <label className={styles.add}>
-            导入 CSV
-            <input
-              hidden
-              type="file"
-              accept=".csv,text/csv"
-              onChange={(event) => void importCsv(event.target.files?.[0])}
-            />
-          </label>
-          <button type="button" className={styles.add} onClick={addEmployee}>+ 添加员工</button>
-          <button className="button buttonDark" disabled={batch.generating}>
-            {batch.generating ? "正在生成…" : batch.plan ? "重新生成方案" : "生成调度方案"}
-          </button>
+          {(workspace.workspace_kind === "enterprise_client" || session?.role === "operator") && <Link className={styles.add} to="/business/employees">Employee Shuttle Planning</Link>}
+          <button className="button buttonDark" onClick={() => void generate()} disabled={operations.preview.isPending}>{operations.preview.isPending ? "Generating…" : result ? "Regenerate AI Plan" : "Generate AI Dispatch Plan"}</button>
         </div>
-        {batch.error && <p className="formError">{batch.error}</p>}
-        {csvMessage && <p className={csvMessage.startsWith("已导入") ? "formSuccess" : "formError"}>{csvMessage}</p>}
-      </form>
+      </section>
 
-      {batch.plan && (
+      {result && (
         <section className={styles.result}>
-          <div className={styles.editorActions}>
-            <select aria-label="风险筛选" value={riskFilter} onChange={(event) => setRiskFilter(event.target.value)}>
-              <option value="all">全部风险</option>
-              <option value="high">高风险</option>
-              <option value="over_budget">超预算</option>
-            </select>
-            <select aria-label="口岸筛选" value={portFilter} onChange={(event) => setPortFilter(event.target.value)}>
-              <option value="all">全部口岸</option>
-              {[...new Set(batch.plan.plan.map((item) => item.recommended_port))].map((port) => (
-                <option key={port}>{port}</option>
-              ))}
-            </select>
-            <button type="button" onClick={() => void downloadBatchPlan(batch.plan!.plan_id)}>导出当前方案</button>
-          </div>
           <div className={styles.stats}>
-            <div><strong>{batch.plan.summary.employee_count}</strong><span>员工</span></div>
-            <div><strong>{batch.plan.summary.avg_commute_time}</strong><span>平均分钟</span></div>
-            <div><strong>{batch.plan.summary.high_risk_count}</strong><span>高风险</span></div>
+            <div><strong>{result.baseline.high_risk_count}→{result.recommended.high_risk_count}</strong><span>High-risk tasks</span></div>
+            <div><strong>{result.baseline.vehicle_conflicts}→{result.recommended.vehicle_conflicts}</strong><span>Vehicle conflicts</span></div>
+            <div><strong>{result.baseline.cost_exposure_hkd.toLocaleString()}→{result.recommended.cost_exposure_hkd.toLocaleString()}</strong><span>Scenario exposure · HK$</span></div>
           </div>
-          <div className={styles.table}>
-            <div className={styles.tableHeader}>
-              <span>员工</span><span>推荐口岸</span><span>出发时间</span><span>通勤时间</span><span>风险</span><span>偏好/预算</span>
-            </div>
-            {batch.plan.plan.filter((item) => (
-              (riskFilter === "all"
-                || (riskFilter === "high" && item.late_risk_percent >= 20)
-                || (riskFilter === "over_budget" && !item.within_budget))
-              && (portFilter === "all" || item.recommended_port === portFilter)
-            )).map((item) => (
-              <div className={styles.tableRow} key={item.employee_id}>
-                <strong>{item.employee_id}</strong>
-                <span>{item.recommended_port}</span>
-                <span>{item.departure_time}</span>
-                <span>{item.total_time} 分钟</span>
-                <span>{item.late_risk_percent}%</span>
-                <span>{PRIORITY_LABELS[item.priority]} · {item.max_budget === null ? "不限" : `HK$${item.max_budget}`}</span>
-              </div>
-            ))}
-          </div>
-          <p className={styles.recommendation}>{batch.plan.summary.recommendation}</p>
+          {workspace.workspace_kind !== "port_authority" && <div className={styles.table}>
+            <div className={styles.tableHeader}><span>Service / Vehicle</span><span>Original port</span><span>AI recommendation</span><span>Departure change</span><span>Risk</span><span>Predicted impact</span></div>
+            {result.jobs.map((job) => <div className={styles.tableRow} key={job.id}><strong>{job.label} · {job.asset_id}</strong><span>{job.baseline_port}</span><span>{job.changed ? `${job.baseline_port} → ${job.recommended_port}` : "Keep plan"}</span><span>{job.baseline_departure_time} → {job.recommended_departure_time}</span><span>{RISK_LABELS[job.baseline_risk]} → {RISK_LABELS[job.recommended_risk]}</span><span>{job.changed ? `${Math.abs(job.arrival_delta_minutes)} min earlier` : "No change"}</span></div>)}
+          </div>}
+          <p className={styles.recommendation}><strong>AI decision chain:</strong> HGB wait forecast → transparent stress calibration → service/fleet constraint optimization. The scenario reduces {result.baseline.high_risk_count - result.recommended.high_risk_count} high-risk classifications and improves predicted arrival by {result.recommended.average_arrival_delta_minutes} minutes on average; it does not guarantee zero real-world delays.</p>
         </section>
       )}
 
-      <section className={styles.shadowSummary}>
-        <div className={styles.shadowHeading}>
-          <div><span className="sectionKicker">AI v1 shadow</span><h2>模型差异观测</h2></div>
-          <span>不影响当前用户推荐</span>
+      {result && <section className={styles.shadowSummary}>
+        <div className={styles.shadowHeading}><div><span className="sectionKicker">Recommended actions</span><h2>{adopted ? "Plan Adopted / 方案已采用" : "AI Dispatch Actions / AI 调度措施"}</h2></div><span>Local execution checklist · No live dispatch connection</span></div>
+        <div className={styles.history}>
+          {result.actions.map((action) => <article key={action.id}><label><input type="checkbox" disabled={Boolean(adopted) || workspace.workspace_kind === "port_authority"} checked={selectedActions.includes(action.id)} onChange={(event) => setSelectedActions((current) => event.target.checked ? [...current, action.id] : current.filter((id) => id !== action.id))} /> <strong>{action.title}</strong></label><div><span>{action.detail}</span><span>{action.impact}</span></div></article>)}
         </div>
-        {shadowSummary.isPending && <p>正在读取影子观测…</p>}
-        {shadowSummary.error && <p>暂时无法读取影子观测。</p>}
-        {shadowSummary.data && (
-          <>
-            <div className={styles.shadowStats}>
-              <div><strong>{shadowSummary.data.total_observations}</strong><span>预测点</span></div>
-              <div><strong>{shadowSummary.data.available_observations}</strong><span>AI 可用</span></div>
-              <div><strong>{shadowSummary.data.unavailable_observations}</strong><span>已降级</span></div>
-            </div>
-            {shadowSummary.data.ports.length === 0 ? (
-              <p>尚无观测；生成方案或完成路线预测后会在此汇总统计模型与 AI v1 的差异。</p>
-            ) : (
-              <div className={styles.shadowPorts}>
-                {shadowSummary.data.ports.map((port) => (
-                  <span key={port.port_id}>{port.port_name} · 平均绝对差 {port.average_absolute_difference_minutes ?? "—"} 分钟</span>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+        {!adopted && workspace.workspace_kind !== "port_authority" && <button className="button buttonPrimary" disabled={!selectedActions.length || operations.adopt.isPending} onClick={() => void adopt()}>{operations.adopt.isPending ? "Adopting…" : "Adopt Plan & Create Notification Drafts"}</button>}
+        {workspace.workspace_kind === "port_authority" && <form onSubmit={publishNotice}><button className="button buttonPrimary" disabled={operations.notice.isPending}>{operations.notice.isSuccess ? "Demo Notice Published" : "Publish Demo Coordination Notice"}</button></form>}
+        {adopted && <p className={styles.recommendation}>{adopted.notifications_created} local notification drafts created. <button onClick={() => void downloadEnterprisePlan(adopted.plan_id)}>Export Execution CSV</button></p>}
+      </section>}
+
+      {adopted && workspace.workspace_kind !== "port_authority" && <section className={styles.readinessSummary}>
+        <div className={styles.shadowHeading}><div><span className="sectionKicker">Outcome review</span><h2>Demo Operations Review / 运营复盘</h2></div><span>Human-entered outcome · Never presented as observed automatically</span></div>
+        <div className={styles.batchPreferences}>
+          <label><span>实际高风险任务</span><input type="number" min="0" value={outcome.actual_high_risk_count} onChange={(event) => setOutcome({ ...outcome, actual_high_risk_count: Number(event.target.value) })} /></label>
+          <label><span>平均到达改善</span><input type="number" value={outcome.actual_average_arrival_delta_minutes} onChange={(event) => setOutcome({ ...outcome, actual_average_arrival_delta_minutes: Number(event.target.value) })} /></label>
+          <label><span>客服咨询量</span><input type="number" min="0" value={outcome.actual_support_contacts} onChange={(event) => setOutcome({ ...outcome, actual_support_contacts: Number(event.target.value) })} /></label>
+          <button className="button" onClick={() => void operations.outcome.mutateAsync({ planId: adopted.plan_id, payload: outcome })}>{operations.outcome.isSuccess ? "复盘已记录" : "保存本地复盘"}</button>
+        </div>
+      </section>}
 
       <section className={styles.history}>
-        <div><h2>最近方案</h2><span>{batch.history.length} 条</span></div>
-        {batch.history.length === 0 && <p>尚未保存企业调度方案。</p>}
-        {batch.history.map((item) => (
-          <article key={item.plan_id}>
-            <div>
-              <strong>{item.date} · {item.plan_id}</strong>
-              <span>{new Date(item.created_at).toLocaleString("zh-HK")}</span>
-            </div>
-            <button onClick={() => loadHistory(item.request)}>载入输入</button>
-            <button onClick={() => void downloadBatchPlan(item.plan_id)}>导出</button>
-          </article>
-        ))}
+        <div><h2>Recently Adopted Plans / 最近方案</h2><span>{operations.plans.length}</span></div>
+        {operations.plans.length === 0 && <p>An auditable record appears here after a dispatch plan is adopted.</p>}
+        {operations.plans.map((plan) => <article key={plan.plan_id}><div><strong>{field(plan.scenario, "name")}</strong><span>{new Date(plan.adopted_at).toLocaleString("zh-HK")} · {plan.status} · {plan.notifications_created} 条草稿</span></div><button onClick={() => void downloadEnterprisePlan(plan.plan_id)}>导出</button></article>)}
       </section>
+      {operations.error && <p className="formError" role="alert">{operations.error}</p>}
     </main>
   );
 }

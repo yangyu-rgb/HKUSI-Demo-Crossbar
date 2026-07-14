@@ -12,12 +12,12 @@ type NavigationItem = { to: string; label: string; shortLabel?: string; end?: bo
 
 const navigation: NavigationItem[] = [
   { to: "/", label: "口岸态势", shortLabel: "态势", end: true },
-  { to: "/planner", label: "路线预测", shortLabel: "规划", roles: ["operator", "commuter", "business_admin"] },
+  { to: "/planner", label: "路线预测", shortLabel: "规划", roles: ["operator", "commuter", "business_admin", "transport_dispatcher", "port_official"] },
   { to: "/scenarios", label: "场景实验室", shortLabel: "场景", roles: ["operator"] },
   { to: "/crowdsource", label: "众包反馈", shortLabel: "反馈", roles: ["operator", "commuter"] },
   { to: "/alerts", label: "智能提醒", shortLabel: "提醒", roles: ["operator", "commuter"] },
-  { to: "/business", label: "企业方案", shortLabel: "企业", roles: ["operator", "business_admin"] },
-  { to: "/model", label: "AI 模型", shortLabel: "模型", roles: ["operator", "commuter", "business_admin"] },
+  { to: "/business", label: "运营控制塔", shortLabel: "控制塔", roles: ["operator", "business_admin", "transport_dispatcher", "port_official"] },
+  { to: "/model", label: "AI 模型", shortLabel: "模型", roles: ["operator", "commuter", "business_admin", "transport_dispatcher", "port_official"] },
   { to: "/operations", label: "运营分析", shortLabel: "运营", roles: ["operator"] },
   { to: "/pricing", label: "套餐订阅", shortLabel: "订阅" },
   { to: "/mobile", label: "手机版", shortLabel: "手机", roles: ["commuter"] },
@@ -28,6 +28,8 @@ const rolePrimary: Record<DemoRole | "guest", string[]> = {
   operator: ["/", "/planner", "/scenarios", "/operations"],
   commuter: ["/", "/planner", "/crowdsource", "/alerts"],
   business_admin: ["/", "/planner", "/business", "/model"],
+  transport_dispatcher: ["/business", "/", "/planner", "/model"],
+  port_official: ["/business", "/", "/model", "/pricing"],
 };
 
 function MenuChevron() {
@@ -120,7 +122,7 @@ export function AppLayout() {
             <time className={styles.platformClock} dateTime={hongKongTime?.toISOString()}>
               <span>香港时间</span><strong>{hongKongTime ? formatHongKongDateTime(hongKongTime, true) : "同步中"}</strong>
             </time>
-            <NavLink className={styles.planCta} to={session ? "/planner" : "/login?next=%2Fplanner"}>开始规划</NavLink>
+            <NavLink className={styles.planCta} to={session && session.role !== "commuter" ? "/business" : session ? "/planner" : "/login?next=%2Fbusiness"}>{session && session.role !== "commuter" ? "运营控制塔" : "开始规划"}</NavLink>
             <div className={styles.menuAnchor} ref={accountRef}>
               <button className={styles.accountTrigger} type="button" aria-label="账户与身份" aria-expanded={accountOpen} aria-controls="account-menu" onClick={() => { setAccountOpen((open) => !open); setMoreOpen(false); }}>
                 <span>{currentPersona?.name?.slice(0, 1) ?? "访"}</span><MenuChevron />

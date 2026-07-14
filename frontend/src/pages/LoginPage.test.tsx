@@ -15,7 +15,7 @@ describe("LoginPage", () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(<QueryClientProvider client={client}><MemoryRouter initialEntries={["/login?next=%2Fplanner"]}><Routes><Route path="login" element={<LoginPage />} /><Route path="planner" element={<h1>已返回路线规划</h1>} /></Routes></MemoryRouter></QueryClientProvider>);
     fireEvent.click(await screen.findByRole("button", { name: /跨境通勤者/ }));
-    fireEvent.click(screen.getByRole("button", { name: /进入 CrossBorder AI/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Enter CrossBorder AI/ }));
     expect(await screen.findByRole("heading", { name: "已返回路线规划" })).toBeInTheDocument();
     expect(window.localStorage.getItem("crossborder-demo-persona")).toBe("commuter-user");
     expect(window.localStorage.getItem("crossborder-demo-session")).toContain("commuter-user");

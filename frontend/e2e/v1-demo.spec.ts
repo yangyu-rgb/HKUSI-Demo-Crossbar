@@ -24,11 +24,11 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
     }
   });
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "选择你的工作空间" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Choose your workspace / 选择工作空间" })).toBeVisible();
   await page.getByRole("button", { name: /Demo 操作员/ }).click();
-  await page.getByRole("button", { name: /进入 CrossBorder AI/ }).click();
+  await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "提前看见口岸等待， 选择更稳的跨境路线。" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Predict border uncertainty. Dispatch with confidence." })).toBeVisible();
   await expect(page.locator('img[src="/hero-city-poster.jpg"]')).toBeVisible();
   await expect(page.getByRole("heading", { name: "四口岸动态态势" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "香港—深圳四口岸实时流线" })).toBeVisible();
@@ -134,10 +134,41 @@ test("口岸态势、V2 场景、双向规划、通知与模型实验室闭环",
   expect(runtimeErrors).toEqual([]);
 });
 
+test("七分钟投资演示的企业 AI 决策闭环可直接操作", async ({ page }) => {
+  test.skip(test.info().project.name === "mobile-chromium", "七分钟现场投资演示以桌面投影为目标；移动路由另有独立闭环与可访问性回归。");
+  test.setTimeout(60_000);
+  await page.goto("/login?next=%2Fbusiness");
+  await page.getByRole("button", { name: /Demo 操作员/ }).click();
+  await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
+
+  await expect(page.getByRole("heading", { name: "Enterprise Predictive Dispatch / 企业预测与调度" })).toBeVisible();
+  await expect(page.getByText(/full model coverage \(4\/4 ports\)/)).toBeVisible();
+  await expect(page.getByText(/about 26,000 travellers used Huanggang/)).toBeVisible();
+  await expect(page.getByText("罗湖 · HGB 44 min · 90% CI 41–47 · High / 高")).toBeVisible();
+
+  await page.getByRole("button", { name: "Generate AI Dispatch Plan" }).click();
+  await expect(page.getByText("3→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("1→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("12,000→2,400", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Adopt Plan & Create Notification Drafts" }).click();
+  await expect(page.getByText(/147 local notification drafts created/)).toBeVisible();
+
+  const viewSelect = page.getByLabel("Demo view / 演示视角");
+  await viewSelect.selectOption("freight_operator");
+  await expect(page.getByRole("heading", { name: "Shenzhen Bay Freight Redistribution / 深圳湾货运转移" })).toBeVisible();
+  await expect(page.getByText(/partial model coverage \(1\/3 ports\)/)).toBeVisible();
+  await expect(page.getByText(/Fallback/).first()).toBeVisible();
+
+  await viewSelect.selectOption("port_authority");
+  await page.getByRole("button", { name: "Generate AI Dispatch Plan" }).click();
+  await page.getByRole("button", { name: "Publish Demo Coordination Notice" }).click();
+  await expect(page.getByRole("button", { name: "Demo Notice Published" })).toBeVisible();
+});
+
 test("桌面电影感外壳在主要断点无横向溢出", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: /Demo 操作员/ }).click();
-  await page.getByRole("button", { name: /进入 CrossBorder AI/ }).click();
+  await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const desktopNavigation = page.getByRole("navigation", { name: "主要导航" });
@@ -154,7 +185,7 @@ test("桌面电影感外壳在主要断点无横向溢出", async ({ page }) => 
   for (const width of [1440, 1024, 768, 375]) {
     await page.setViewportSize({ width, height: width <= 375 ? 812 : 900 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "提前看见口岸等待， 选择更稳的跨境路线。" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Predict border uncertainty. Dispatch with confidence." })).toBeVisible();
     const layout = await page.evaluate(() => ({
       overflow: document.documentElement.scrollWidth - window.innerWidth,
       offenders: [...document.querySelectorAll("body *")]
@@ -179,7 +210,7 @@ test("主要页面没有严重可访问性问题", async ({ page }) => {
 
   await page.goto("/login");
   await page.getByRole("button", { name: /Demo 操作员/ }).click();
-  await page.getByRole("button", { name: /进入 CrossBorder AI/ }).click();
+  await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
   for (const route of ["/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/operations"]) {
     await page.goto(route);
     await page.locator("main").waitFor();

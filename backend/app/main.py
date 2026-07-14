@@ -13,6 +13,7 @@ from .api import (
     crowdsource_router,
     commercial_router,
     demo_router,
+    enterprise_operations_router,
     health_router,
     prediction_router,
     realtime_router,
@@ -225,6 +226,7 @@ def create_app(
     app.include_router(commercial_router)
     app.include_router(subscription_router)
     app.include_router(batch_router)
+    app.include_router(enterprise_operations_router)
     return app
 
 

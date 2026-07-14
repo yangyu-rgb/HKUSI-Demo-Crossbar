@@ -245,6 +245,37 @@ CREATE TABLE IF NOT EXISTS batch_plans (
 CREATE INDEX IF NOT EXISTS idx_batch_plans_company
 ON batch_plans(company, created_at);
 
+CREATE TABLE IF NOT EXISTS enterprise_operation_plans (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    workspace_kind TEXT NOT NULL,
+    scenario_id TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    outcome_json TEXT,
+    status TEXT NOT NULL DEFAULT 'adopted',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_enterprise_operation_plans_org
+ON enterprise_operation_plans(organization_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS coordination_notices (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    affected_ports_json TEXT NOT NULL,
+    valid_until TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    demo_only INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_coordination_notices_created
+ON coordination_notices(created_at DESC);
+
 CREATE TABLE IF NOT EXISTS shadow_model_observations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     generated_at TEXT NOT NULL,

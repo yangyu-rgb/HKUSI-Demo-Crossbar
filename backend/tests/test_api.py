@@ -38,7 +38,10 @@ def test_v1_model_personas_and_readiness(client: TestClient) -> None:
     ready_health = client.get("/api/health/ready")
 
     assert personas.status_code == model.status_code == readiness.status_code == 200
-    assert len(personas.json()["personas"]) == 3
+    assert len(personas.json()["personas"]) == 6
+    assert {item["role"] for item in personas.json()["personas"]} >= {
+        "transport_dispatcher", "port_official"
+    }
     assert model.json()["synthetic_only"] is True
     route_check = next(
         item for item in readiness.json()["checks"]

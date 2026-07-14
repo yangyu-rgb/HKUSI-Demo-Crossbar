@@ -6,6 +6,8 @@ const roleNames: Record<DemoRole, string> = {
   operator: "Demo 运营人员",
   commuter: "个人通勤者",
   business_admin: "企业管理员",
+  transport_dispatcher: "运输调度员",
+  port_official: "口岸协调人员",
 };
 
 type RequireAccessProps = {

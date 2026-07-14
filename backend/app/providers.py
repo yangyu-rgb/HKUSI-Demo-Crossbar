@@ -131,6 +131,20 @@ def valid_crowdsource_seed(value: JsonValue) -> bool:
     )
 
 
+def valid_enterprise_operations(value: JsonValue) -> bool:
+    if not isinstance(value, dict) or not isinstance(value.get("scenarios"), list):
+        return False
+    required = {"id", "workspace_kind", "name", "scenario_at", "ports", "assets", "jobs"}
+    return bool(value["scenarios"]) and all(
+        isinstance(scenario, dict)
+        and required <= set(scenario)
+        and isinstance(scenario["ports"], list)
+        and isinstance(scenario["assets"], list)
+        and isinstance(scenario["jobs"], list)
+        for scenario in value["scenarios"]
+    )
+
+
 PORT_STATE_FALLBACK = {
     "source": "CrossBorder AI embedded fallback",
     "ports": [
@@ -178,3 +192,9 @@ WEATHER_FALLBACK = {
 HOLIDAY_FALLBACK = {"dates": [], "demo_note": "Embedded calendar fallback."}
 EVENT_FALLBACK = {"events": [], "demo_note": "Embedded event fallback."}
 CROWDSOURCE_FALLBACK: list[dict] = []
+ENTERPRISE_OPERATIONS_FALLBACK = {
+    "version": "enterprise-operations-fallback-v1",
+    "source": "embedded-demo-fallback",
+    "demo_notice": "企业运营情景文件不可用。",
+    "scenarios": [],
+}

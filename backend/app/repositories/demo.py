@@ -12,6 +12,7 @@ from ..external_data import load_source_registry
 from .external import ExternalDataRepository
 from ..providers import (
     CROWDSOURCE_FALLBACK,
+    ENTERPRISE_OPERATIONS_FALLBACK,
     EVENT_FALLBACK,
     HOLIDAY_FALLBACK,
     PORT_STATE_FALLBACK,
@@ -19,13 +20,14 @@ from ..providers import (
     LocalJsonProvider,
     valid_calendar,
     valid_crowdsource_seed,
+    valid_enterprise_operations,
     valid_events,
     valid_port_state,
     valid_weather,
 )
 
 
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 
 def load_json(path: Path) -> dict | list:
@@ -82,6 +84,13 @@ class DemoRepository:
                 validator=valid_crowdsource_seed,
                 now=provider_now,
             ),
+            "enterprise_operations": LocalJsonProvider(
+                name="enterprise_operations",
+                path=data_dir / "operations" / "demo_operations.json",
+                fallback=ENTERPRISE_OPERATIONS_FALLBACK,
+                validator=valid_enterprise_operations,
+                now=provider_now,
+            ),
         }
         self._port_state = self._providers["port_status"].get()
         self._locations = load_json(data_dir / "routes" / "locations.json")
@@ -97,6 +106,7 @@ class DemoRepository:
         self._holidays = self._providers["calendar"].get()
         self._events = self._providers["events"].get()
         self._crowdsource_seed = self._providers["crowdsource_seed"].get()
+        self._enterprise_operations = self._providers["enterprise_operations"].get()
         self._initialize_database()
         self.external_data = ExternalDataRepository(
             self._database_path,
@@ -511,6 +521,9 @@ class DemoRepository:
 
     def get_events(self) -> dict:
         return deepcopy(self._events)
+
+    def get_enterprise_operations(self) -> dict:
+        return deepcopy(self._enterprise_operations)
 
     def get_provider_statuses(self) -> list[dict]:
         return [
@@ -1352,6 +1365,196 @@ class DemoRepository:
         except sqlite3.Error as error:
             raise PersistenceError() from error
 
+    def save_enterprise_operation_plan(
+        self,
+        *,
+        organization_id: str,
+        workspace_kind: str,
+        scenario_id: str,
+        request: dict,
+        result: dict,
+    ) -> dict:
+        plan_id = f"ops-{uuid4().hex[:12]}"
+        created_at = self._utc_now()
+        stored = {
+            **result,
+            "plan_id": plan_id,
+            "status": "adopted",
+            "adopted_at": created_at,
+            "outcome": None,
+        }
+        try:
+            with self._connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO enterprise_operation_plans(
+                        id, organization_id, workspace_kind, scenario_id,
+                        request_json, result_json, outcome_json, status,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, NULL, 'adopted', ?, ?)
+                    """,
+                    (
+                        plan_id,
+                        organization_id,
+                        workspace_kind,
+                        scenario_id,
+                        json.dumps(request, ensure_ascii=False),
+                        json.dumps(stored, ensure_ascii=False),
+                        created_at,
+                        created_at,
+                    ),
+                )
+            return stored
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+    def list_enterprise_operation_plans(
+        self,
+        organization_id: str,
+        limit: int = 10,
+    ) -> list[dict]:
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT result_json, outcome_json FROM enterprise_operation_plans
+                    WHERE organization_id = ? ORDER BY created_at DESC LIMIT ?
+                    """,
+                    (organization_id, limit),
+                ).fetchall()
+            plans = []
+            for row in rows:
+                result = json.loads(row["result_json"])
+                result["outcome"] = (
+                    json.loads(row["outcome_json"])
+                    if row["outcome_json"]
+                    else None
+                )
+                plans.append(result)
+            return plans
+        except (sqlite3.Error, json.JSONDecodeError) as error:
+            raise PersistenceError() from error
+
+    def get_enterprise_operation_plan(
+        self,
+        plan_id: str,
+        organization_id: str,
+    ) -> dict | None:
+        try:
+            with self._connect() as connection:
+                row = connection.execute(
+                    """
+                    SELECT result_json, outcome_json FROM enterprise_operation_plans
+                    WHERE id = ? AND organization_id = ?
+                    """,
+                    (plan_id, organization_id),
+                ).fetchone()
+            if row is None:
+                return None
+            result = json.loads(row["result_json"])
+            result["outcome"] = (
+                json.loads(row["outcome_json"])
+                if row["outcome_json"]
+                else None
+            )
+            return result
+        except (sqlite3.Error, json.JSONDecodeError) as error:
+            raise PersistenceError() from error
+
+    def save_enterprise_operation_outcome(
+        self,
+        plan_id: str,
+        organization_id: str,
+        outcome: dict,
+    ) -> dict | None:
+        try:
+            with self._connect() as connection:
+                cursor = connection.execute(
+                    """
+                    UPDATE enterprise_operation_plans
+                    SET outcome_json = ?, status = 'reviewed', updated_at = ?
+                    WHERE id = ? AND organization_id = ?
+                    """,
+                    (
+                        json.dumps(outcome, ensure_ascii=False),
+                        self._utc_now(),
+                        plan_id,
+                        organization_id,
+                    ),
+                )
+                if cursor.rowcount == 0:
+                    return None
+                row = connection.execute(
+                    "SELECT result_json FROM enterprise_operation_plans WHERE id = ?",
+                    (plan_id,),
+                ).fetchone()
+            result = json.loads(row["result_json"])
+            return {**result, "status": "reviewed", "outcome": outcome}
+        except (sqlite3.Error, json.JSONDecodeError) as error:
+            raise PersistenceError() from error
+
+    def save_coordination_notice(
+        self,
+        organization_id: str,
+        notice: dict,
+    ) -> dict:
+        notice_id = f"notice-{uuid4().hex[:12]}"
+        created_at = self._utc_now()
+        stored = {
+            "id": notice_id,
+            "organization_id": organization_id,
+            **notice,
+            "created_at": created_at,
+            "demo_only": True,
+        }
+        try:
+            with self._connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO coordination_notices(
+                        id, organization_id, title, message, affected_ports_json,
+                        valid_until, severity, demo_only, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+                    """,
+                    (
+                        notice_id,
+                        organization_id,
+                        notice["title"],
+                        notice["message"],
+                        json.dumps(notice["affected_ports"], ensure_ascii=False),
+                        notice["valid_until"],
+                        notice["severity"],
+                        created_at,
+                    ),
+                )
+            return stored
+        except sqlite3.Error as error:
+            raise PersistenceError() from error
+
+    def list_coordination_notices(self, limit: int = 20) -> list[dict]:
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    "SELECT * FROM coordination_notices ORDER BY created_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            return [
+                {
+                    "id": row["id"],
+                    "organization_id": row["organization_id"],
+                    "title": row["title"],
+                    "message": row["message"],
+                    "affected_ports": json.loads(row["affected_ports_json"]),
+                    "valid_until": row["valid_until"],
+                    "severity": row["severity"],
+                    "created_at": row["created_at"],
+                    "demo_only": bool(row["demo_only"]),
+                }
+                for row in rows
+            ]
+        except (sqlite3.Error, json.JSONDecodeError) as error:
+            raise PersistenceError() from error
+
     def save_shadow_observations(self, observations: list[dict]) -> None:
         if not observations:
             return
@@ -1741,6 +1944,8 @@ class DemoRepository:
                 connection.execute("DELETE FROM crowdsource_reports")
                 connection.execute("DELETE FROM subscriptions")
                 connection.execute("DELETE FROM batch_plans")
+                connection.execute("DELETE FROM enterprise_operation_plans")
+                connection.execute("DELETE FROM coordination_notices")
                 connection.execute("DELETE FROM shadow_model_observations")
                 connection.execute("DELETE FROM scenario_overrides")
                 self._seed_reports(connection)

@@ -10,6 +10,7 @@ from ..services import (
     CrowdsourceService,
     CommercialService,
     DemoService,
+    EnterpriseOperationsService,
     PredictionService,
     RealtimeService,
     SubscriptionService,
@@ -126,3 +127,11 @@ def get_batch_service(
     scenario_model: ScenarioWaitModel = Depends(get_scenario_model),
 ) -> BatchService:
     return BatchService(repository, clock, shadow_model=shadow_model, scenario_model=scenario_model)
+
+
+def get_enterprise_operations_service(
+    repository: DemoRepository = Depends(get_repository),
+    clock: Clock = Depends(get_clock),
+    scenario_model: ScenarioWaitModel = Depends(get_scenario_model),
+) -> EnterpriseOperationsService:
+    return EnterpriseOperationsService(repository, clock, scenario_model=scenario_model)

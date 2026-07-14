@@ -1,4 +1,4 @@
-export type DemoRole = "operator" | "commuter" | "business_admin";
+export type DemoRole = "operator" | "commuter" | "business_admin" | "transport_dispatcher" | "port_official";
 
 export type DemoSession = {
   personaId: string;
@@ -8,7 +8,7 @@ export type DemoSession = {
 
 const SESSION_KEY = "crossborder-demo-session";
 const PERSONA_KEY = "crossborder-demo-persona";
-const ROLES = new Set<DemoRole>(["operator", "commuter", "business_admin"]);
+const ROLES = new Set<DemoRole>(["operator", "commuter", "business_admin", "transport_dispatcher", "port_official"]);
 
 export function getDemoSession(): DemoSession | null {
   try {

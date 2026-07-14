@@ -24,7 +24,7 @@
 
 主要错误代码包括 `AUTH_REQUIRED`、`VALIDATION_ERROR`、`FORBIDDEN`、`LOCATION_NOT_FOUND`、`TARGET_TIME_OUT_OF_RANGE`、`SUBSCRIPTION_NOT_FOUND`、`NOTIFICATION_NOT_FOUND`、`PLAN_NOT_FOUND`、`DATABASE_ERROR` 和 `INTERNAL_ERROR`。
 
-前端仅在完成本地登录后附带 `X-Demo-Persona-ID`，可选值来自 `GET /api/demo/personas`。健康检查、Demo 时间与身份列表、实时口岸态势和商业套餐允许匿名读取；其余接口未提供身份头时返回 `401 AUTH_REQUIRED`。个人、企业与运营接口继续执行角色检查，越权返回 `403 FORBIDDEN`。该身份头可被客户端伪造，只用于课堂 Demo 流程与组织隔离，不是生产认证。
+前端仅在完成本地登录后附带 `X-Demo-Persona-ID`，可选值来自 `GET /api/demo/personas`。健康检查、Demo 时间与身份列表、实时口岸态势和商业套餐允许匿名读取；其余接口未提供身份头时返回 `401 AUTH_REQUIRED`。个人、企业管理员、运输调度、口岸官方与平台运营接口继续执行角色检查，越权返回 `403 FORBIDDEN`。该身份头可被客户端伪造，只用于课堂 Demo 流程与组织隔离，不是生产认证。
 
 ## Demo 控制
 
@@ -32,7 +32,7 @@
 - `GET /api/health/live`：进程存活探测。
 - `GET /api/health/ready`：检查双向矩阵、本地 Provider、SQLite、Demo 身份、AI v1 产物和本地通知适配器。
 - `GET /api/demo/context`：返回 `Asia/Hong_Kong` 当前时间、建议目标时间、有效预测范围和轮询间隔。
-- `GET /api/demo/personas`：返回运营、通勤者和企业管理员三种本地身份。
+- `GET /api/demo/personas`：返回平台运营、通勤者、企业管理员、巴士调度、物流调度和口岸官方六种本地身份，并标明对应 `workspace_kind`。
 - `GET /api/demo/v1-model`：返回 AI v1 元数据、合成数据指标、时间切分和运行时产物状态。
 - `GET /api/demo/v2-model`：返回 AI v2.2 候选排行榜、最终参数、时间切分、数据审计、区间覆盖和运行时产物状态。
 - `GET /api/demo/v1-readiness`：返回 V1 完整 Demo 就绪检查；该状态不影响独立的 V2 门槛。
@@ -150,14 +150,27 @@ Demo 模型为每个目标时间筛选相同工作日、周末或节假日，目
 
 订阅使用稳定的 `origin_id` 和 `destination_id`，支持双向跨境组合、一周七天与三类提醒开关，并持久化到 SQLite。预览接口计算下一次有效通勤日，以到达前三小时内的预测窗口返回推荐口岸、最晚出发、出发前提醒、异常拥堵和更优路线的触发状态。运行本地告警周期后，触发结果写入幂等通知收件箱；这仍是本地适配器，不代表真实外部投递。`POST /api/subscription` 仅作为已弃用的兼容路径保留。
 
-## 企业方案
+## 企业运营控制塔
+
+- `GET /api/enterprise-operations/workspace?view_as=coach_operator`：返回当前身份可见的运营情景、口岸风险、车辆/货车、任务、最近方案和协调建议。`ai_decision_trace` 同时返回已加载的 HGB 模型版本、预测目标时刻、90% 区间、真实参与模型的输入、透明压力校准、优化目标和各口岸基础/校准等待。仅平台运营可用 `view_as` 切换巴士、物流、企业客户和口岸官方视角。
+- `POST /api/enterprise-operations/previews`：按 `scenario_id` 运行已签入的 AI v2.2 HGB 等待预测、透明压力校准和确定性约束优化，生成不持久化决策预览，并比较基线与推荐后的高风险任务、车辆冲突、情景成本暴露和平均到达变化。
+- `POST /api/enterprise-operations/plans`：采用预览中的选定措施，保存本地方案并生成本地通知草稿；不连接车辆、短信、客服或口岸生产系统。
+- `GET /api/enterprise-operations/plans?limit=10`：读取当前组织近期采用的方案。
+- `PATCH /api/enterprise-operations/plans/{plan_id}/outcome`：人工写入事后复盘数据，明确区分预测结果和实际录入。
+- `GET /api/enterprise-operations/plans/{plan_id}/export.csv`：导出当前组织可访问的本地执行清单。
+- `GET /api/enterprise-operations/coordination-notices`：读取可见的本地协调建议。
+- `POST /api/enterprise-operations/coordination-notices`：仅口岸官方或平台运营可发布本地 Demo 协调建议。
+
+巴士与物流身份只能读取各自组织和工作空间；口岸官方只看到聚合口岸压力和协调信息，不返回企业车辆、班次或货运任务明细。四个客运口岸的 HGB 基础等待由已校验的本地产物实际推理；货运视角目前只有深圳湾具备该模型覆盖，莲塘与文锦渡明确返回 `transparent scenario fallback`，不会伪装成 HGB 输出。容量压力和风险信号来自 `data/operations/demo_operations.json` 的课堂重建，再由透明系数与约束层转化为建议。任务、成本暴露、改善量与通知数量仍是确定性情景，不代表真实企业损失或已执行调度。
+
+## 员工接驳辅助方案
 
 - `POST /api/batch`：验证最多 100 名可编辑员工；请求可提供批次 `preferences`，员工可用同名字段覆盖默认路线偏好和预算。结果会回显每名员工实际使用的偏好、预算和预算满足状态，并保存到 SQLite。
 - `GET /api/batch/plans?company=...&limit=10`：返回近期保存的方案，前端可载入输入并重新生成。
 - `POST /api/batch/csv/validate`：校验包含 `id,name,origin_id,destination_id,arrival_deadline` 的员工 CSV，并返回可直接生成方案的标准化员工数组。
 - `GET /api/batch/plans/{plan_id}/export.csv`：导出当前组织可访问的方案。
 
-企业接口仅允许运营或企业管理员身份访问，方案按 `organization_id` 隔离；通勤者身份返回 `403 FORBIDDEN`。
+员工接驳接口仅允许平台运营或企业管理员身份访问，方案按 `organization_id` 隔离；通勤者、运输调度和口岸官方身份返回 `403 FORBIDDEN`。
 
 ## Demo 边界
 

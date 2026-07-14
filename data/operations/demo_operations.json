@@ -1,0 +1,73 @@
+{
+  "version": "enterprise-operations-demo-v1",
+  "source": "CrossBorder AI deterministic classroom operations fixture",
+  "demo_notice": "Classroom reconstruction only: all services, vehicles, waits, risks, amounts and notifications are deterministic Demo data, not live border conditions, observed losses or executed dispatches. / 仅为课堂重建情景。",
+  "scenarios": [
+    {
+      "id": "may-day-coach-surge",
+      "workspace_kind": "coach_operator",
+      "name": "May Day 2026 Coach Surge / 五一客流高峰",
+      "subtitle": "One-hour early warning for Luohu / 罗湖高峰前一小时预警",
+      "scenario_at": "2026-04-30T07:00:00+08:00",
+      "horizon_hours": 3,
+      "source_label": "深圳市口岸办五一客流预测（事实）+ 本地班次重建（情景）",
+      "source_url": "https://www.sz.gov.cn/cn/xxgk/zfxxgj/bmdt/content/post_12759142.html",
+      "problem_evidence": "Official Hong Kong briefing: about 26,000 travellers used Huanggang between 00:00 and 06:00 on 1 January 2024; heavy traffic prevented many cross-border coaches from immediately returning to the city despite reinforced service.",
+      "problem_source_url": "https://www.tlb.gov.hk/sc/psp/speeches/transport/2024/20240102a.html",
+      "evidence_boundary": "公开资料只支持五一口岸客流高峰预期；45分钟等待、班次风险、成本与调度建议均为课堂情景。",
+      "ports": [
+        {"id": "luohu", "name": "罗湖", "wait_minutes": 45, "risk": "high", "change_next_hour": 18, "capacity_percent": 118},
+        {"id": "futian", "name": "福田", "wait_minutes": 18, "risk": "low", "change_next_hour": 3, "capacity_percent": 72},
+        {"id": "huanggang", "name": "皇岗", "wait_minutes": 31, "risk": "medium", "change_next_hour": 8, "capacity_percent": 91},
+        {"id": "shenzhen-bay", "name": "深圳湾", "wait_minutes": 22, "risk": "medium", "change_next_hour": 4, "capacity_percent": 78}
+      ],
+      "assets": [
+        {"id": "A01", "label": "客车 A01", "asset_type": "coach", "capacity": 53, "available_at": "07:00", "status": "available"},
+        {"id": "A02", "label": "客车 A02", "asset_type": "coach", "capacity": 53, "available_at": "07:10", "status": "cycle_conflict"},
+        {"id": "A03", "label": "客车 A03", "asset_type": "coach", "capacity": 49, "available_at": "07:00", "status": "available"},
+        {"id": "A04", "label": "客车 A04", "asset_type": "coach", "capacity": 53, "available_at": "07:30", "status": "available"}
+      ],
+      "jobs": [
+        {"id": "101", "label": "班次 #101", "direction": "香港→深圳", "departure_time": "07:40", "arrival_deadline": "09:05", "passenger_count": 49, "asset_id": "A01", "baseline_port_id": "luohu", "baseline_port": "罗湖", "baseline_risk": "high", "baseline_arrival": "09:29", "recovery_budget_hkd": 4000, "recommended_port_id": "futian", "recommended_port": "福田", "recommended_departure_time": "07:30", "recommended_arrival": "08:57", "recommended_risk": "medium"},
+        {"id": "102", "label": "班次 #102", "direction": "香港→深圳", "departure_time": "07:45", "arrival_deadline": "09:20", "passenger_count": 42, "asset_id": "A03", "baseline_port_id": "shenzhen-bay", "baseline_port": "深圳湾", "baseline_risk": "low", "baseline_arrival": "09:10", "recovery_budget_hkd": 3000},
+        {"id": "103", "label": "班次 #103", "direction": "香港→深圳", "departure_time": "08:00", "arrival_deadline": "09:30", "passenger_count": 50, "asset_id": "A02", "baseline_port_id": "luohu", "baseline_port": "罗湖", "baseline_risk": "high", "baseline_arrival": "09:53", "recovery_budget_hkd": 4000, "recommended_port_id": "futian", "recommended_port": "福田", "recommended_departure_time": "07:50", "recommended_arrival": "09:22", "recommended_risk": "medium"},
+        {"id": "104", "label": "班次 #104", "direction": "深圳→香港", "departure_time": "08:05", "arrival_deadline": "09:40", "passenger_count": 38, "asset_id": "A04", "baseline_port_id": "huanggang", "baseline_port": "皇岗", "baseline_risk": "low", "baseline_arrival": "09:38", "recovery_budget_hkd": 3000},
+        {"id": "105", "label": "班次 #105", "direction": "香港→深圳", "departure_time": "08:15", "arrival_deadline": "09:45", "passenger_count": 48, "asset_id": "A03", "baseline_port_id": "luohu", "baseline_port": "罗湖", "baseline_risk": "high", "baseline_arrival": "10:08", "recovery_budget_hkd": 4000, "recommended_port_id": "shenzhen-bay", "recommended_port": "深圳湾", "recommended_departure_time": "08:15", "recommended_arrival": "09:37", "recommended_risk": "medium"},
+        {"id": "106", "label": "班次 #106", "direction": "香港→深圳", "departure_time": "08:25", "arrival_deadline": "10:00", "passenger_count": 35, "asset_id": "A04", "baseline_port_id": "futian", "baseline_port": "福田", "baseline_risk": "low", "baseline_arrival": "09:48", "recovery_budget_hkd": 3000},
+        {"id": "107", "label": "班次 #107", "direction": "深圳→香港", "departure_time": "08:40", "arrival_deadline": "10:15", "passenger_count": 41, "asset_id": "A01", "baseline_port_id": "huanggang", "baseline_port": "皇岗", "baseline_risk": "low", "baseline_arrival": "10:11", "recovery_budget_hkd": 3000},
+        {"id": "108", "label": "班次 #108", "direction": "香港→深圳", "departure_time": "08:50", "arrival_deadline": "10:25", "passenger_count": 46, "asset_id": "A03", "baseline_port_id": "shenzhen-bay", "baseline_port": "深圳湾", "baseline_risk": "low", "baseline_arrival": "10:12", "recovery_budget_hkd": 3000},
+        {"id": "109", "label": "班次 #109", "direction": "香港→深圳", "departure_time": "09:10", "arrival_deadline": "10:45", "passenger_count": 39, "asset_id": "A04", "baseline_port_id": "futian", "baseline_port": "福田", "baseline_risk": "low", "baseline_arrival": "10:31", "recovery_budget_hkd": 3000},
+        {"id": "110", "label": "班次 #110", "direction": "深圳→香港", "departure_time": "09:35", "arrival_deadline": "11:10", "passenger_count": 44, "asset_id": "A02", "baseline_port_id": "huanggang", "baseline_port": "皇岗", "baseline_risk": "low", "baseline_arrival": "11:08", "recovery_budget_hkd": 3000}
+      ]
+    },
+    {
+      "id": "freight-port-redistribution",
+      "workspace_kind": "freight_operator",
+      "name": "Shenzhen Bay Freight Redistribution / 深圳湾货运转移",
+      "subtitle": "Delivery windows and truck rerouting / 配送时窗与货车改道",
+      "scenario_at": "2025-12-22T12:00:00+08:00",
+      "horizon_hours": 3,
+      "source_label": "皇岗停止跨境货车通关（事实）+ 本地货运任务重建（情景）",
+      "source_url": "https://www.sz.gov.cn/szzt2010/wgkzl/jcgk/jcygk/zdzcjc/content/post_12527327.html",
+      "problem_evidence": "Policy-driven freight redistribution can concentrate trucks at the remaining ports; the Demo therefore tests delivery-window and vehicle-cycle decisions rather than claiming a measured loss.",
+      "problem_source_url": "https://www.sz.gov.cn/szzt2010/wgkzl/jcgk/jcygk/zdzcjc/content/post_12527327.html",
+      "evidence_boundary": "政策变化和货运口岸转移为公开事实；排队时间、配送风险和金额为课堂情景。",
+      "ports": [
+        {"id": "shenzhen-bay", "name": "深圳湾", "wait_minutes": 62, "risk": "high", "change_next_hour": 16, "capacity_percent": 126},
+        {"id": "liantang", "name": "莲塘", "wait_minutes": 31, "risk": "medium", "change_next_hour": 5, "capacity_percent": 86},
+        {"id": "man-kam-to", "name": "文锦渡", "wait_minutes": 27, "risk": "medium", "change_next_hour": 2, "capacity_percent": 79}
+      ],
+      "assets": [
+        {"id": "T01", "label": "货车 T01", "asset_type": "truck", "capacity": 18, "available_at": "12:00", "status": "available"},
+        {"id": "T02", "label": "货车 T02", "asset_type": "truck", "capacity": 24, "available_at": "12:15", "status": "cycle_conflict"},
+        {"id": "T03", "label": "货车 T03", "asset_type": "truck", "capacity": 18, "available_at": "12:00", "status": "available"}
+      ],
+      "jobs": [
+        {"id": "F201", "label": "货运 #F201", "direction": "香港→深圳", "departure_time": "12:20", "arrival_deadline": "14:30", "passenger_count": 0, "load_units": 16, "asset_id": "T01", "baseline_port_id": "shenzhen-bay", "baseline_port": "深圳湾", "baseline_risk": "high", "baseline_arrival": "15:05", "recovery_budget_hkd": 6000, "recommended_port_id": "liantang", "recommended_port": "莲塘", "recommended_departure_time": "12:05", "recommended_arrival": "14:20", "recommended_risk": "medium"},
+        {"id": "F202", "label": "货运 #F202", "direction": "香港→深圳", "departure_time": "12:40", "arrival_deadline": "15:00", "passenger_count": 0, "load_units": 20, "asset_id": "T02", "baseline_port_id": "shenzhen-bay", "baseline_port": "深圳湾", "baseline_risk": "high", "baseline_arrival": "15:32", "recovery_budget_hkd": 6000, "recommended_port_id": "man-kam-to", "recommended_port": "文锦渡", "recommended_departure_time": "12:25", "recommended_arrival": "14:52", "recommended_risk": "medium"},
+        {"id": "F203", "label": "货运 #F203", "direction": "深圳→香港", "departure_time": "13:00", "arrival_deadline": "15:20", "passenger_count": 0, "load_units": 15, "asset_id": "T03", "baseline_port_id": "liantang", "baseline_port": "莲塘", "baseline_risk": "medium", "baseline_arrival": "15:14", "recovery_budget_hkd": 4000},
+        {"id": "F204", "label": "货运 #F204", "direction": "香港→深圳", "departure_time": "13:20", "arrival_deadline": "15:50", "passenger_count": 0, "load_units": 12, "asset_id": "T01", "baseline_port_id": "man-kam-to", "baseline_port": "文锦渡", "baseline_risk": "low", "baseline_arrival": "15:34", "recovery_budget_hkd": 4000}
+      ]
+    }
+  ]
+}

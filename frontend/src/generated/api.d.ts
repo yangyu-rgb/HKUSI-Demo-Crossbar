@@ -669,10 +669,207 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/enterprise-operations/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workspace */
+        get: operations["get_workspace_api_enterprise_operations_workspace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Decision */
+        post: operations["preview_decision_api_enterprise_operations_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plans */
+        get: operations["list_plans_api_enterprise_operations_plans_get"];
+        put?: never;
+        /** Adopt Decision */
+        post: operations["adopt_decision_api_enterprise_operations_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/plans/{plan_id}/outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Record Outcome */
+        patch: operations["record_outcome_api_enterprise_operations_plans__plan_id__outcome_patch"];
+        trace?: never;
+    };
+    "/api/enterprise-operations/plans/{plan_id}/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Plan */
+        get: operations["export_plan_api_enterprise_operations_plans__plan_id__export_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/coordination-notices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Notices */
+        get: operations["list_notices_api_enterprise_operations_coordination_notices_get"];
+        put?: never;
+        /** Create Notice */
+        post: operations["create_notice_api_enterprise_operations_coordination_notices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AIDecisionTrace */
+        AIDecisionTrace: {
+            /** Model Available */
+            model_available: boolean;
+            /** Coverage Status */
+            coverage_status: string;
+            /** Model Supported Port Count */
+            model_supported_port_count: number;
+            /** Total Port Count */
+            total_port_count: number;
+            /** Model Version */
+            model_version: string;
+            /** Prediction Engine */
+            prediction_engine: string;
+            /**
+             * Target Time
+             * Format: date-time
+             */
+            target_time: string;
+            /** Forecast Horizon Hours */
+            forecast_horizon_hours: number;
+            /** Confidence Level */
+            confidence_level: number;
+            /** Inputs */
+            inputs: string[];
+            /** Optimization Objectives */
+            optimization_objectives: string[];
+            /** Ports */
+            ports: components["schemas"]["AIPortForecast"][];
+            /** Disclosure */
+            disclosure: string;
+        };
+        /** AIPortForecast */
+        AIPortForecast: {
+            /** Port Id */
+            port_id: string;
+            /** Name */
+            name: string;
+            /** Model Base Wait Minutes */
+            model_base_wait_minutes: number;
+            /** Calibrated Wait Minutes */
+            calibrated_wait_minutes: number;
+            /** Confidence Interval */
+            confidence_interval: [
+                number,
+                number
+            ];
+            /** Traffic Pressure */
+            traffic_pressure: number;
+            stress_signal: components["schemas"]["RiskBand"];
+            /** Forecast Source */
+            forecast_source: string;
+        };
+        /** AdoptedDecisionPlanResponse */
+        AdoptedDecisionPlanResponse: {
+            /** Preview Id */
+            preview_id: string;
+            workspace_kind: components["schemas"]["WorkspaceKind"];
+            /** Scenario */
+            scenario: {
+                [key: string]: unknown;
+            };
+            baseline: components["schemas"]["OperationalSummary"];
+            recommended: components["schemas"]["OperationalSummary"];
+            /** Jobs */
+            jobs: components["schemas"]["OperationalJobResult"][];
+            /** Actions */
+            actions: components["schemas"]["RecommendedAction"][];
+            ai_decision_trace: components["schemas"]["AIDecisionTrace"];
+            /** Explanation */
+            explanation: string[];
+            /** Demo Notice */
+            demo_notice: string;
+            /** Plan Id */
+            plan_id: string;
+            /** Status */
+            status: string;
+            /**
+             * Adopted At
+             * Format: date-time
+             */
+            adopted_at: string;
+            /** Notifications Created */
+            notifications_created: number;
+            /** Notification Delivery */
+            notification_delivery: string;
+            /** Selected Action Ids */
+            selected_action_ids: string[];
+            /** Outcome */
+            outcome?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** AlertCycleResponse */
         AlertCycleResponse: {
             /** Evaluated Subscriptions */
@@ -955,6 +1152,55 @@ export interface components {
             /** Demo Notice */
             demo_notice: string;
         };
+        /** CoordinationNoticeListResponse */
+        CoordinationNoticeListResponse: {
+            /** Notices */
+            notices: components["schemas"]["CoordinationNoticeResponse"][];
+            /** Total */
+            total: number;
+        };
+        /** CoordinationNoticeResponse */
+        CoordinationNoticeResponse: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string;
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+            /** Affected Ports */
+            affected_ports: string[];
+            /**
+             * Valid Until
+             * Format: date-time
+             */
+            valid_until: string;
+            severity: components["schemas"]["RiskBand"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Demo Only */
+            demo_only: boolean;
+        };
+        /** CoordinationNoticeWrite */
+        CoordinationNoticeWrite: {
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+            /** Affected Ports */
+            affected_ports: string[];
+            /**
+             * Valid Until
+             * Format: date-time
+             */
+            valid_until: string;
+            /** @default medium */
+            severity: components["schemas"]["RiskBand"];
+        };
         /**
          * CrossingChannel
          * @enum {string}
@@ -1081,6 +1327,27 @@ export interface components {
             /** Data Version */
             data_version: string;
         };
+        /** DecisionPreviewResponse */
+        DecisionPreviewResponse: {
+            /** Preview Id */
+            preview_id: string;
+            workspace_kind: components["schemas"]["WorkspaceKind"];
+            /** Scenario */
+            scenario: {
+                [key: string]: unknown;
+            };
+            baseline: components["schemas"]["OperationalSummary"];
+            recommended: components["schemas"]["OperationalSummary"];
+            /** Jobs */
+            jobs: components["schemas"]["OperationalJobResult"][];
+            /** Actions */
+            actions: components["schemas"]["RecommendedAction"][];
+            ai_decision_trace: components["schemas"]["AIDecisionTrace"];
+            /** Explanation */
+            explanation: string[];
+            /** Demo Notice */
+            demo_notice: string;
+        };
         /** DemoContextResponse */
         DemoContextResponse: {
             /**
@@ -1120,6 +1387,8 @@ export interface components {
             organization_id: string;
             /** Organization Name */
             organization_name: string;
+            /** Workspace Kind */
+            workspace_kind: string;
         };
         /** DemoPersonasResponse */
         DemoPersonasResponse: {
@@ -1148,6 +1417,85 @@ export interface components {
             origin_ids: string[];
             /** Destination Ids */
             destination_ids: string[];
+        };
+        /** EnterpriseOperationsOutcomeWrite */
+        EnterpriseOperationsOutcomeWrite: {
+            /** Actual High Risk Count */
+            actual_high_risk_count: number;
+            /** Actual Average Arrival Delta Minutes */
+            actual_average_arrival_delta_minutes: number;
+            /** Actual Support Contacts */
+            actual_support_contacts: number;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
+        /** EnterpriseOperationsPlanListResponse */
+        EnterpriseOperationsPlanListResponse: {
+            /** Plans */
+            plans: components["schemas"]["AdoptedDecisionPlanResponse"][];
+            /** Total */
+            total: number;
+        };
+        /** EnterpriseOperationsPlanRequest */
+        EnterpriseOperationsPlanRequest: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Preview Id */
+            preview_id: string;
+            /** Selected Action Ids */
+            selected_action_ids?: string[];
+        };
+        /** EnterpriseOperationsPreviewRequest */
+        EnterpriseOperationsPreviewRequest: {
+            /** Scenario Id */
+            scenario_id: string;
+        };
+        /** EnterpriseOperationsWorkspaceResponse */
+        EnterpriseOperationsWorkspaceResponse: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            workspace_kind: components["schemas"]["WorkspaceKind"];
+            /** Organization Name */
+            organization_name: string;
+            /** Available Views */
+            available_views: components["schemas"]["WorkspaceKind"][];
+            /** Scenarios */
+            scenarios: {
+                [key: string]: unknown;
+            }[];
+            /** Active Scenario */
+            active_scenario: {
+                [key: string]: unknown;
+            };
+            /** Ports */
+            ports: {
+                [key: string]: unknown;
+            }[];
+            /** Assets */
+            assets: {
+                [key: string]: unknown;
+            }[];
+            /** Jobs */
+            jobs: {
+                [key: string]: unknown;
+            }[];
+            /** Recent Plans */
+            recent_plans: {
+                [key: string]: unknown;
+            }[];
+            /** Coordination Notices */
+            coordination_notices: {
+                [key: string]: unknown;
+            }[];
+            ai_decision_trace: components["schemas"]["AIDecisionTrace"];
+            /** Demo Notice */
+            demo_notice: string;
         };
         /** ErrorBody */
         ErrorBody: {
@@ -1296,6 +1644,64 @@ export interface components {
             calibrated_wait_minutes: number;
             /** Uncertainty Minutes */
             uncertainty_minutes: number;
+        };
+        /** OperationalJobResult */
+        OperationalJobResult: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Direction */
+            direction: string;
+            /** Asset Id */
+            asset_id: string;
+            /** Passenger Count */
+            passenger_count: number;
+            /** Load Units */
+            load_units?: number | null;
+            /** Baseline Port Id */
+            baseline_port_id: string;
+            /** Baseline Port */
+            baseline_port: string;
+            /** Baseline Departure Time */
+            baseline_departure_time: string;
+            /** Baseline Arrival */
+            baseline_arrival: string;
+            baseline_risk: components["schemas"]["RiskBand"];
+            /** Recommended Port Id */
+            recommended_port_id: string;
+            /** Recommended Port */
+            recommended_port: string;
+            /** Recommended Departure Time */
+            recommended_departure_time: string;
+            /** Recommended Arrival */
+            recommended_arrival: string;
+            recommended_risk: components["schemas"]["RiskBand"];
+            /** Changed */
+            changed: boolean;
+            /** Arrival Delta Minutes */
+            arrival_delta_minutes: number;
+            /** Exposure Before Hkd */
+            exposure_before_hkd: number;
+            /** Exposure After Hkd */
+            exposure_after_hkd: number;
+        };
+        /** OperationalSummary */
+        OperationalSummary: {
+            /** Total Jobs */
+            total_jobs: number;
+            /** High Risk Count */
+            high_risk_count: number;
+            /** Medium Risk Count */
+            medium_risk_count: number;
+            /** Vehicle Conflicts */
+            vehicle_conflicts: number;
+            /** Cost Exposure Hkd */
+            cost_exposure_hkd: number;
+            /** Average Arrival Delta Minutes */
+            average_arrival_delta_minutes: number;
+            /** Affected People */
+            affected_people: number;
         };
         /** OperationsSummaryResponse */
         OperationsSummaryResponse: {
@@ -1595,11 +2001,31 @@ export interface components {
             alerts: components["schemas"]["ServiceAlert"][];
             overview: components["schemas"]["RealtimeOverview"];
         };
+        /** RecommendedAction */
+        RecommendedAction: {
+            /** Id */
+            id: string;
+            /** Action Type */
+            action_type: string;
+            /** Target Id */
+            target_id: string;
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+            /** Impact */
+            impact: string;
+        };
         /**
          * ReportQualityLevel
          * @enum {string}
          */
         ReportQualityLevel: "low" | "medium" | "high";
+        /**
+         * RiskBand
+         * @enum {string}
+         */
+        RiskBand: "low" | "medium" | "high";
         /**
          * RiskLevel
          * @enum {string}
@@ -2136,6 +2562,11 @@ export interface components {
          * @enum {string}
          */
         Weekday: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+        /**
+         * WorkspaceKind
+         * @enum {string}
+         */
+        WorkspaceKind: "coach_operator" | "freight_operator" | "enterprise_client" | "port_authority";
     };
     responses: never;
     parameters: never;
@@ -4641,6 +5072,504 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_workspace_api_enterprise_operations_workspace_get: {
+        parameters: {
+            query?: {
+                view_as?: string | null;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnterpriseOperationsWorkspaceResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_decision_api_enterprise_operations_previews_post: {
+        parameters: {
+            query?: {
+                view_as?: string | null;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnterpriseOperationsPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionPreviewResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_plans_api_enterprise_operations_plans_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnterpriseOperationsPlanListResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    adopt_decision_api_enterprise_operations_plans_post: {
+        parameters: {
+            query?: {
+                view_as?: string | null;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnterpriseOperationsPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdoptedDecisionPlanResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    record_outcome_api_enterprise_operations_plans__plan_id__outcome_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnterpriseOperationsOutcomeWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdoptedDecisionPlanResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_plan_api_enterprise_operations_plans__plan_id__export_csv_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_notices_api_enterprise_operations_coordination_notices_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoordinationNoticeListResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_notice_api_enterprise_operations_coordination_notices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoordinationNoticeWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoordinationNoticeResponse"];
+                };
             };
             /** @description 请求的资源不存在 */
             404: {

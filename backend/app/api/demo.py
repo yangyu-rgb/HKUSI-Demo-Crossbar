@@ -49,7 +49,7 @@ def get_demo_personas(
 )
 def get_v1_model(
     service: DemoService = Depends(get_demo_service),
-    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin", "transport_dispatcher", "port_official")),
 ) -> dict:
     return service.get_v1_model()
 
@@ -57,7 +57,7 @@ def get_v1_model(
 @router.get("/v2-model", response_model=V2ModelResponse, summary="获取 AI v2.2 透明校准课堂模型状态")
 def get_v2_model(
     service: DemoService = Depends(get_demo_service),
-    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin", "transport_dispatcher", "port_official")),
 ) -> dict:
     return service.get_v2_model()
 
@@ -69,7 +69,7 @@ def get_v2_model(
 )
 def get_v1_readiness(
     service: DemoService = Depends(get_demo_service),
-    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin", "transport_dispatcher", "port_official")),
 ) -> dict:
     return service.get_v1_readiness()
 
@@ -109,7 +109,7 @@ def get_operations_summary(
 )
 def get_model_shadow_summary(
     service: DemoService = Depends(get_demo_service),
-    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin")),
+    _persona: dict = Depends(require_roles("operator", "commuter", "business_admin", "transport_dispatcher", "port_official")),
 ) -> dict:
     return service.get_model_shadow_summary()
 

@@ -168,7 +168,7 @@ test("拖动场景不会滚动页面或破坏路线聚焦功能", async ({ page 
   expect(Math.abs(scrollAfterDrag - scrollBeforeDrag)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE);
 
   const firstRoute = page.getByLabel("四口岸路线聚焦控制").getByRole("button").first();
-  await firstRoute.click();
+  if (await firstRoute.getAttribute("aria-pressed") !== "true") await firstRoute.click();
   await expect(firstRoute).toHaveAttribute("aria-pressed", "true");
   await expect(returnOverview).toBeEnabled();
   await returnOverview.click();
@@ -226,7 +226,10 @@ test("3D 场景离开视口时停止渲染并在返回后保留路线选择", as
   await expect(scene.locator("canvas")).toBeVisible();
   await expect(scene).toHaveAttribute("data-render-state", "running");
 
-  await firstRoute.click();
+  const autoTour = page.getByRole("button", { name: /自动巡航/ });
+  if (await autoTour.getAttribute("aria-pressed") === "true") await autoTour.click();
+  await expect(autoTour).toHaveAttribute("aria-pressed", "false");
+  if (await firstRoute.getAttribute("aria-pressed") !== "true") await firstRoute.click();
   await expect(firstRoute).toHaveAttribute("aria-pressed", "true");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect(scene).toHaveAttribute("data-render-state", "paused");

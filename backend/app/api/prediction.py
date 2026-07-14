@@ -12,7 +12,7 @@ from .dependencies import get_prediction_service, require_roles
 router = APIRouter(
     prefix="/api",
     tags=["路线预测"],
-    dependencies=[Depends(require_roles("operator", "commuter", "business_admin"))],
+    dependencies=[Depends(require_roles("operator", "commuter", "business_admin", "transport_dispatcher", "port_official"))],
 )
 
 
