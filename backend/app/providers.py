@@ -132,17 +132,22 @@ def valid_crowdsource_seed(value: JsonValue) -> bool:
 
 
 def valid_enterprise_operations(value: JsonValue) -> bool:
-    if not isinstance(value, dict) or not isinstance(value.get("scenarios"), list):
+    if (
+        not isinstance(value, dict)
+        or not isinstance(value.get("scenarios"), list)
+        or not isinstance(value.get("scenario_presets"), list)
+    ):
         return False
     required = {"id", "workspace_kind", "name", "scenario_at", "ports", "assets", "jobs"}
-    return bool(value["scenarios"]) and all(
+    preset_required = {"preset_id", "name", "weather", "is_holiday", "events", "port_constraints"}
+    return bool(value["scenarios"]) and bool(value["scenario_presets"]) and all(
         isinstance(scenario, dict)
         and required <= set(scenario)
         and isinstance(scenario["ports"], list)
         and isinstance(scenario["assets"], list)
         and isinstance(scenario["jobs"], list)
         for scenario in value["scenarios"]
-    )
+    ) and all(isinstance(item, dict) and preset_required <= set(item) for item in value["scenario_presets"])
 
 
 PORT_STATE_FALLBACK = {

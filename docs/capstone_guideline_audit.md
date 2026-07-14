@@ -15,12 +15,12 @@ Source reviewed: `SIUS2612_Capstone Project Guideline.pdf`, last updated 26 June
 | Criterion | Weight | Current evidence | Status |
 | --- | ---: | --- | --- |
 | Originality and value proposition | 15% | Predictive decision layer for coach, freight and port operations rather than another personal map | Ready |
-| AI technology at core | 20% | Actual HGB inference in the enterprise API, transparent stress calibration, 90% interval, constraint optimizer, model coverage and fallback disclosure | Ready for Demo; production labels still required |
+| AI technology at core | 20% | Operator-entered tasks feed actual HGB inference per candidate port, transparent scenario calibration, 90% interval and vehicle/route constraint optimization; coverage and fallback remain visible | Ready for Demo; production labels still required |
 | Problem-solution fit and market need | 15% | Official 2024 Huanggang coach-circulation evidence, official 2026 May Day peak forecast and official 2025 freight-port redistribution policy | Strong public evidence; first-hand customer validation remains external |
-| Feasibility and scalability | 15% | Running frontend/API, role isolation, SQLite audit trail, exports, deterministic reset, model artifact checks and tested fallback | Ready for classroom feasibility claim |
+| Feasibility and scalability | 15% | Role-specific CSV/manual input, four-scenario comparison, running frontend/API, role isolation, SQLite audit trail, exports, deterministic reset, model checks and tested fallback | Ready for classroom feasibility claim |
 | Entrepreneurial vision and awareness | 15% | Coach beachhead, staged freight coverage, port coordination boundary, design-partner data plan and explicit risks | Ready if delivered in the business segment |
-| Organization and coherence | 10% | Seven-minute runbook follows problem -> AI -> baseline -> action -> execution -> platform -> feasibility -> ask | Ready |
-| Presentation skills | 10% | Existing cinematic Hero, 3D border scene, high-contrast risk state, three before/after metrics, one-click adoption and role switching | Ready after device rehearsal |
+| Organization and coherence | 10% | Seven-minute runbook follows input -> scenario comparison -> AI pipeline -> risk -> action -> execution -> platform boundary -> ask | Ready |
+| Presentation skills | 10% | Empty-state-to-result interaction, four scenario cards, visible analysis pipeline, high-contrast before/after metrics, adoption and role switching | Ready after device rehearsal |
 
 ## Model decision
 
@@ -30,7 +30,7 @@ Reasons:
 
 1. The current `public-traffic-transparent-hgb-v2.2` artifact already has a chronological train/validation/test split, 25-candidate selection, data audit, per-port interval calibration, traffic ablation, slice checks and monotonicity checks.
 2. Its test MAE of 1.1368 minutes and 90.44% interval coverage apply to a generated base-wait target with real official traffic features. Retraining on the same generated target could improve a synthetic score but would not improve investor credibility.
-3. The material technical gap was enterprise integration, not model complexity. The enterprise control tower now calls the checked-in HGB artifact directly and exposes model version, inputs, coverage, forecast interval and fallback source.
+3. The material technical gap was enterprise integration, not model complexity. The control tower now accepts role-specific CSV or manual tasks, calls the checked-in HGB for every eligible task/port option, and exposes model version, inputs, coverage, interval and fallback source before constraint optimization.
 4. Freight model coverage is intentionally partial: Shenzhen Bay uses HGB, while unsupported freight ports use a labelled transparent scenario fallback. Extending the model without authorized port-specific labels would overstate capability.
 
 Production model milestone:

@@ -216,10 +216,17 @@ describe("application routes", () => {
 
   it("loads the enterprise operations control tower without changing the page shell", async () => {
     const scenario = {
-      id: "may-day-coach-surge",
-      name: "May Day 2026 Coach Surge / 五一客流高峰",
-      subtitle: "One-hour early warning for Luohu / 罗湖高峰前一小时预警",
+      id: "holiday-peak",
+      preset_id: "holiday-peak",
+      name: "Holiday Peak / 节假日高峰",
+      weather: "clear",
+      is_holiday: true,
+      events: [],
+      port_constraints: {},
+      subtitle: "What-if stress test",
       scenario_at: "2026-04-30T07:00:00+08:00",
+      problem_evidence: "Official operating evidence.",
+      problem_source_url: "https://example.com/evidence",
     };
     const aiDecisionTrace = {
       model_available: true,
@@ -253,13 +260,27 @@ describe("application routes", () => {
       coordination_notices: [],
       ai_decision_trace: aiDecisionTrace,
       demo_notice: "所有班次、车辆、等待、风险、金额与通知均为课堂重建情景。",
+      scenario_presets: [scenario],
+      sample_jobs: [{
+        id: "101", label: "Service #101", job_kind: "coach", asset_id: "A01",
+        origin_id: "central", destination_id: "futian-cbd",
+        departure_time: "2026-04-30T07:40:00+08:00", arrival_deadline: "2026-04-30T09:35:00+08:00",
+        baseline_port_id: "luohu", passenger_count: 49, load_units: 0, asset_capacity: 53,
+        asset_available_at: "2026-04-30T07:00:00+08:00", turnaround_minutes: 20,
+        exposure_hkd: 4000, priority: "urgent",
+      }],
+      locations: {
+        origins: [{ id: "central", name: "中环" }],
+        destinations: [{ id: "futian-cbd", name: "深圳福田 CBD" }],
+      },
+      csv_columns: ["id"],
     };
     const preview = {
       preview_id: "preview-test",
       workspace_kind: "coach_operator",
       scenario,
-      baseline: { total_jobs: 10, high_risk_count: 3, medium_risk_count: 0, vehicle_conflicts: 1, cost_exposure_hkd: 12000, average_arrival_delta_minutes: 0, affected_people: 147 },
-      recommended: { total_jobs: 10, high_risk_count: 0, medium_risk_count: 3, vehicle_conflicts: 0, cost_exposure_hkd: 2400, average_arrival_delta_minutes: 8, affected_people: 147 },
+      baseline: { total_jobs: 1, high_risk_count: 7, medium_risk_count: 0, vehicle_conflicts: 1, cost_exposure_hkd: 24000, average_arrival_delta_minutes: 0, affected_people: 0, affected_load_units: 0, changed_jobs: 0 },
+      recommended: { total_jobs: 1, high_risk_count: 0, medium_risk_count: 0, vehicle_conflicts: 0, cost_exposure_hkd: 0, average_arrival_delta_minutes: 8, affected_people: 49, affected_load_units: 0, changed_jobs: 1 },
       jobs: [],
       actions: [{ id: "reroute-101", action_type: "reroute", target_id: "101", title: "班次 #101 改走福田", detail: "提前 10 分钟发车", impact: "降低延误风险" }],
       ai_decision_trace: aiDecisionTrace,
@@ -278,11 +299,12 @@ describe("application routes", () => {
     renderRoute("/business");
 
     expect(await screen.findByRole("heading", { name: "Enterprise Predictive Dispatch / 企业预测与调度" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "May Day 2026 Coach Surge / 五一客流高峰" })).toBeInTheDocument();
-    expect(screen.getByText("罗湖 · HGB 44 min · 90% CI 41–47 · High / 高")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Generate AI Dispatch Plan" }));
-    expect(await screen.findByText("3→0")).toBeInTheDocument();
-    expect(screen.getByText("12,000→2,400")).toBeInTheDocument();
+    expect(screen.getByText("No operating data loaded")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Load Demo Sample" }));
+    expect(screen.getByText(/1 validated Demo tasks loaded/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Analyse Selected Scenario" }));
+    expect(await screen.findByText("7→0")).toBeInTheDocument();
+    expect(screen.getByText("24,000→0")).toBeInTheDocument();
   });
 
   it("applies the demo time window and submits changed prediction input", async () => {

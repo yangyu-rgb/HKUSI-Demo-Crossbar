@@ -1,146 +1,132 @@
 # CrossBorder AI - 7-Minute Live Demo Runbook
 
-This runbook covers the interactive platform segment of the 15-minute Topic 2 presentation. Deliver every spoken line in English. Reserve the remaining 8 minutes for market evidence, business model, feasibility, risks, roadmap, investment ask, and closing.
+This is the interactive platform segment of the 15-minute Topic 2 presentation. Deliver every spoken line in English. Reserve the remaining 8 minutes for market evidence, business model, risks, roadmap, investment ask and closing.
 
 ## Before presenting
 
-- Run `./start.sh` and confirm `/api/health/ready` returns healthy.
-- Use a 1440 x 900 browser window at 100% zoom.
-- Reset the Demo, sign in as `Platform Operator / Demo 操作员`, and leave `/` open.
-- Keep `/business` and `/model` available as backup tabs only if switching tabs is faster on the presentation device.
-- Do not describe any scenario wait, cost, customer, notification, or improvement as observed performance.
+- Run `./start.sh`; use a 1440 x 900 browser at 100% zoom.
+- Reset the Demo, sign in as `Platform Operator / Demo 操作员`, and leave `/business` open in Coach Dispatch view.
+- Keep the coach and freight CSV sample files available only as backup. The primary path uses `Load Demo Sample` so the system file picker cannot interrupt timing.
+- Never describe scenario exposure as booked loss, notification drafts as sent messages, or predicted improvement as observed performance.
 
-## 0:00-0:35 - Five-second value proposition
+## 0:00-0:35 - What enters the platform
 
-Screen: `/`
-
-Action: Let the cinematic Hero and live Hong Kong-Shenzhen scene remain visible. Point to the primary CTA.
+Screen: `/business`, empty operating input.
 
 Say:
 
-> CrossBorder AI is a predictive dispatch platform for cross-border operators. It turns one-to-three-hour border uncertainty into service, fleet, freight and coordination decisions. We are not building another map. We are building the decision layer between border forecasts and enterprise operations.
+> CrossBorder AI is a predictive dispatch platform for cross-border operators. Instead of starting from a prebuilt answer, it starts with the operator's services, vehicles, deadlines and current port plan.
 
-Investor message: clear value proposition, enterprise focus, and immediate visual identity.
+Point to `Import CSV`, `Download Template`, `Add Task`, then click `Load Demo Sample`.
 
-## 0:35-1:15 - Problem and market need
+> I can upload a role-specific CSV or enter a service manually. For presentation reliability, I am loading the same ten-row deterministic sample. The platform has now validated ten services, their assigned vehicles, passenger capacity and timing constraints.
 
-Screen: scroll from the Hero to the four-port 3D scene, then open the operations control tower.
+## 0:35-1:25 - Stress-test the same plan
 
-Say:
-
-> The operational problem is real. An official Hong Kong briefing recorded about 26,000 travellers using Huanggang in six hours on 1 January 2024. Heavy traffic prevented many cross-border coaches from immediately returning to the city, even after service was reinforced. More vehicles alone did not solve the problem because fleet circulation failed.
-
-> Our platform forecasts the pressure before it becomes an operational failure, then converts that forecast into a decision an operator can adopt.
-
-Evidence boundary: the 26,000-traveller event and coach circulation problem are official facts. The May Day service plan used next is a classroom reconstruction.
-
-## 1:15-2:05 - Prove that AI is at the core
-
-Screen: `/business`, Coach Dispatch view.
-
-Action: Point to the embedded AI line and the four port forecast chips before clicking anything.
+Click `Compare All 4 Scenarios`.
 
 Say:
 
-> This is not a dashboard with an AI label. Our checked-in HistGradientBoosting model uses port, direction, hour, weekday and official cross-border traffic pressure to produce a base wait forecast. Transparent stress calibration adjusts that forecast, and a deterministic constraint optimizer turns it into service and vehicle actions.
+> One forecast is not enough for an operator. We run the same operating plan against four explainable conditions: a normal weekday, a holiday peak, a major concert release and severe typhoon weather.
 
-> We show a 90 percent prediction interval because the system must communicate uncertainty, not pretend to know an exact future minute. If the model artifact fails validation, the platform falls back to an explainable statistical forecast.
+Point to the different before-and-after risk, conflict, exposure and action counts.
 
-Point out:
+> The scenarios do not contain prewritten recommendations. They change the model inputs and constraints, so the same ten services produce different risk and dispatch decisions. The operator can also change weather, holiday status, event direction, time window, affected ports and port restrictions.
 
-- model version `public-traffic-transparent-hgb-v2.2`;
-- 1-3 hour forecast horizon;
-- 90% interval per port;
-- classroom disclosure beside the operational data.
+## 1:25-2:10 - Select the severe-weather decision
 
-## 2:05-3:10 - Show the risk before intervention
-
-Screen: the May Day 2026 coach scenario.
-
-Action: Read the visible baseline before generating a plan.
+Click `Typhoon / Severe Weather`, then `Analyse Selected Scenario`.
 
 Say:
 
-> At 07:00, the platform evaluates ten reconstructed services. Three services using Luohu are classified as high risk, one vehicle has a cycle conflict, and the scenario cost exposure is HK$12,000. Exposure means a transparent scenario estimate for recovery and support workload; it is not booked loss.
+> I will open the severe-weather case. Typhoon is not presented as a secret model feature. It is transparently represented as thunderstorm weather, high event impact and a Shenzhen Bay capacity restriction.
 
-> The red state is important: the audience first sees what happens if the operator does nothing.
+Point to the completed pipeline:
 
-## 3:10-4:20 - Generate and compare the AI dispatch plan
+`Input validated -> HGB forecast -> Scenario calibrated -> Constraints optimized -> Plan ready`
 
-Action: Click `Generate AI Dispatch Plan`.
+> For every task, the checked-in HistGradientBoosting model forecasts each eligible passenger port. The system then applies versioned weather, holiday and event calibration, and finally checks route time, capacity, vehicle availability, turnaround and the promised arrival time.
+
+## 2:10-3:15 - Show the operational risk before intervention
+
+Point to the three comparison metrics and the task table.
 
 Say:
 
-> The model and constraint layer now recommend rerouting services 101 and 103 through Futian, rerouting 105 through Shenzhen Bay, and releasing vehicle A02 for service 110.
+> The red side is the operator's submitted plan under this scenario. The green side is the optimized plan. The table shows exactly which service changes port, departure time or vehicle, together with the predicted wait, 90 percent interval and model source.
 
-Point to the three comparison metrics and the service table.
+> Risk is also operationally defined. Low means the upper prediction interval still arrives before the commitment. Medium means the median arrives on time but the upper interval may not. High means the median forecast is already late or a hard constraint fails.
 
-> In this reconstructed scenario, high-risk services move from three to zero, the vehicle conflict moves from one to zero, and scenario exposure moves from HK$12,000 to HK$2,400. Predicted arrival improves by eight minutes on average. These are scenario outputs, not a promise of zero delay.
+> Scenario exposure is a transparent estimate based on the amount entered for each task and its risk classification. It is not a claim of observed financial loss.
 
-Investor message: a visible before-and-after decision, not a passive chart.
+## 3:15-4:20 - Show that the recommendation is data-dependent
+
+Point to two changed service rows and the reserve-vehicle recommendation.
+
+Say:
+
+> The optimizer first rejects closed ports and capacity violations. It then minimizes high-risk services, vehicle-cycle conflicts and scenario exposure, while changing as little of the submitted plan as possible.
+
+> Here, some services move to a different port or depart earlier. Where one vehicle cannot complete its first service and turn around before the next departure, the platform recommends a reserve allocation. This is why the result is more than a congestion dashboard: the forecast changes a real operating decision.
 
 ## 4:20-5:05 - Adopt and execute
 
-Action: Keep all recommended actions selected and click `Adopt Plan & Create Notification Drafts`.
+Keep all recommended actions selected and click `Adopt 7 Actions & Create Drafts`.
 
 Say:
 
-> A recommendation has no value if it stops at the screen. The dispatcher adopts the plan, creates 147 local passenger notification drafts and can export an execution CSV. In the Demo nothing is actually sent and no vehicle is controlled, but the workflow boundary is ready for later API integration.
+> The dispatcher can accept all or only selected measures. Adoption stores the exact task input, scenario snapshot, model trace and chosen actions in the local audit record. It then creates passenger notification drafts and an execution CSV.
 
-Action: briefly point to the local outcome-review inputs.
+Point to `Export Execution CSV` and the human-entered review fields.
 
-> After operations, a human records the actual outcome separately. This prevents predicted improvement from being misreported as observed performance and creates the future learning and audit loop.
+> Nothing is actually sent and no vehicle is controlled in this classroom Demo. After operations, a human records the real outcome separately, preventing predicted improvement from being misreported as observed performance.
 
-## 5:05-5:50 - Prove that it is a platform
+## 5:05-5:55 - Prove the freight workflow
 
-Action: As Platform Operator, switch from Coach Dispatch to Freight Dispatch, then to Port Authority.
-
-Say:
-
-> The same decision architecture supports three operating roles. Coach operators manage services and fleet circulation. Freight operators protect delivery windows and reroute trucks. Port authorities see aggregate pressure and coordination notices, but not company vehicle or task details.
-
-> Model coverage is also explicit. The checked-in HGB fully covers the four passenger ports used by the coach scenario. The freight view currently has HGB coverage for Shenzhen Bay and a labelled transparent fallback for unsupported freight ports. Extending freight coverage requires authorized port-specific labels; the Demo does not hide that gap.
-
-> This role and model boundary is part of the product design: one platform, different decisions, and no unnecessary operational-data exposure or fake AI coverage.
-
-## 5:50-6:30 - Feasibility and model honesty
-
-Screen: `/model` or remain on the embedded AI line if time is tight.
+Switch to `Freight Dispatch`, click `Load Demo Sample`, then `Compare All 4 Scenarios`. Select `Holiday Peak` and analyse it.
 
 Say:
 
-> The current model is sufficient for a classroom proof of technical feasibility. It is reproducible, versioned, tested against a time split, checked for distribution drift, and protected by a statistical fallback. We will not retrain it merely to show a lower synthetic error.
+> The same workflow accepts freight jobs, truck capacity, delivery windows and exposure values. In this holiday case, the submitted freight plan develops a delivery-window risk and a vehicle-cycle conflict, so the system compares diversion and reserve options.
 
-> The production milestone is different: secure authorized, timestamped wait labels from design partners, evaluate out of sample by port and peak period, and only then decide whether a more complex temporal model earns deployment.
+Point to HGB/Fallback labels.
 
-Investor message: technically buildable today, honest about the data needed for production.
+> Coverage is explicit. Shenzhen Bay uses the checked-in HGB model. Liantang and Man Kam To use a labelled transparent fallback because we do not have authorized port-specific training labels. The platform never hides that boundary.
+
+## 5:55-6:30 - Prove the authority boundary
+
+Switch to `Port Authority` and click `Publish Demo Coordination Notice`.
+
+Say:
+
+> A port authority sees aggregate port pressure and coordination signals, but not company CSV rows, vehicles or shipments. It can publish a local coordination notice for the operating window. This demonstrates one platform with role-specific decisions and data minimization.
 
 ## 6:30-7:00 - Investment close
 
-Screen: return to the adopted plan comparison.
+Return attention to the adopted-plan history.
 
 Say:
 
-> CrossBorder AI is investable because AI is tied directly to an expensive operational decision: when to depart, which port to use, and how to protect fleet circulation. The Demo proves the complete interaction - forecast, compare, adopt, notify and review. Our next validation is not more interface work; it is two design partners, authorized outcome data, and a measured pilot.
+> This Demo now proves the complete operational loop: import, validate, stress-test, forecast, optimize, adopt, notify, export and review. The current model is sufficient for classroom technical feasibility. The next milestone is not another interface; it is two design partners, authorized timestamped outcomes and a measured pilot.
 
-> We are turning border uncertainty from an unavoidable disruption into a manageable operating decision.
+> CrossBorder AI turns border uncertainty from a status operators watch into a decision they can execute.
 
 ## Guideline scoring coverage
 
 | Topic 2 criterion | Live evidence |
 | --- | --- |
-| Originality and value proposition - 15% | Predictive dispatch layer between public border information and enterprise execution |
-| AI technology at core - 20% | HGB forecast, official traffic feature, transparent calibration, uncertainty interval, constraint optimizer, fallback |
-| Problem-solution fit and market need - 15% | Official 2024 Huanggang operating failure, then visible risk-to-action workflow |
-| Feasibility and scalability - 15% | Running API, role isolation, local persistence, exports, model validation and staged production boundary |
-| Entrepreneurial vision and awareness - 15% | Coach beachhead, freight and port extensions, design-partner data plan, explicit model and integration risks |
-| Organization and coherence - 10% | Problem -> AI -> baseline -> decision -> execution -> platform -> feasibility -> ask |
-| Presentation skills - 10% | Cinematic opening, 3D scene, three before/after metrics, one-click adoption, concise English delivery |
+| Originality and value proposition - 15% | Enterprise input becomes an executable cross-border dispatch plan |
+| AI technology at core - 20% | HGB forecast, scenario calibration, 90% interval, constraint optimizer and fallback disclosure |
+| Problem-solution fit and market need - 15% | Official operating evidence plus coach and freight workflow |
+| Feasibility and scalability - 15% | CSV contract, API, role isolation, persistence, export and reproducible local model |
+| Entrepreneurial vision and awareness - 15% | Coach beachhead, freight extension, port coordination and explicit production-data gap |
+| Organization and coherence - 10% | Input -> scenarios -> AI -> comparison -> adoption -> platform boundary -> close |
+| Presentation skills - 10% | Four visible scenario cards, staged model pipeline, before/after metrics and direct interaction |
 
 ## Do not say
 
-- Do not say the Demo prevented real delays or saved HK$9,600.
+- Do not say the Demo prevented a real delay or saved the displayed exposure difference.
 - Do not call generated wait labels real measured labels.
-- Do not claim that official sources do not forecast border flows.
-- Do not claim production authentication, live dispatch integration, real notification delivery, paying customers or revenue.
-- Do not spend the seven minutes on the personal planner, pricing simulation, technical formulas, or every navigation item.
+- Do not claim production authentication, live dispatch integration, notification delivery, paying customers or revenue.
+- Do not claim full freight AI coverage.
+- Do not spend the seven minutes on the personal planner, pricing simulation or every navigation item.

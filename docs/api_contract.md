@@ -152,9 +152,12 @@ Demo 模型为每个目标时间筛选相同工作日、周末或节假日，目
 
 ## 企业运营控制塔
 
-- `GET /api/enterprise-operations/workspace?view_as=coach_operator`：返回当前身份可见的运营情景、口岸风险、车辆/货车、任务、最近方案和协调建议。`ai_decision_trace` 同时返回已加载的 HGB 模型版本、预测目标时刻、90% 区间、真实参与模型的输入、透明压力校准、优化目标和各口岸基础/校准等待。仅平台运营可用 `view_as` 切换巴士、物流、企业客户和口岸官方视角。
-- `POST /api/enterprise-operations/previews`：按 `scenario_id` 运行已签入的 AI v2.2 HGB 等待预测、透明压力校准和确定性约束优化，生成不持久化决策预览，并比较基线与推荐后的高风险任务、车辆冲突、情景成本暴露和平均到达变化。
-- `POST /api/enterprise-operations/plans`：采用预览中的选定措施，保存本地方案并生成本地通知草稿；不连接车辆、短信、客服或口岸生产系统。
+- `GET /api/enterprise-operations/workspace?view_as=coach_operator`：返回角色能力、四个场景预设、地点/口岸选项、分角色 CSV 字段、确定性样例任务、模型覆盖、近期方案和协调建议。仅平台运营可用 `view_as` 切换视角；口岸官方不接收企业样例或任务明细。
+- `GET /api/enterprise-operations/templates/{workspace_kind}.csv?sample=false`：下载巴士或物流空模板；`sample=true` 返回同契约的确定性样例文件。
+- `POST /api/enterprise-operations/imports/validate`：校验最多 100 条 CSV 任务，返回标准化任务、逐行错误/警告及任务、车辆和客货量摘要；不保存草稿。
+- `POST /api/enterprise-operations/comparisons`：将同一批标准化任务分别运行普通工作日、节假日、演唱会和台风压力测试，返回各场景采用前后风险、车辆冲突、情景暴露、口岸预测和建议数量。
+- `POST /api/enterprise-operations/previews`：接收 `jobs` 与完整 `scenario`，逐任务/候选口岸运行 HGB 或显式降级，再应用天气、节假日、事件、口岸状态、路线、容量、车辆可用时间和周转约束，生成不持久化决策预览。
+- `POST /api/enterprise-operations/plans`：以 `preview_id`、原始任务、场景快照和选定措施采用方案，保存完整决策轨迹并生成本地通知草稿；不连接车辆、短信、客服或口岸生产系统。
 - `GET /api/enterprise-operations/plans?limit=10`：读取当前组织近期采用的方案。
 - `PATCH /api/enterprise-operations/plans/{plan_id}/outcome`：人工写入事后复盘数据，明确区分预测结果和实际录入。
 - `GET /api/enterprise-operations/plans/{plan_id}/export.csv`：导出当前组织可访问的本地执行清单。

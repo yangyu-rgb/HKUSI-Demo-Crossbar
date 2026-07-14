@@ -142,25 +142,33 @@ test("七分钟投资演示的企业 AI 决策闭环可直接操作", async ({ p
   await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
 
   await expect(page.getByRole("heading", { name: "Enterprise Predictive Dispatch / 企业预测与调度" })).toBeVisible();
-  await expect(page.getByText(/full model coverage \(4\/4 ports\)/)).toBeVisible();
-  await expect(page.getByText(/about 26,000 travellers used Huanggang/)).toBeVisible();
-  await expect(page.getByText("罗湖 · HGB 44 min · 90% CI 41–47 · High / 高")).toBeVisible();
-
-  await page.getByRole("button", { name: "Generate AI Dispatch Plan" }).click();
-  await expect(page.getByText("3→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("No operating data loaded")).toBeVisible();
+  await page.getByRole("button", { name: "Load Demo Sample" }).click();
+  await expect(page.getByText(/10 validated Demo tasks loaded/)).toBeVisible();
+  await page.getByRole("button", { name: "Compare All 4 Scenarios" }).click();
+  await expect(page.getByRole("button", { name: /Holiday Peak/ })).toContainText("7→0 high risk");
+  await expect(page.getByRole("button", { name: /Major Concert Release/ })).toContainText("4→0 high risk");
+  await page.getByRole("button", { name: /Typhoon \/ Severe Weather/ }).click();
+  await page.getByRole("button", { name: "Analyse Selected Scenario" }).click();
+  await expect(page.getByText("7→0", { exact: true })).toBeVisible();
   await expect(page.getByText("1→0", { exact: true })).toBeVisible();
-  await expect(page.getByText("12,000→2,400", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Adopt Plan & Create Notification Drafts" }).click();
-  await expect(page.getByText(/147 local notification drafts created/)).toBeVisible();
+  await expect(page.getByText("24,000→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("✓ Input validated")).toBeVisible();
+  await expect(page.getByText(/HGB/, { exact: false }).first()).toBeVisible();
+  await page.getByRole("button", { name: /Adopt 7 Actions & Create Drafts/ }).click();
+  await expect(page.getByText(/316 local notification drafts created/)).toBeVisible();
 
   const viewSelect = page.getByLabel("Demo view / 演示视角");
   await viewSelect.selectOption("freight_operator");
-  await expect(page.getByRole("heading", { name: "Shenzhen Bay Freight Redistribution / 深圳湾货运转移" })).toBeVisible();
-  await expect(page.getByText(/partial model coverage \(1\/3 ports\)/)).toBeVisible();
+  await expect(page.getByText("No operating data loaded")).toBeVisible();
+  await page.getByRole("button", { name: "Load Demo Sample" }).click();
+  await page.getByRole("button", { name: "Compare All 4 Scenarios" }).click();
+  await expect(page.getByRole("button", { name: /Holiday Peak/ })).toContainText("1→0 high risk");
+  await page.getByRole("button", { name: /Holiday Peak/ }).click();
+  await page.getByRole("button", { name: "Analyse Selected Scenario" }).click();
   await expect(page.getByText(/Fallback/).first()).toBeVisible();
 
   await viewSelect.selectOption("port_authority");
-  await page.getByRole("button", { name: "Generate AI Dispatch Plan" }).click();
   await page.getByRole("button", { name: "Publish Demo Coordination Notice" }).click();
   await expect(page.getByRole("button", { name: "Demo Notice Published" })).toBeVisible();
 });

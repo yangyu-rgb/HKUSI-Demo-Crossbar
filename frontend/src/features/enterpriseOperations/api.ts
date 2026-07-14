@@ -2,11 +2,15 @@ import { getDemoSession, request } from "../../shared/api/client";
 import type {
   AdoptedDecisionPlan,
   CoordinationNoticeWrite,
+  CsvValidation,
   DecisionPreview,
   EnterprisePlanRequest,
   EnterpriseWorkspace,
+  OperationsJobInput,
+  OperationsScenario,
   OutcomeWrite,
   PlanList,
+  ScenarioComparison,
   WorkspaceKind,
 } from "./types";
 
@@ -18,11 +22,56 @@ export function fetchEnterpriseWorkspace(view?: WorkspaceKind): Promise<Enterpri
   return request(`/api/enterprise-operations/workspace${viewQuery(view)}`);
 }
 
-export function previewEnterpriseDecision(scenarioId: string, view?: WorkspaceKind): Promise<DecisionPreview> {
+export function previewEnterpriseDecision(
+  jobs: OperationsJobInput[],
+  scenario: OperationsScenario,
+  view?: WorkspaceKind,
+): Promise<DecisionPreview> {
   return request(`/api/enterprise-operations/previews${viewQuery(view)}`, {
     method: "POST",
-    body: JSON.stringify({ scenario_id: scenarioId }),
+    body: JSON.stringify({ scenario_id: scenario.preset_id, jobs, scenario }),
   });
+}
+
+export function compareEnterpriseScenarios(
+  jobs: OperationsJobInput[],
+  scenarioIds: string[],
+  view?: WorkspaceKind,
+): Promise<ScenarioComparison> {
+  return request(`/api/enterprise-operations/comparisons${viewQuery(view)}`, {
+    method: "POST",
+    body: JSON.stringify({ jobs, scenario_ids: scenarioIds }),
+  });
+}
+
+export function validateEnterpriseCsv(
+  workspaceKind: WorkspaceKind,
+  csvText: string,
+): Promise<CsvValidation> {
+  return request("/api/enterprise-operations/imports/validate", {
+    method: "POST",
+    body: JSON.stringify({ workspace_kind: workspaceKind, csv_text: csvText }),
+  });
+}
+
+export async function downloadEnterpriseTemplate(
+  workspaceKind: WorkspaceKind,
+  sample = false,
+): Promise<void> {
+  const session = getDemoSession();
+  const suffix = sample ? "?sample=true" : "";
+  const response = await fetch(
+    `${import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000"}/api/enterprise-operations/templates/${workspaceKind}.csv${suffix}`,
+    { headers: session ? { "X-Demo-Persona-ID": session.personaId } : {} },
+  );
+  if (!response.ok) throw new Error("CSV 模板下载失败");
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${workspaceKind}-${sample ? "sample" : "template"}.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 export function adoptEnterpriseDecision(payload: EnterprisePlanRequest, view?: WorkspaceKind): Promise<AdoptedDecisionPlan> {

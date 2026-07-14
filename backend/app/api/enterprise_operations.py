@@ -7,6 +7,10 @@ from ..schemas.enterprise_operations import (
     CoordinationNoticeResponse,
     CoordinationNoticeWrite,
     DecisionPreviewResponse,
+    EnterpriseOperationsComparisonRequest,
+    EnterpriseOperationsComparisonResponse,
+    EnterpriseOperationsCsvValidateRequest,
+    EnterpriseOperationsCsvValidateResponse,
     EnterpriseOperationsOutcomeWrite,
     EnterpriseOperationsPlanListResponse,
     EnterpriseOperationsPlanRequest,
@@ -46,7 +50,48 @@ def preview_decision(
     service: EnterpriseOperationsService = Depends(get_enterprise_operations_service),
     persona: dict = Depends(get_demo_persona),
 ) -> dict:
-    return service.preview(persona, request.scenario_id, view_as)
+    return service.preview(persona, request.model_dump(mode="json"), view_as)
+
+
+@router.post("/comparisons", response_model=EnterpriseOperationsComparisonResponse)
+def compare_scenarios(
+    request: EnterpriseOperationsComparisonRequest,
+    view_as: str | None = Query(default=None),
+    service: EnterpriseOperationsService = Depends(get_enterprise_operations_service),
+    persona: dict = Depends(get_demo_persona),
+) -> dict:
+    return service.compare(persona, request.model_dump(mode="json"), view_as)
+
+
+@router.post("/imports/validate", response_model=EnterpriseOperationsCsvValidateResponse)
+def validate_operations_csv(
+    request: EnterpriseOperationsCsvValidateRequest,
+    service: EnterpriseOperationsService = Depends(get_enterprise_operations_service),
+    persona: dict = Depends(get_demo_persona),
+) -> dict:
+    workspace = service.resolve_workspace_kind(persona)
+    if persona["role"] == "operator":
+        workspace = request.workspace_kind.value
+    return service.validate_csv(workspace, request.csv_text)
+
+
+@router.get("/templates/{workspace_kind}.csv", response_class=Response)
+def download_operations_template(
+    workspace_kind: str,
+    sample: bool = Query(default=False),
+    service: EnterpriseOperationsService = Depends(get_enterprise_operations_service),
+    persona: dict = Depends(get_demo_persona),
+) -> Response:
+    resolved = service.resolve_workspace_kind(persona)
+    if persona["role"] != "operator" and workspace_kind != resolved:
+        service.resolve_workspace_kind(persona, workspace_kind)
+    content = service.template_csv(workspace_kind, sample)
+    suffix = "sample" if sample else "template"
+    return Response(
+        content=content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{workspace_kind}-{suffix}.csv"'},
+    )
 
 
 @router.post("/plans", response_model=AdoptedDecisionPlanResponse, status_code=201)

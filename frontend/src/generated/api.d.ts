@@ -703,6 +703,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/enterprise-operations/comparisons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare Scenarios */
+        post: operations["compare_scenarios_api_enterprise_operations_comparisons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/imports/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate Operations Csv */
+        post: operations["validate_operations_csv_api_enterprise_operations_imports_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/enterprise-operations/templates/{workspace_kind}.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Operations Template */
+        get: operations["download_operations_template_api_enterprise_operations_templates__workspace_kind__csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/enterprise-operations/plans": {
         parameters: {
             query?: never;
@@ -1418,6 +1469,111 @@ export interface components {
             /** Destination Ids */
             destination_ids: string[];
         };
+        /** EnterpriseOperationsComparisonRequest */
+        EnterpriseOperationsComparisonRequest: {
+            /** Jobs */
+            jobs: components["schemas"]["EnterpriseOperationsJobInput"][];
+            /** Scenario Ids */
+            scenario_ids: string[];
+        };
+        /** EnterpriseOperationsComparisonResponse */
+        EnterpriseOperationsComparisonResponse: {
+            /** Input Summary */
+            input_summary: {
+                [key: string]: unknown;
+            };
+            /** Baseline Scenario Id */
+            baseline_scenario_id: string;
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioComparisonItem"][];
+            /** Demo Notice */
+            demo_notice: string;
+        };
+        /** EnterpriseOperationsCsvError */
+        EnterpriseOperationsCsvError: {
+            /** Row */
+            row: number;
+            /** Field */
+            field?: string | null;
+            /** Message */
+            message: string;
+        };
+        /** EnterpriseOperationsCsvValidateRequest */
+        EnterpriseOperationsCsvValidateRequest: {
+            workspace_kind: components["schemas"]["WorkspaceKind"];
+            /** Csv Text */
+            csv_text: string;
+        };
+        /** EnterpriseOperationsCsvValidateResponse */
+        EnterpriseOperationsCsvValidateResponse: {
+            /** Valid */
+            valid: boolean;
+            /** Jobs */
+            jobs: components["schemas"]["EnterpriseOperationsJobInput"][];
+            /** Errors */
+            errors: components["schemas"]["EnterpriseOperationsCsvError"][];
+            /** Warnings */
+            warnings: components["schemas"]["EnterpriseOperationsCsvError"][];
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            };
+        };
+        /** EnterpriseOperationsJobInput */
+        EnterpriseOperationsJobInput: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            job_kind: components["schemas"]["OperationsJobKind"];
+            /** Asset Id */
+            asset_id: string;
+            /** Origin Id */
+            origin_id: string;
+            /** Destination Id */
+            destination_id: string;
+            /**
+             * Departure Time
+             * Format: date-time
+             */
+            departure_time: string;
+            /**
+             * Arrival Deadline
+             * Format: date-time
+             */
+            arrival_deadline: string;
+            /** Baseline Port Id */
+            baseline_port_id: string;
+            /**
+             * Passenger Count
+             * @default 0
+             */
+            passenger_count: number;
+            /**
+             * Load Units
+             * @default 0
+             */
+            load_units: number;
+            /** Asset Capacity */
+            asset_capacity: number;
+            /**
+             * Asset Available At
+             * Format: date-time
+             */
+            asset_available_at: string;
+            /**
+             * Turnaround Minutes
+             * @default 20
+             */
+            turnaround_minutes: number;
+            /**
+             * Exposure Hkd
+             * @default 4000
+             */
+            exposure_hkd: number;
+            /** @default standard */
+            priority: components["schemas"]["OperationsPriority"];
+        };
         /** EnterpriseOperationsOutcomeWrite */
         EnterpriseOperationsOutcomeWrite: {
             /** Actual High Risk Count */
@@ -1447,11 +1603,17 @@ export interface components {
             preview_id: string;
             /** Selected Action Ids */
             selected_action_ids?: string[];
+            /** Jobs */
+            jobs?: components["schemas"]["EnterpriseOperationsJobInput"][];
+            scenario?: components["schemas"]["EnterpriseScenarioInput"] | null;
         };
         /** EnterpriseOperationsPreviewRequest */
         EnterpriseOperationsPreviewRequest: {
             /** Scenario Id */
-            scenario_id: string;
+            scenario_id?: string | null;
+            /** Jobs */
+            jobs?: components["schemas"]["EnterpriseOperationsJobInput"][];
+            scenario?: components["schemas"]["EnterpriseScenarioInput"] | null;
         };
         /** EnterpriseOperationsWorkspaceResponse */
         EnterpriseOperationsWorkspaceResponse: {
@@ -1496,6 +1658,57 @@ export interface components {
             ai_decision_trace: components["schemas"]["AIDecisionTrace"];
             /** Demo Notice */
             demo_notice: string;
+            /** Scenario Presets */
+            scenario_presets: components["schemas"]["EnterpriseScenarioInput"][];
+            /** Sample Jobs */
+            sample_jobs: components["schemas"]["EnterpriseOperationsJobInput"][];
+            /** Locations */
+            locations: {
+                [key: string]: unknown;
+            };
+            /** Csv Columns */
+            csv_columns: string[];
+        };
+        /** EnterpriseScenarioEvent */
+        EnterpriseScenarioEvent: {
+            /** Name */
+            name: string;
+            /** Impact */
+            impact: string;
+            /** Direction */
+            direction?: string | null;
+            /** Affected Ports */
+            affected_ports?: string[];
+            /**
+             * Start Time
+             * @default 00:00
+             */
+            start_time: string;
+            /**
+             * End Time
+             * @default 23:59
+             */
+            end_time: string;
+        };
+        /** EnterpriseScenarioInput */
+        EnterpriseScenarioInput: {
+            /** Preset Id */
+            preset_id: string;
+            /** Name */
+            name: string;
+            /** Weather */
+            weather: string;
+            /**
+             * Is Holiday
+             * @default false
+             */
+            is_holiday: boolean;
+            /** Events */
+            events?: components["schemas"]["EnterpriseScenarioEvent"][];
+            /** Port Constraints */
+            port_constraints?: {
+                [key: string]: components["schemas"]["PortConstraint"];
+            };
         };
         /** ErrorBody */
         ErrorBody: {
@@ -1655,6 +1868,8 @@ export interface components {
             direction: string;
             /** Asset Id */
             asset_id: string;
+            /** Recommended Asset Id */
+            recommended_asset_id: string;
             /** Passenger Count */
             passenger_count: number;
             /** Load Units */
@@ -1685,6 +1900,15 @@ export interface components {
             exposure_before_hkd: number;
             /** Exposure After Hkd */
             exposure_after_hkd: number;
+            /** Predicted Wait Minutes */
+            predicted_wait_minutes: number;
+            /** Prediction Interval */
+            prediction_interval: [
+                number,
+                number
+            ];
+            /** Model Source */
+            model_source: string;
         };
         /** OperationalSummary */
         OperationalSummary: {
@@ -1702,7 +1926,27 @@ export interface components {
             average_arrival_delta_minutes: number;
             /** Affected People */
             affected_people: number;
+            /**
+             * Affected Load Units
+             * @default 0
+             */
+            affected_load_units: number;
+            /**
+             * Changed Jobs
+             * @default 0
+             */
+            changed_jobs: number;
         };
+        /**
+         * OperationsJobKind
+         * @enum {string}
+         */
+        OperationsJobKind: "coach" | "freight";
+        /**
+         * OperationsPriority
+         * @enum {string}
+         */
+        OperationsPriority: "standard" | "urgent" | "critical";
         /** OperationsSummaryResponse */
         OperationsSummaryResponse: {
             /**
@@ -1737,6 +1981,11 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * PortConstraint
+         * @enum {string}
+         */
+        PortConstraint: "open" | "restricted" | "closed";
         /** PortPrediction */
         PortPrediction: {
             /** Port Id */
@@ -2054,6 +2303,22 @@ export interface components {
             arrival_deadline: string;
             /** @default balanced */
             priority: components["schemas"]["Priority"];
+        };
+        /** ScenarioComparisonItem */
+        ScenarioComparisonItem: {
+            /** Scenario */
+            scenario: {
+                [key: string]: unknown;
+            };
+            summary: components["schemas"]["OperationalSummary"];
+            baseline: components["schemas"]["OperationalSummary"];
+            recommended: components["schemas"]["OperationalSummary"];
+            /** Port Forecasts */
+            port_forecasts: components["schemas"]["AIPortForecast"][];
+            /** Action Count */
+            action_count: number;
+            /** Top Recommendation */
+            top_recommendation: string;
         };
         /** ScenarioComparisonPort */
         ScenarioComparisonPort: {
@@ -5198,6 +5463,195 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DecisionPreviewResponse"];
                 };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    compare_scenarios_api_enterprise_operations_comparisons_post: {
+        parameters: {
+            query?: {
+                view_as?: string | null;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnterpriseOperationsComparisonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnterpriseOperationsComparisonResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    validate_operations_csv_api_enterprise_operations_imports_validate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnterpriseOperationsCsvValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnterpriseOperationsCsvValidateResponse"];
+                };
+            };
+            /** @description 请求的资源不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 请求与当前状态冲突 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 领域规则或请求参数验证失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 内部服务或持久化错误 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    download_operations_template_api_enterprise_operations_templates__workspace_kind__csv_get: {
+        parameters: {
+            query?: {
+                sample?: boolean;
+            };
+            header?: {
+                /** @description 本地课堂 Demo 身份；受保护接口缺失时返回 401，不是生产认证令牌。 */
+                "X-Demo-Persona-ID"?: string | null;
+            };
+            path: {
+                workspace_kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 请求的资源不存在 */
             404: {

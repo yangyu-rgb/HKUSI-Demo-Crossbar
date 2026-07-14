@@ -1,7 +1,41 @@
 {
-  "version": "enterprise-operations-demo-v1",
+  "version": "enterprise-operations-demo-v2",
   "source": "CrossBorder AI deterministic classroom operations fixture",
-  "demo_notice": "Classroom reconstruction only: all services, vehicles, waits, risks, amounts and notifications are deterministic Demo data, not live border conditions, observed losses or executed dispatches. / 仅为课堂重建情景。",
+  "demo_notice": "Classroom reconstruction only: imported samples, waits, risks, amounts and notifications are deterministic Demo data, not live border conditions, observed losses or executed dispatches. Recommendations are calculated at runtime from task input, scenario factors and vehicle constraints. / 仅为课堂重建情景。",
+  "scenario_presets": [
+    {
+      "preset_id": "normal-weekday",
+      "name": "Normal Weekday / 普通工作日",
+      "weather": "clear",
+      "is_holiday": false,
+      "events": [],
+      "port_constraints": {}
+    },
+    {
+      "preset_id": "holiday-peak",
+      "name": "Holiday Peak / 节假日高峰",
+      "weather": "clear",
+      "is_holiday": true,
+      "events": [{"name": "Holiday cross-border peak", "impact": "high", "direction": null, "affected_ports": ["luohu", "futian", "huanggang", "shenzhen-bay", "liantang", "man-kam-to"], "start_time": "00:00", "end_time": "23:59"}],
+      "port_constraints": {}
+    },
+    {
+      "preset_id": "concert-release",
+      "name": "Major Concert Release / 大型演唱会散场",
+      "weather": "clear",
+      "is_holiday": false,
+      "events": [{"name": "Major event release", "impact": "high", "direction": null, "affected_ports": ["futian", "huanggang"], "start_time": "00:00", "end_time": "23:59"}],
+      "port_constraints": {}
+    },
+    {
+      "preset_id": "typhoon-severe-weather",
+      "name": "Typhoon / Severe Weather / 台风恶劣天气",
+      "weather": "thunderstorm",
+      "is_holiday": false,
+      "events": [{"name": "Severe weather transport pressure", "impact": "high", "direction": null, "affected_ports": ["luohu", "futian", "huanggang", "shenzhen-bay", "liantang", "man-kam-to"], "start_time": "00:00", "end_time": "23:59"}],
+      "port_constraints": {"shenzhen-bay": "restricted"}
+    }
+  ],
   "scenarios": [
     {
       "id": "may-day-coach-surge",

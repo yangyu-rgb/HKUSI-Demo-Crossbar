@@ -7,5 +7,9 @@ export type AdoptedDecisionPlan = components["schemas"]["AdoptedDecisionPlanResp
 export type PlanList = components["schemas"]["EnterpriseOperationsPlanListResponse"];
 export type OutcomeWrite = components["schemas"]["EnterpriseOperationsOutcomeWrite"];
 export type CoordinationNoticeWrite = components["schemas"]["CoordinationNoticeWrite"];
+export type OperationsJobInput = components["schemas"]["EnterpriseOperationsJobInput"];
+export type OperationsScenario = components["schemas"]["EnterpriseScenarioInput"];
+export type ScenarioComparison = components["schemas"]["EnterpriseOperationsComparisonResponse"];
+export type CsvValidation = components["schemas"]["EnterpriseOperationsCsvValidateResponse"];
 
 export type EnterprisePlanRequest = components["schemas"]["EnterpriseOperationsPlanRequest"];
