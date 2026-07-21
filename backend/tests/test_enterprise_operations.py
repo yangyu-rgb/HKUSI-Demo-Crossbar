@@ -104,10 +104,57 @@ def test_csv_templates_validation_and_scenario_comparison(client: TestClient) ->
     assert {item["scenario"]["preset_id"] for item in scenarios} == {
         "normal-weekday", "holiday-peak", "concert-release", "typhoon-severe-weather"
     }
+    assert {item["scenario"]["name"] for item in scenarios} == {
+        "Normal Weekday", "Holiday Peak", "Major Concert Release", "Typhoon / Severe Weather"
+    }
     normal = next(item for item in scenarios if item["scenario"]["preset_id"] == "normal-weekday")
     holiday = next(item for item in scenarios if item["scenario"]["preset_id"] == "holiday-peak")
+    assert normal["recommended"]["changed_jobs"] == 0
+    assert normal["recommended"] == normal["baseline"]
     assert holiday["baseline"]["high_risk_count"] > normal["baseline"]["high_risk_count"]
-    assert all(item["recommended"]["vehicle_conflicts"] == 0 for item in scenarios)
+    assert holiday["recommended"]["vehicle_conflicts"] == 0
+
+
+def test_scenario_changes_are_causal_to_selected_affected_ports(client: TestClient) -> None:
+    workspace = coach_workspace(client)
+    jobs = workspace["sample_jobs"]
+    concert = next(item for item in workspace["scenario_presets"] if item["preset_id"] == "concert-release")
+
+    def preview(affected_ports: list[str]) -> dict:
+        scenario = {
+            **concert,
+            "events": [{**concert["events"][0], "affected_ports": affected_ports}],
+        }
+        response = client.post(
+            "/api/enterprise-operations/previews",
+            headers=COACH_HEADERS,
+            json={"jobs": jobs, "scenario": scenario},
+        )
+        assert response.status_code == 200
+        return response.json()
+
+    unaffected = preview([])
+    assert unaffected["recommended"]["changed_jobs"] == 0
+    assert unaffected["recommended"] == unaffected["baseline"]
+
+    futian_only = preview(["futian"])
+    assert all(
+        not item["changed"]
+        for item in futian_only["jobs"]
+        if item["baseline_port_id"] != "futian"
+    )
+    assert all(
+        item["recommended_port_id"] != "futian"
+        for item in futian_only["jobs"]
+        if item["changed"] and item["baseline_port_id"] != "futian"
+    )
+
+    all_ports = preview(["luohu", "futian", "huanggang", "shenzhen-bay"])
+    assert all_ports["recommended"]["changed_jobs"] > 0
+    assert all(
+        item["recommended_port_id"] == item["baseline_port_id"]
+        for item in all_ports["jobs"]
+    )
 
 
 def test_custom_closed_port_is_never_recommended(client: TestClient) -> None:

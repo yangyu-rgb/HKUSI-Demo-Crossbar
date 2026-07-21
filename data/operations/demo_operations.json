@@ -5,7 +5,7 @@
   "scenario_presets": [
     {
       "preset_id": "normal-weekday",
-      "name": "Normal Weekday / 普通工作日",
+      "name": "Normal Weekday",
       "weather": "clear",
       "is_holiday": false,
       "events": [],
@@ -13,7 +13,7 @@
     },
     {
       "preset_id": "holiday-peak",
-      "name": "Holiday Peak / 节假日高峰",
+      "name": "Holiday Peak",
       "weather": "clear",
       "is_holiday": true,
       "events": [{"name": "Holiday cross-border peak", "impact": "high", "direction": null, "affected_ports": ["luohu", "futian", "huanggang", "shenzhen-bay", "liantang", "man-kam-to"], "start_time": "00:00", "end_time": "23:59"}],
@@ -21,7 +21,7 @@
     },
     {
       "preset_id": "concert-release",
-      "name": "Major Concert Release / 大型演唱会散场",
+      "name": "Major Concert Release",
       "weather": "clear",
       "is_holiday": false,
       "events": [{"name": "Major event release", "impact": "high", "direction": null, "affected_ports": ["futian", "huanggang"], "start_time": "00:00", "end_time": "23:59"}],
@@ -29,7 +29,7 @@
     },
     {
       "preset_id": "typhoon-severe-weather",
-      "name": "Typhoon / Severe Weather / 台风恶劣天气",
+      "name": "Typhoon / Severe Weather",
       "weather": "thunderstorm",
       "is_holiday": false,
       "events": [{"name": "Severe weather transport pressure", "impact": "high", "direction": null, "affected_ports": ["luohu", "futian", "huanggang", "shenzhen-bay", "liantang", "man-kam-to"], "start_time": "00:00", "end_time": "23:59"}],

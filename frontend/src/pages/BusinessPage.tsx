@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   downloadEnterprisePlan,
   downloadEnterpriseTemplate,
@@ -19,7 +19,7 @@ import styles from "./BusinessPage.module.css";
 const VIEW_LABELS: Record<WorkspaceKind, string> = {
   coach_operator: "Coach Dispatch",
   freight_operator: "Freight Dispatch",
-  enterprise_client: "Enterprise Client",
+  enterprise_client: "Employee Planning",
   port_authority: "Port Authority",
 };
 const RISK_LABELS = { low: "Low", medium: "Medium", high: "High" } as const;
@@ -57,12 +57,29 @@ function clock(value: string): string {
   return new Date(value).toLocaleTimeString("en-HK", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
+function departureDeltaMinutes(baseline: string, recommended: string): number {
+  return Math.round((new Date(recommended).getTime() - new Date(baseline).getTime()) / 60_000);
+}
+
+function departureDisplay(baseline: string, recommended: string): string {
+  return departureDeltaMinutes(baseline, recommended) === 0
+    ? clock(recommended)
+    : `${clock(baseline)} → ${clock(recommended)}`;
+}
+
+function departureImpact(baseline: string, recommended: string): string {
+  const delta = departureDeltaMinutes(baseline, recommended);
+  if (delta === 0) return "Departure unchanged";
+  return `Departure ${Math.abs(delta)} min ${delta < 0 ? "earlier" : "later"}`;
+}
+
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
 export function BusinessPage() {
   const session = getDemoSession();
+  const navigate = useNavigate();
   const [view, setView] = useState<WorkspaceKind | undefined>(session?.role === "operator" ? "coach_operator" : undefined);
   const operations = useEnterpriseOperations(view);
   const workspace = operations.workspace.data;
@@ -227,7 +244,14 @@ export function BusinessPage() {
       <section className={styles.editor}>
         <div className={styles.editorHeading}>
           <div><span className="sectionKicker">Stage 1 · Operating input</span><h2>Import Services or Shipments</h2><p>Draft data stays in this browser until a plan is adopted.</p></div>
-          {session?.role === "operator" && <label><span>Demo view</span><select value={view} onChange={(event) => setView(event.target.value as WorkspaceKind)}>{workspace.available_views.map((item) => <option key={item} value={item}>{VIEW_LABELS[item]}</option>)}</select></label>}
+          {session?.role === "operator" && <label><span>Demo view</span><select value={view} onChange={(event) => {
+            const selectedView = event.target.value as WorkspaceKind;
+            if (selectedView === "enterprise_client") {
+              navigate("/business/employees");
+              return;
+            }
+            setView(selectedView);
+          }}>{workspace.available_views.map((item) => <option key={item} value={item}>{VIEW_LABELS[item]}</option>)}</select></label>}
         </div>
 
         {!official && <>
@@ -259,13 +283,13 @@ export function BusinessPage() {
       </section>
 
       {!official && <section className={styles.shadowSummary}>
-        <div className={styles.shadowHeading}><div><span className="sectionKicker">Stage 2 · Scenario stress test</span><h2>Choose and Compare Scenarios</h2></div><button className="button buttonPrimary" disabled={!jobs.length || operations.comparison.isPending} onClick={() => void compareScenarios()}>{operations.comparison.isPending ? "Running 4 scenarios…" : "Compare All 4 Scenarios"}</button></div>
+        <div className={styles.shadowHeading}><div><span className="sectionKicker">Stage 2 · Scenario stress test</span><h2>Choose and Compare Scenarios</h2><p>Normal Weekday is the control and preserves the submitted plan. Stress scenarios optimize only tasks whose original port is affected.</p></div><button className="button buttonPrimary" disabled={!jobs.length || operations.comparison.isPending} onClick={() => void compareScenarios()}>{operations.comparison.isPending ? "Running 4 scenarios…" : "Compare All 4 Scenarios"}</button></div>
         <div className={styles.scenarioGrid}>
           {(workspace.scenario_presets ?? [DEFAULT_SCENARIO]).map((item) => {
             const comparison = operations.comparison.data?.scenarios.find((candidate) => field(candidate.scenario, "preset_id") === item.preset_id);
             const selected = scenario.preset_id === item.preset_id;
             return <button type="button" className={selected ? styles.scenarioSelected : styles.scenarioCard} key={item.preset_id} onClick={() => selectScenario(item)}>
-              <span>{item.weather.replace("_", " ")} · {item.is_holiday ? "Holiday" : "Working day"}</span>
+              <span>{item.preset_id === "normal-weekday" ? "Control baseline" : item.weather.replace("_", " ")} · {item.is_holiday ? "Holiday" : "Working day"}</span>
               <strong>{item.name}</strong>
               {comparison ? <><b>{comparison.baseline.high_risk_count}→{comparison.recommended.high_risk_count} high risk · {comparison.baseline.vehicle_conflicts}→{comparison.recommended.vehicle_conflicts} conflicts</b><small>HK${comparison.baseline.cost_exposure_hkd.toLocaleString()}→${comparison.recommended.cost_exposure_hkd.toLocaleString()} exposure · {comparison.action_count} changes</small></> : <small>Run the comparison to calculate this scenario.</small>}
             </button>;
@@ -298,10 +322,10 @@ export function BusinessPage() {
             <div><strong>{result.baseline.cost_exposure_hkd.toLocaleString()}→{result.recommended.cost_exposure_hkd.toLocaleString()}</strong><span>Scenario exposure · HK$</span></div>
           </div>
           <div className={styles.table}>
-            <div className={styles.tableHeader}><span>Task / Vehicle</span><span>Original port</span><span>AI recommendation</span><span>Departure</span><span>Risk</span><span>Model / impact</span></div>
-            {result.jobs.map((job) => <div className={styles.tableRow} key={job.id}><strong>{job.label} · {job.asset_id === job.recommended_asset_id ? job.asset_id : `${job.asset_id}→${job.recommended_asset_id}`}</strong><span>{job.baseline_port}</span><span>{job.changed ? `${job.baseline_port} → ${job.recommended_port}` : "Keep plan"}</span><span>{clock(job.baseline_departure_time)} → {clock(job.recommended_departure_time)}</span><span>{RISK_LABELS[job.baseline_risk]} → {RISK_LABELS[job.recommended_risk]}</span><span>{job.predicted_wait_minutes} min · {job.model_source === "checked-in HGB model" ? "HGB" : "Fallback"} · {job.changed ? `${Math.abs(job.arrival_delta_minutes)} min earlier` : "No change"}</span></div>)}
+            <div className={styles.tableHeader}><span>Task / Vehicle</span><span>Original port</span><span>AI recommendation</span><span>Departure</span><span>Risk</span><span>Model / departure impact</span></div>
+            {result.jobs.map((job) => <div className={styles.tableRow} key={job.id}><strong>{job.label} · {job.asset_id === job.recommended_asset_id ? job.asset_id : `${job.asset_id}→${job.recommended_asset_id}`}</strong><span>{job.baseline_port}</span><span>{job.changed ? `${job.baseline_port} → ${job.recommended_port}` : "Keep plan"}</span><span>{departureDisplay(job.baseline_departure_time, job.recommended_departure_time)}</span><span>{RISK_LABELS[job.baseline_risk]} → {RISK_LABELS[job.recommended_risk]}</span><span>{job.predicted_wait_minutes} min · {job.model_source === "checked-in HGB model" ? "HGB" : "Fallback"} · {departureImpact(job.baseline_departure_time, job.recommended_departure_time)}</span></div>)}
           </div>
-          <p className={styles.recommendation}><strong>AI decision chain:</strong> imported task data → HGB port forecast → transparent weather/holiday/event calibration → route, capacity, availability and turnaround constraints. Results are scenario estimates, not observed savings.</p>
+          <p className={styles.recommendation}><strong>AI decision chain:</strong> imported task data → HGB port forecast → transparent weather/holiday/event calibration → causal eligibility check → route, capacity, availability and turnaround constraints. Unaffected submitted tasks stay unchanged, and no task is diverted into an affected or restricted port. Results are scenario estimates, not observed savings.</p>
         </>}
         <p className={styles.recommendation}><strong>Verified problem evidence:</strong> {field(workspace.active_scenario, "problem_evidence")} <a href={field(workspace.active_scenario, "problem_source_url")} target="_blank" rel="noreferrer">Official source ↗</a></p>
       </section>}

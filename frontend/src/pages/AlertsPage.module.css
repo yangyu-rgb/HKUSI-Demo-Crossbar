@@ -330,12 +330,4 @@
   }
 }
 
-.form, .list { background: #0e0e0e; border: 1px solid var(--line); }
-.form label > span, .days legend, .alertOptions { color: var(--muted); }
-.itemActions button { color: #ddd; background: #171717; border-color: var(--line); }
-.preview { color: var(--ink); background: #0e0e0e; border-color: var(--line); }
-.previewHeading > b { color: var(--teal); background: rgba(85,215,193,.1); }
-.saveEvaluation { color: #050505; background: white; }
-.history article button, .previewActive, .previewInactive { color: var(--ink); background: #151515; border-color: var(--line); }
-.historyUnread { background: rgba(85,215,193,.08); border-color: rgba(85,215,193,.2); }
-.historyRead { background: #111; border-color: var(--line); }
+.form, .list, .preview { background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

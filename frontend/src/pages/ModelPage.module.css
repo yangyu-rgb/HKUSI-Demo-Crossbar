@@ -68,11 +68,4 @@
   .optimization { grid-template-columns: 1fr; }
 }
 
-.panel { background: #0f0f0f; }
-.stats div { background: #171717; }
-.optimization .completed { background: rgba(85,215,193,.08); }
-.optimization .completed span { color: var(--teal); background: rgba(85,215,193,.12); }
-.optimization .blocked { background: rgba(255,196,107,.08); }
-.optimization .blocked span { color: var(--warning); background: rgba(255,196,107,.12); }
-.optimization .deferred { background: #171717; }
-.optimization .deferred span { color: #aaa; background: #222; }
+.panel { background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

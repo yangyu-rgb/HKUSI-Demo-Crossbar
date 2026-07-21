@@ -9,7 +9,7 @@ import styles from "./LoginPage.module.css";
 const roleCopy: Record<string, { tag: string; detail: string }> = {
   operator: { tag: "Platform Operations", detail: "Switch role views, inspect AI decisions, and review operating signals." },
   commuter: { tag: "Personal Mobility", detail: "Plan routes, submit feedback, and manage personal alerts." },
-  business_admin: { tag: "Enterprise Client", detail: "Review enterprise dispatch and employee shuttle planning." },
+  business_admin: { tag: "HR Operations", detail: "Plan employee commutes in batches, manage preferences, and export dispatch results." },
   transport_dispatcher: { tag: "Transport Dispatch", detail: "Predict service, fleet, and delivery-window risk, then adopt a plan." },
   port_official: { tag: "Port Coordination", detail: "Review aggregate pressure and publish a Demo coordination notice." },
 };

@@ -7,8 +7,6 @@
   color: var(--ink);
 }
 
-.state { background: #101010; border-color: var(--line); }
-.spinner { border-color: #333; border-top-color: white; }
 
 .screen h1 {
   margin: 18px 0 5px;
@@ -45,5 +43,3 @@
     transform: rotate(360deg);
   }
 }
-
-.loader { border-color: #333; border-top-color: white; }

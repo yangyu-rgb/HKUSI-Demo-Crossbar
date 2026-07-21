@@ -138,7 +138,7 @@ test("浏览器中的主要平台页面只显示英文", async ({ page }) => {
   await page.getByRole("button", { name: /Demo Operator/ }).click();
   await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
 
-  for (const route of ["/", "/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/model", "/pricing", "/operations"]) {
+  for (const route of ["/", "/planner", "/scenarios", "/crowdsource", "/alerts", "/business", "/business/employees", "/model", "/pricing", "/operations"]) {
     await page.goto(route);
     await page.locator("main").waitFor();
     const visibleText = await page.locator("body").innerText();
@@ -167,17 +167,31 @@ test("七分钟投资演示的企业 AI 决策闭环可直接操作", async ({ p
   await page.getByRole("button", { name: "Load Demo Sample" }).click();
   await expect(page.getByText(/10 validated Demo tasks loaded/)).toBeVisible();
   await page.getByRole("button", { name: "Compare All 4 Scenarios" }).click();
-  await expect(page.getByRole("button", { name: /Holiday Peak/ })).toContainText("7→0 high risk");
-  await expect(page.getByRole("button", { name: /Major Concert Release/ })).toContainText("4→0 high risk");
+  await expect(page.getByRole("button", { name: /Normal Weekday/ })).toContainText("2→2 high risk");
+  await expect(page.getByRole("button", { name: /Normal Weekday/ })).toContainText("0 changes");
+  await expect(page.getByRole("button", { name: /Holiday Peak/ })).toContainText("7→2 high risk");
+  await expect(page.getByRole("button", { name: /Major Concert Release/ })).toContainText("2→1 high risk");
+  await page.getByRole("button", { name: /Major Concert Release/ }).click();
+  for (const port of ["Lo Wu", "Shenzhen Bay"]) {
+    const checkbox = page.getByRole("checkbox", { name: port });
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
+    await checkbox.uncheck();
+    await expect(checkbox).not.toBeChecked();
+  }
   await page.getByRole("button", { name: /Typhoon \/ Severe Weather/ }).click();
   await page.getByRole("button", { name: "Analyse Selected Scenario" }).click();
-  await expect(page.getByText("7→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("7→2", { exact: true })).toBeVisible();
   await expect(page.getByText("1→0", { exact: true })).toBeVisible();
-  await expect(page.getByText("24,000→0", { exact: true })).toBeVisible();
+  await expect(page.getByText("24,000→7,000", { exact: true })).toBeVisible();
+  await expect(page.getByText("Model / departure impact")).toBeVisible();
+  await expect(page.getByText(/Departure \d+ min earlier/).first()).toBeVisible();
+  await expect(page.getByText("Departure unchanged").first()).toBeVisible();
+  await expect(page.getByText(/→/, { exact: false }).filter({ hasText: /07:/ }).first()).toBeVisible();
   await expect(page.getByText("✓ Input validated")).toBeVisible();
   await expect(page.getByText(/HGB/, { exact: false }).first()).toBeVisible();
-  await page.getByRole("button", { name: /Adopt 7 Actions & Create Drafts/ }).click();
-  await expect(page.getByText(/316 local notification drafts created/)).toBeVisible();
+  await page.getByRole("button", { name: /Adopt 6 Actions & Create Drafts/ }).click();
+  await expect(page.getByText(/268 local notification drafts created/)).toBeVisible();
 
   const viewSelect = page.getByLabel("Demo view");
   await viewSelect.selectOption("freight_operator");
@@ -192,6 +206,25 @@ test("七分钟投资演示的企业 AI 决策闭环可直接操作", async ({ p
   await viewSelect.selectOption("port_authority");
   await page.getByRole("button", { name: "Publish Demo Coordination Notice" }).click();
   await expect(page.getByRole("button", { name: "Demo Notice Published" })).toBeVisible();
+
+  await viewSelect.selectOption("enterprise_client");
+  await expect(page).toHaveURL(/\/business\/employees$/);
+  await expect(page.getByRole("heading", { name: "Employee Planning Control Tower" })).toBeVisible();
+});
+
+test("企业管理员直接进入HR员工规划主工作区", async ({ page }) => {
+  await page.goto("/login?next=%2Fbusiness");
+  await page.getByRole("button", { name: /Enterprise Administrator/ }).click();
+  await page.getByRole("button", { name: /Enter CrossBorder AI/ }).click();
+
+  await expect(page).toHaveURL(/\/business\/employees$/);
+  await expect(page.getByRole("heading", { name: "Employee Planning Control Tower" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Employee Planning" })).toHaveAttribute("href", "/business/employees");
+  await page.getByRole("button", { name: "Generate dispatch plan" }).click();
+  const employeeWorkspace = page.locator("#main-content");
+  await expect(employeeWorkspace.getByText("Employees", { exact: true })).toBeVisible();
+  await expect(employeeWorkspace.getByText("Average minutes", { exact: true })).toBeVisible();
+  await expect(employeeWorkspace.locator("span").filter({ hasText: /^High risk$/ })).toBeVisible();
 });
 
 test("桌面电影感外壳在主要断点无横向溢出", async ({ page }) => {

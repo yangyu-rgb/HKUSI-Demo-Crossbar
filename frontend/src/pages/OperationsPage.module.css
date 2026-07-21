@@ -36,9 +36,4 @@
 @media (max-width: 900px) { .metrics { grid-template-columns: 1fr 1fr; } .grid { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .intro, .adapterPanel { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: 1fr; } .adapters { justify-content: flex-start; } }
 
-.window { background: #111; border: 1px solid var(--line); }
-.window .active { color: #050505; background: white; }
-.bars i { background: #242424; }
-.bars b { background: linear-gradient(90deg, #f5f5f5, #55d7c1); }
-.ok { color: var(--teal); background: rgba(85,215,193,.1); }
-.bad { color: var(--danger); background: rgba(255,131,117,.1); }
+.metrics article, .panel, .adapterPanel { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

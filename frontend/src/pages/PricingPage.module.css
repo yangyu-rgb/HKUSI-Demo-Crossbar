@@ -7,22 +7,10 @@
 @media (max-width: 850px) { .plans { grid-template-columns: 1fr; }.plans .highlighted { transform: none; }.businessCase { grid-template-columns: 1fr; } }.businessCase > div:last-child { grid-template-columns: repeat(3,1fr); }
 @media (max-width: 560px) { .page { padding: 0 14px; }.current { align-items: flex-start; flex-direction: column; }.businessCase > div:last-child { grid-template-columns: 1fr; } }
 
-.hero { background: #090909; border-bottom: 1px solid var(--line); }
+.hero { color: var(--ink); background: rgba(255,255,255,.78); border-bottom: 1px solid var(--line); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .hero :global(.sectionKicker) { color: var(--teal); }
 .hero p { color: var(--muted); }
-.cycle { background: #141414; border: 1px solid var(--line); }
-.cycle button { color: #aaa; }
-.cycle .active { color: #050505; background: white; font-weight: 600; }
-.current { background: #101010; border-color: var(--line); }
-.current button { background: #151515; border-color: rgba(255,131,117,.25); }
-.guestNotice { color: #ffd99e; background: rgba(255,196,107,.08); border-color: rgba(255,196,107,.18); }
-.plans article, .businessCase { background: #101010; }
-.plans .highlighted { color: #050505; background: white; border-color: white; box-shadow: 0 30px 80px rgba(255,255,255,.08); }
-.plans .highlighted p, .plans .highlighted ul, .plans .highlighted small { color: #5d5d5d; }
-.plans article > button { color: #050505; background: white; font-weight: 600; }
-.highlighted > button { color: white !important; background: #050505 !important; }
-.businessCase article { background: #171717; }
-.modal { background: rgba(0,0,0,.78); }
-.modal > div { background: #101010; border: 1px solid var(--line); }
-.close { color: white; }
-.confirm { color: #050505; background: white; font-weight: 600; }
+.cycle { background: rgba(235,242,243,.9); border: 1px solid var(--line); }
+.cycle button { color: var(--muted); }
+.cycle .active { color: white; background: var(--teal-dark); font-weight: 600; }
+.plans article, .businessCase, .current { background: rgba(255,255,255,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

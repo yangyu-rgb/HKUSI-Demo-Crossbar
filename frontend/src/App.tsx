@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { RequireAccess } from "./features/auth/RequireAccess";
+import { getDemoSession } from "./features/auth/session";
 import { AppLayout } from "./layout/AppLayout";
 import { PageSkeleton } from "./shared/components/PageSkeleton";
 
@@ -25,6 +26,13 @@ const MobileLayout = lazy(() => import("./mobile/MobileLayout").then((module) =>
 const MobileLoginPage = lazy(() => import("./mobile/MobileLoginPage").then((module) => ({ default: module.MobileLoginPage })));
 
 
+function BusinessEntryPage() {
+  return getDemoSession()?.role === "business_admin"
+    ? <Navigate to="/business/employees" replace />
+    : <BusinessPage />;
+}
+
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -41,7 +49,7 @@ export function AppRoutes() {
           <Route path="alerts" element={<Suspense fallback={<PageSkeleton cards={2} />}><AlertsPage /></Suspense>} />
         </Route>
         <Route element={<RequireAccess allowedRoles={["operator", "business_admin", "transport_dispatcher", "port_official"]} />}>
-          <Route path="business" element={<Suspense fallback={<PageSkeleton cards={3} />}><BusinessPage /></Suspense>} />
+          <Route path="business" element={<Suspense fallback={<PageSkeleton cards={3} />}><BusinessEntryPage /></Suspense>} />
         </Route>
         <Route element={<RequireAccess allowedRoles={["operator", "business_admin"]} />}>
           <Route path="business/employees" element={<Suspense fallback={<PageSkeleton cards={3} />}><LegacyEmployeeBatchPage /></Suspense>} />

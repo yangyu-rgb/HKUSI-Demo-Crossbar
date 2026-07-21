@@ -281,7 +281,24 @@ describe("application routes", () => {
       scenario,
       baseline: { total_jobs: 1, high_risk_count: 7, medium_risk_count: 0, vehicle_conflicts: 1, cost_exposure_hkd: 24000, average_arrival_delta_minutes: 0, affected_people: 0, affected_load_units: 0, changed_jobs: 0 },
       recommended: { total_jobs: 1, high_risk_count: 0, medium_risk_count: 0, vehicle_conflicts: 0, cost_exposure_hkd: 0, average_arrival_delta_minutes: 8, affected_people: 49, affected_load_units: 0, changed_jobs: 1 },
-      jobs: [],
+      jobs: [
+        {
+          id: "101", label: "Service #101", direction: "hong_kong_to_shenzhen", asset_id: "A01", recommended_asset_id: "A01",
+          passenger_count: 49, load_units: 0, baseline_port_id: "luohu", baseline_port: "Lo Wu",
+          baseline_departure_time: "2026-04-30T07:40:00+08:00", baseline_arrival: "2026-04-30T09:41:00+08:00", baseline_risk: "high",
+          recommended_port_id: "luohu", recommended_port: "Lo Wu", recommended_departure_time: "2026-04-30T07:30:00+08:00",
+          recommended_arrival: "2026-04-30T09:25:00+08:00", recommended_risk: "medium", changed: true, arrival_delta_minutes: -16,
+          exposure_before_hkd: 4000, exposure_after_hkd: 2000, predicted_wait_minutes: 45, prediction_interval: [40, 50], model_source: "checked-in HGB model",
+        },
+        {
+          id: "104", label: "Service #104", direction: "shenzhen_to_hong_kong", asset_id: "A04", recommended_asset_id: "A04",
+          passenger_count: 38, load_units: 0, baseline_port_id: "huanggang", baseline_port: "Huanggang",
+          baseline_departure_time: "2026-04-30T08:05:00+08:00", baseline_arrival: "2026-04-30T10:10:00+08:00", baseline_risk: "high",
+          recommended_port_id: "shenzhen-bay", recommended_port: "Shenzhen Bay", recommended_departure_time: "2026-04-30T08:05:00+08:00",
+          recommended_arrival: "2026-04-30T09:40:00+08:00", recommended_risk: "low", changed: true, arrival_delta_minutes: -30,
+          exposure_before_hkd: 3000, exposure_after_hkd: 0, predicted_wait_minutes: 22, prediction_interval: [18, 26], model_source: "checked-in HGB model",
+        },
+      ],
       actions: [{ id: "reroute-101", action_type: "reroute", target_id: "101", title: "班次 #101 改走福田", detail: "提前 10 分钟发车", impact: "降低延误风险" }],
       ai_decision_trace: aiDecisionTrace,
       explanation: ["提前一小时识别罗湖压力。"],
@@ -302,9 +319,23 @@ describe("application routes", () => {
     expect(screen.getByText("No operating data loaded")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Load Demo Sample" }));
     expect(screen.getByText(/1 validated Demo tasks loaded/)).toBeInTheDocument();
+    for (const port of ["Lo Wu", "Futian", "Huanggang", "Shenzhen Bay"]) {
+      const checkbox = screen.getByRole("checkbox", { name: port });
+      fireEvent.click(checkbox);
+      expect(checkbox).toBeChecked();
+    }
+    const loWuCheckbox = screen.getByRole("checkbox", { name: "Lo Wu" });
+    fireEvent.click(loWuCheckbox);
+    expect(loWuCheckbox).not.toBeChecked();
     fireEvent.click(screen.getByRole("button", { name: "Analyse Selected Scenario" }));
     expect(await screen.findByText("7→0")).toBeInTheDocument();
     expect(screen.getByText("24,000→0")).toBeInTheDocument();
+    expect(screen.getByText("07:40 → 07:30")).toBeInTheDocument();
+    expect(screen.getByText(/Departure 10 min earlier/)).toBeInTheDocument();
+    expect(screen.getByText("08:05", { exact: true })).toBeInTheDocument();
+    expect(screen.getByText(/Departure unchanged/)).toBeInTheDocument();
+    expect(screen.queryByText("08:05 → 08:05")).not.toBeInTheDocument();
+    expect(screen.queryByText("30 min earlier")).not.toBeInTheDocument();
   });
 
   it("applies the demo time window and submits changed prediction input", async () => {

@@ -1,24 +1,24 @@
 :root {
-  color: #f7f7f5;
-  background: #050505;
+  color: #17232d;
+  background: #f4f7f8;
   font-family: "Inter", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #f7f7f5;
-  --muted: #a3a3a3;
-  --line: rgba(255, 255, 255, 0.13);
-  --teal: #55d7c1;
-  --teal-dark: #8de7d8;
-  --mint: rgba(85, 215, 193, 0.12);
-  --lime: #b8f08c;
-  --orange: #ff9c75;
-  --paper: #101010;
-  --shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.26);
-  --surface-subtle: #141414;
-  --danger: #ff8375;
-  --warning: #ffc46b;
-  --success: #55d7c1;
+  --ink: #17232d;
+  --muted: #5f6f7b;
+  --line: rgba(37, 59, 74, 0.15);
+  --teal: #147a80;
+  --teal-dark: #0e5f67;
+  --mint: rgba(20, 122, 128, 0.1);
+  --lime: #b8dd72;
+  --orange: #c96045;
+  --paper: rgba(255, 255, 255, 0.92);
+  --shadow: 0 28px 74px rgba(41, 65, 80, 0.16);
+  --shadow-soft: 0 16px 40px rgba(41, 65, 80, 0.11);
+  --surface-subtle: rgba(241, 246, 247, 0.94);
+  --danger: #b74b42;
+  --warning: #a66915;
+  --success: #147a80;
   --radius-card: 16px;
   --radius-panel: 22px;
 }
@@ -36,7 +36,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: var(--ink);
-  background: #050505;
+  background: #f4f7f8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -54,13 +54,13 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 3px solid rgba(20, 122, 128, 0.72);
   outline-offset: 3px;
 }
 
 ::selection {
-  color: #050505;
-  background: #ffffff;
+  color: #0d3438;
+  background: #c8e7e3;
 }
 
 .liquid-glass {
@@ -186,15 +186,15 @@ a {
 }
 
 .buttonPrimary {
-  color: #050505;
-  background: #ffffff;
-  box-shadow: 0 12px 32px rgba(255, 255, 255, 0.1);
+  color: white;
+  background: var(--teal-dark);
+  box-shadow: 0 12px 28px rgba(14, 95, 103, 0.2);
 }
 
 .buttonAccent {
   width: 100%;
-  color: #050505;
-  background: #ffffff;
+  color: white;
+  background: var(--teal-dark);
 }
 
 .buttonLight {
@@ -203,8 +203,8 @@ a {
 }
 
 .buttonDark {
-  color: #050505;
-  background: #ffffff;
+  color: white;
+  background: var(--teal-dark);
 }
 
 label {
@@ -226,8 +226,8 @@ textarea {
   height: 45px;
   padding: 0 12px;
   color: var(--ink);
-  color-scheme: dark;
-  background: #111111;
+  color-scheme: light;
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
   border-radius: 10px;
   outline: none;
@@ -236,8 +236,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(255, 255, 255, 0.62);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+  border-color: rgba(20, 122, 128, 0.66);
+  box-shadow: 0 0 0 3px rgba(20, 122, 128, 0.11);
 }
 
 .formError,

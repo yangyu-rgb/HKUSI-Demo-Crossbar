@@ -165,18 +165,3 @@
 @media (prefers-reduced-motion: reduce) {
   .close { transition: none; }
 }
-
-.dialog::backdrop { background: rgba(0,0,0,.78); }
-.sheet { background: #0b0b0b; border-color: var(--line); box-shadow: 0 30px 90px rgba(0,0,0,.6); }
-.header { background: #111; border-bottom: 1px solid var(--line); }
-.header span { color: var(--teal); font-weight: 600; }
-.header p { color: var(--muted); }
-.pipeline { background: #0b0b0b; }
-.pipeline > div { background: #171717; }
-.pipeline > div:not(:last-child)::after { background: #0b0b0b; border-color: #555; }
-.pipeline .finalStep { color: #050505; background: white; }
-.pipeline .finalStep span, .pipeline .finalStep small { color: #4f4f4f; }
-.panel, .factors { background: #111; }
-.factors li { background: #191919; }
-.bar { background: #2a2a2a; }
-.footer button { color: #050505; background: white; font-weight: 600; }

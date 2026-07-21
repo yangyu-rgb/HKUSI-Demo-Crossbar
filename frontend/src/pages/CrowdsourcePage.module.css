@@ -145,8 +145,4 @@
   }
 }
 
-.form, .feedPanel { background: #0f0f0f; }
-.forecastLink { color: var(--teal); background: rgba(85,215,193,.08); border-color: rgba(85,215,193,.2); }
-.segmented { background: #080808; border: 1px solid var(--line); }
-.segmented .active { color: #050505; background: white; box-shadow: none; }
-.dataGovernance { background: #0a0a0a; }
+.form, .feedPanel { background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

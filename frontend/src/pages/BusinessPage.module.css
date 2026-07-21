@@ -322,14 +322,12 @@
   }
 }
 
-.editor, .result, .history, .shadowSummary, .readinessSummary { background: #0f0f0f; border: 1px solid var(--line); }
+.editor, .result, .history, .shadowSummary, .readinessSummary { background: rgba(255,255,255,.93); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .editorHeading p { color: var(--muted); }
-.remove, .add, .history button { color: #ddd; background: #171717; border-color: var(--line); }
-.shadowStats div, .shadowPorts span { background: #171717; }
-.checkPassed { color: var(--teal); background: rgba(85,215,193,.1); }
-.checkPending { color: var(--warning); background: rgba(255,196,107,.1); }
-.table { background: #0b0b0b; border: 1px solid var(--line); }
-.tableHeader { background: #151515; }
+.remove, .add, .history button { color: var(--teal-dark); background: rgba(255,255,255,.78); border-color: var(--line); }
+.shadowStats div, .shadowPorts span { background: rgba(242,247,247,.94); }
+.table { background: rgba(255,255,255,.96); border: 1px solid var(--line); }
+.tableHeader { background: #edf4f3; }
 
 .inputSummary {
   margin-left: auto;
@@ -345,17 +343,17 @@
   gap: 6px;
   text-align: center;
   color: var(--muted);
-  border: 1px dashed rgba(255, 255, 255, .18);
+  border: 1px dashed rgba(37, 59, 74, .24);
   border-radius: 14px;
 }
 
-.emptyInput strong { color: white; }
+.emptyInput strong { color: var(--ink); }
 .emptyInput span { font-size: 10px; }
 
 .inputTable {
   margin-top: 18px;
   overflow-x: auto;
-  background: #0b0b0b;
+  background: rgba(255,255,255,.96);
   border: 1px solid var(--line);
   border-radius: 14px;
 }
@@ -372,7 +370,7 @@
 
 .inputHeader {
   color: var(--muted);
-  background: #151515;
+  background: #edf4f3;
   font-size: 9px;
   font-weight: 700;
 }
@@ -403,8 +401,8 @@
   align-content: start;
   gap: 7px;
   text-align: left;
-  color: white;
-  background: #171717;
+  color: var(--ink);
+  background: rgba(245,248,248,.96);
   border: 1px solid var(--line);
   border-radius: 13px;
   cursor: pointer;
@@ -490,10 +488,18 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #ddd;
-  background: #171717;
+  color: var(--ink);
+  background: rgba(255,255,255,.92);
   border: 1px solid var(--line);
   border-radius: 999px;
+}
+
+.scenarioPorts input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex: 0 0 15px;
+  accent-color: var(--teal-dark);
 }
 
 @media (max-width: 900px) {

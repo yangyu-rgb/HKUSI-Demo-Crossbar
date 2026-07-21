@@ -95,8 +95,4 @@
   }
 }
 
-.panel { background: #101010; }
-.originNode, .destinationNode { fill: #171717; stroke: white; }
-.portNode { fill: white; stroke: #555; }
-.nodeCode { fill: white; }.portCode { fill: #050505; }
-.wait { fill: var(--teal); }
+.panel { background: rgba(255,255,255,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }

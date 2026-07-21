@@ -127,9 +127,9 @@ export function LegacyEmployeeBatchPage() {
   return (
     <main className="page">
       <div className="pageIntro">
-        <span className="sectionKicker">B2B operations</span>
-        <h1>Enterprise Batch Commute Risk Management</h1>
-        <p>Edit employee requirements, regenerate dispatch plans, and restore recent plan inputs from SQLite.</p>
+        <span className="sectionKicker">HR operations · Employee mobility</span>
+        <h1>Employee Planning Control Tower</h1>
+        <p>Plan employee cross-border commutes in batches, manage individual preferences and budgets, and export auditable dispatch results.</p>
       </div>
       <form className={styles.editor} onSubmit={handleSubmit}>
         <div className={styles.editorHeading}>

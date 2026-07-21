@@ -39,10 +39,13 @@ function MenuChevron() {
 function NavigationLink({ item, session, mobile = false, onSelect }: { item: NavigationItem; session: ReturnType<typeof getDemoSession>; mobile?: boolean; onSelect?: () => void }) {
   const locked = Boolean(item.roles && !session);
   const loginPath = item.to === "/mobile" ? "/mobile/login" : "/login";
-  const target = locked ? `${loginPath}?next=${encodeURIComponent(item.to)}` : item.to;
+  const employeePlanning = item.to === "/business" && session?.role === "business_admin";
+  const destination = employeePlanning ? "/business/employees" : item.to;
+  const target = locked ? `${loginPath}?next=${encodeURIComponent(item.to)}` : destination;
+  const label = employeePlanning ? (mobile ? "Employees" : "Employee Planning") : mobile ? item.shortLabel ?? item.label : item.label;
   return (
     <NavLink to={target} end={item.end} onClick={onSelect} className={({ isActive }) => isActive && !locked ? styles.active : undefined}>
-      <span>{mobile ? item.shortLabel ?? item.label : item.label}</span>
+      <span>{label}</span>
       {locked && <small className={styles.lock}>Sign in</small>}
     </NavLink>
   );
@@ -67,6 +70,7 @@ export function AppLayout() {
   const primaryPaths = rolePrimary[session?.role ?? "guest"];
   const primary = primaryPaths.map((path) => navigation.find((item) => item.to === path)).filter(Boolean) as NavigationItem[];
   const more = visibleNavigation.filter((item) => !primaryPaths.includes(item.to));
+  const employeePlanning = session?.role === "business_admin";
 
   useEffect(() => {
     setMoreOpen(false);
@@ -98,10 +102,10 @@ export function AppLayout() {
   }
 
   return (
-    <div className={styles.appShell}>
+    <div className={`${styles.appShell} ${isHome ? styles.homeShell : styles.contentShell}`}>
       <a className={styles.skipLink} href="#main-content">Skip to main content</a>
       <header className={`${styles.headerWrap} ${isHome ? styles.homeHeader : ""}`}>
-        <div className={`${styles.header} liquid-glass`}>
+        <div className={`${styles.header} liquid-glass ${isHome ? styles.homeSurface : styles.contentSurface}`}>
           <NavLink className={styles.brand} to="/" aria-label="CrossBorder AI home">
             <span className={styles.brandMark}>CB</span>
             <span><strong>CrossBorder AI</strong><small>Hong Kong–Shenzhen Intelligence</small></span>
@@ -122,7 +126,7 @@ export function AppLayout() {
             <time className={styles.platformClock} dateTime={hongKongTime?.toISOString()}>
               <span>Hong Kong time</span><strong>{hongKongTime ? formatHongKongDateTime(hongKongTime, true) : "Syncing"}</strong>
             </time>
-            <NavLink className={styles.planCta} to={session && session.role !== "commuter" ? "/business" : session ? "/planner" : "/login?next=%2Fbusiness"}>{session && session.role !== "commuter" ? "Control Tower" : "Start planning"}</NavLink>
+            <NavLink className={styles.planCta} to={employeePlanning ? "/business/employees" : session && session.role !== "commuter" ? "/business" : session ? "/planner" : "/login?next=%2Fbusiness"}>{employeePlanning ? "Employee Planning" : session && session.role !== "commuter" ? "Control Tower" : "Start planning"}</NavLink>
             <div className={styles.menuAnchor} ref={accountRef}>
               <button className={styles.accountTrigger} type="button" aria-label="Account and persona" aria-expanded={accountOpen} aria-controls="account-menu" onClick={() => { setAccountOpen((open) => !open); setMoreOpen(false); }}>
                 <span>{currentPersona?.name?.slice(0, 1) ?? "G"}</span><MenuChevron />

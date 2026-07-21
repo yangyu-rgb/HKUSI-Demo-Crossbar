@@ -186,19 +186,10 @@
   font-size: 8px;
 }
 
-.card { background: #101010; }
-.recommended { border-color: rgba(255,255,255,.66); box-shadow: 0 14px 34px rgba(255,255,255,.05); }
-.risk.low, .onTime { color: var(--teal); background: rgba(85,215,193,.1); }
-.risk.medium, .routeAlert { color: var(--warning); background: rgba(255,196,107,.1); }
-.risk.high, .late, .budgetAlert { color: var(--danger); background: rgba(255,131,117,.1); }
-.metrics div { background: #181818; }
-.calculationButton { color: white; background: #191919; border-color: var(--line); font-weight: 600; }
-.calculationButton:hover { background: #232323; border-color: #555; }
+.card { background: rgba(255,255,255,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 
 .budgetAlert {
   margin: 0 0 10px;
   color: #a23f36;
   background: #fde8e5;
 }
-
-.budgetAlert { color: var(--danger); background: rgba(255,131,117,.1); }

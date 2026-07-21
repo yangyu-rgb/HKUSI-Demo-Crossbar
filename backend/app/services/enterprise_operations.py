@@ -56,7 +56,7 @@ CSV_ROLE_COLUMNS = {
 SCENARIO_PRESETS = [
     {
         "preset_id": "normal-weekday",
-        "name": "Normal Weekday / 普通工作日",
+        "name": "Normal Weekday",
         "weather": "clear",
         "is_holiday": False,
         "events": [],
@@ -64,7 +64,7 @@ SCENARIO_PRESETS = [
     },
     {
         "preset_id": "holiday-peak",
-        "name": "Holiday Peak / 节假日高峰",
+        "name": "Holiday Peak",
         "weather": "clear",
         "is_holiday": True,
         "events": [{
@@ -79,7 +79,7 @@ SCENARIO_PRESETS = [
     },
     {
         "preset_id": "concert-release",
-        "name": "Major Concert Release / 大型演唱会散场",
+        "name": "Major Concert Release",
         "weather": "clear",
         "is_holiday": False,
         "events": [{
@@ -94,7 +94,7 @@ SCENARIO_PRESETS = [
     },
     {
         "preset_id": "typhoon-severe-weather",
-        "name": "Typhoon / Severe Weather / 台风恶劣天气",
+        "name": "Typhoon / Severe Weather",
         "weather": "thunderstorm",
         "is_holiday": False,
         "events": [{
@@ -173,7 +173,7 @@ class EnterpriseOperationsService:
         return {
             **scenario,
             "id": scenario["preset_id"],
-            "subtitle": "What-if stress test using the imported operating plan / 基于当前任务的压力测试",
+            "subtitle": "What-if stress test using the imported operating plan",
             "scenario_at": self._clock.now().isoformat(),
             "horizon_hours": 3,
             "source_label": evidence["source_label"],
@@ -275,7 +275,10 @@ class EnterpriseOperationsService:
         for event in scenario.get("events", []):
             if event.get("direction") and event["direction"] != direction:
                 continue
-            if event.get("affected_ports") and port_id not in event["affected_ports"]:
+            # An empty selection means that the event affects no port. It must
+            # never be treated as a wildcard because the UI exposes explicit
+            # per-port checkboxes.
+            if port_id not in event.get("affected_ports", []):
                 continue
             if self._time_in_window(moment, event["start_time"], event["end_time"]):
                 impacts.append(event["impact"])
@@ -285,12 +288,24 @@ class EnterpriseOperationsService:
         base = 0.90
         if scenario["is_holiday"]:
             base += 0.20
-        if scenario["preset_id"] == "concert-release" and port_id in {"futian", "huanggang"}:
-            base += 0.20
         constraint = scenario.get("port_constraints", {}).get(port_id, "open")
         if constraint == "restricted":
             base += 0.25
         return round(min(1.8, base), 2)
+
+    def _port_is_scenario_affected(
+        self,
+        scenario: dict,
+        direction: str,
+        port_id: str,
+        moment: datetime,
+    ) -> bool:
+        return (
+            scenario["weather"] != "clear"
+            or scenario["is_holiday"]
+            or scenario.get("port_constraints", {}).get(port_id, "open") != "open"
+            or self._event_impact(scenario, direction, port_id, moment) != "none"
+        )
 
     def _forecast(self, port_id: str, direction: str, moment: datetime, scenario: dict) -> dict:
         port_name = PORT_NAMES[port_id]
@@ -377,6 +392,7 @@ class EnterpriseOperationsService:
     def _job_result(self, job: dict, scenario: dict) -> dict:
         departure = datetime.fromisoformat(job["departure_time"])
         baseline = self._evaluate_option(job, job["baseline_port_id"], departure, scenario)
+        baseline_available = baseline is not None
         if baseline is None:
             baseline = {
                 "port_id": job["baseline_port_id"],
@@ -386,22 +402,43 @@ class EnterpriseOperationsService:
                 "exposure": job["exposure_hkd"],
                 "forecast": self._forecast(job["baseline_port_id"], job["direction"], departure, scenario),
             }
+        baseline_affected = self._port_is_scenario_affected(
+            scenario,
+            job["direction"],
+            job["baseline_port_id"],
+            departure,
+        )
         candidates = []
         shifts = (0, -10, -20) if job["job_kind"] == "coach" else (0, -15, -30)
         ports = COACH_PORTS if job["job_kind"] == "coach" else FREIGHT_PORTS
-        for port_id in ports:
-            for shift in shifts:
-                candidate = self._evaluate_option(job, port_id, departure + timedelta(minutes=shift), scenario)
-                if candidate is None:
-                    continue
-                candidate["score"] = (
-                    RISK_ORDER[candidate["risk"]],
-                    candidate["exposure"],
-                    int(port_id != job["baseline_port_id"]) + int(shift != 0),
-                    abs(shift),
-                    candidate["arrival"],
-                )
-                candidates.append(candidate)
+        if baseline_affected or not baseline_available:
+            for port_id in ports:
+                for shift in shifts:
+                    candidate_departure = departure + timedelta(minutes=shift)
+                    if port_id != job["baseline_port_id"]:
+                        # A scenario must not attract new services into a port
+                        # that the same event marks as affected or restricted.
+                        # If the submitted port is closed/infeasible, however,
+                        # a feasible affected alternative is still preferable
+                        # to recommending the closed port.
+                        if (
+                            baseline_available
+                            and self._event_impact(scenario, job["direction"], port_id, candidate_departure) != "none"
+                        ):
+                            continue
+                        if scenario.get("port_constraints", {}).get(port_id, "open") != "open":
+                            continue
+                    candidate = self._evaluate_option(job, port_id, candidate_departure, scenario)
+                    if candidate is None:
+                        continue
+                    candidate["score"] = (
+                        RISK_ORDER[candidate["risk"]],
+                        candidate["exposure"],
+                        int(port_id != job["baseline_port_id"]) + int(shift != 0),
+                        abs(shift),
+                        candidate["arrival"],
+                    )
+                    candidates.append(candidate)
         recommended = min(candidates, key=lambda item: item["score"]) if candidates else baseline
         changed = recommended["port_id"] != baseline["port_id"] or recommended["departure"] != baseline["departure"]
         arrival_delta = round((recommended["arrival"] - baseline["arrival"]).total_seconds() / 60)
@@ -460,7 +497,10 @@ class EnterpriseOperationsService:
                 ready = datetime.fromisoformat(current["recommended_arrival"]) + timedelta(
                     minutes=input_by_id[current["id"]]["turnaround_minutes"]
                 )
-                if ready > datetime.fromisoformat(following["recommended_departure_time"]):
+                if (
+                    ready > datetime.fromisoformat(following["recommended_departure_time"])
+                    and (current["changed"] or following["changed"])
+                ):
                     following["recommended_asset_id"] = f"{asset_id}-R"
                     following["changed"] = True
 
@@ -647,7 +687,7 @@ class EnterpriseOperationsService:
                 "id": f"reroute-{result['id']}",
                 "action_type": "reroute_and_retime",
                 "target_id": result["id"],
-                "title": f"Optimize {result['label']} / 调整{result['label']}",
+                "title": f"Optimize {result['label']}",
                 "detail": (
                     f"{result['baseline_port']} → {result['recommended_port']} · "
                     f"{datetime.fromisoformat(result['baseline_departure_time']).strftime('%H:%M')} → "
@@ -675,15 +715,15 @@ class EnterpriseOperationsService:
                 "id": "coordinate-capacity-window",
                 "action_type": "coordination",
                 "target_id": "network",
-                "title": "Publish aggregate coordination window / 发布聚合协调窗口",
+                "title": "Publish aggregate coordination window",
                 "detail": "Share port pressure and diversion capacity without exposing company task or vehicle records.",
                 "impact": f"Aggregate high-risk tasks {baseline['high_risk_count']} → {recommended['high_risk_count']} (scenario)",
             }] if official else actions),
             "ai_decision_trace": trace,
             "explanation": [
-                "The model evaluates every eligible port for every imported task.",
+                "The model preserves unaffected submitted tasks and evaluates alternatives only for scenario-affected or infeasible plans.",
                 "Weather, holiday and event effects are transparent versioned multipliers.",
-                "The optimizer applies capacity, availability, turnaround and port constraints before minimizing risk and changes.",
+                "The optimizer never diverts a task into an event-affected or restricted port, then minimizes risk with the fewest plan changes.",
             ],
             "demo_notice": self._catalog()["demo_notice"],
         }
@@ -703,7 +743,7 @@ class EnterpriseOperationsService:
                 "recommended": preview["recommended"],
                 "port_forecasts": preview["ai_decision_trace"]["ports"],
                 "action_count": len(preview["actions"]),
-                "top_recommendation": preview["actions"][0]["title"] if preview["actions"] else "Keep current plan / 保持原计划",
+                "top_recommendation": preview["actions"][0]["title"] if preview["actions"] else "Keep current plan",
             })
         unit_field = "load_units" if operations_kind == "freight_operator" else "passenger_count"
         return {
